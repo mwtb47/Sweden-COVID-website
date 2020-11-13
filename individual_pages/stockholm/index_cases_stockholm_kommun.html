@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+
+<html>
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Bekräftade Fall i Stockholms Stad</title>
+  </head>
+
+  <!-- Styles-->
+  <style>
+  .aligncenter {
+      text-align: center;
+  }
+  .header {
+    padding: 20px;
+    text-align: center;
+    background: rgba(20,20,130,0.9);
+    color: white;
+    font-family: Arial;
+    font-size: 30px;
+  }
+  .header_buttons {
+    text-align: center;
+    background: rgb(240,240,240);
+    color: white;
+    font-family: Arial;
+    font-size: 16px;
+  }
+  .hyperlink{
+    color: black;
+    font-family: Arial;
+    text-decoration: none;
+  }
+  .footer{
+    padding: 7px;
+    text-align: center;
+    background: rgba(20,20,130,0.9);
+    color: white;
+    font-family: Arial;
+    font-size: 15px;
+  }
+
+  hr {
+    width: 90%;
+    height: 1px;
+    background-color: rgb(200,200,200);
+  }
+
+  .dropbtn {
+    background-color: rgb(240,240,240);
+    color: white;
+    padding: 8px;
+    font-size: 16px;
+    border: none;
+  }
+  .dropdown {
+    font-size: 16px;
+    position: relative;
+    background-color: rgb(240,240,240);
+    display: inline-block;
+  }
+  .dropdown-content {
+    text-align: left;
+    display: none;
+    position: absolute;
+    background-color: #rgb(240,240,240);
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+  }
+  .dropdown-content a {
+    background-color: rgb(245,245,245);
+    color: black;
+    padding: 12px 16px;
+    font-size: 14px;
+    text-decoration: none;
+    display: block;
+  }
+  .dropdown-content a:hover {background-color: rgb(230,230,230);}
+  .dropdown:hover .dropdown-content {display: block;}
+  .dropdown:hover .dropbtn {background-color: rgb(230,230,230);}
+  </style>
+
+
+  <!-- Document-->
+  <div class="header">
+    <a>Sverige COVID-19 - Bekräftade Fall i Stockholms Stad</a></br>
+  </div>
+
+  <div class="header_buttons">
+    <div class="dropdown">
+      <button class="dropbtn"><a href="/Sweden-COVID-website/index.html" class=hyperlink>Fall</a></button>
+      <div class="dropdown-content">
+        <a href="/Sweden-COVID-website/individual_pages/cases/index_daily_cases_all.html" class=hyperlink>Bekräftade Fall per Dag</a>
+        <a href="/Sweden-COVID-website/individual_pages/cases/index_daily_cases_regions.html" class=hyperlink>Bekräftade Fall per Län</a>
+        <a href="/Sweden-COVID-website/individual_pages/cases/index_percentage_cases.html" class=hyperlink>% Positiv Resultat</a>
+      </div>
+    </div>
+
+    &emsp;
+
+    <div class="dropdown">
+      <button class="dropbtn"><a href="/Sweden-COVID-website/index_deaths.html" class=hyperlink>Dödsfall</a></button>
+      <div class="dropdown-content">
+        <a href="/Sweden-COVID-website/individual_pages/deaths/index_deaths_all.html" class=hyperlink>Antal Avlidna per Dag</a>
+        <a href="/Sweden-COVID-website/individual_pages/deaths/index_deaths_weekly.html" class=hyperlink>Antal Avlidna (5 År Medelvärde)</a>
+        <a href="/Sweden-COVID-website/individual_pages/deaths/index_case_fatality_rate.html" class=hyperlink>Case Fatality Rate</a>
+        <a href="/Sweden-COVID-website/individual_pages/deaths/index_deaths_age_group.html" class=hyperlink>Antal Avlidna per Åldersgruppa</a>
+        <a href="/Sweden-COVID-website/individual_pages/deaths/index_comorbidities.html" class=hyperlink>Sjukdomsgrupper</a>
+        <a href="/Sweden-COVID-website/individual_pages/deaths/index_number_of_comorbidities.html" class=hyperlink>Antal av Sjukdomsgrupperna</a>
+      </div>
+    </div>
+
+    &emsp;
+
+    <div class="dropdown">
+      <button class="dropbtn"><a href="/Sweden-COVID-website/index_intensiv.html" class=hyperlink>Intensivvård</a></button>
+      <div class="dropdown-content">
+        <a href="/Sweden-COVID-website/individual_pages/intensiv/index_intensiv_ward_all.html" class=hyperlink>Antal Intensivvårdade</a>
+        <a href="/Sweden-COVID-website/individual_pages/intensiv/index_intensive_ward_regions.html" class=hyperlink>Antal Intensivvårdade per Län</a>
+      </div>
+    </div>
+
+    &emsp;
+
+    <div class="dropdown">
+      <button class="dropbtn"><a href="/Sweden-COVID-website/index_stockholm.html" class=hyperlink>Stockholms Län</a></button>
+      <div class="dropdown-content">
+        <a href="/Sweden-COVID-website/individual_pages/stockholm/index_cases_stockholm_county.html" class=hyperlink>Stockholms Län</a>
+        <a href="/Sweden-COVID-website/individual_pages/stockholm/index_cases_stockholm_kommun.html" class=hyperlink>Stockholms Kommun</a>
+      </div>
+    </div>
+
+    &emsp;
+
+    <div class="dropdown">
+      <button class="dropbtn"><a href="/Sweden-COVID-website/index_maps.html" class=hyperlink>Kartor</a></button>
+      <div class="dropdown-content">
+        <a href="/Sweden-COVID-website/individual_pages/maps/index_maps_cases.html" class=hyperlink>Bekräftade Fall</a>
+        <a href="/Sweden-COVID-website/individual_pages/maps/index_maps_deaths.html" class=hyperlink>Antal Avlidna</a>
+      </div>
+    </div>
+  </div>
+
+  <p class="aligncenter">
+      <embed type="text/html" src="/Sweden-COVID-website/graphs/stockholm/cases_stockholm_kommun.html" width="90%" height="700">
+  </p>
+  <div class="footer">
+    <a>Contact: mwt.barnes@outlook.com</a>
+  </div>
+</html>
