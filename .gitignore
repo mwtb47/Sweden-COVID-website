@@ -1,0 +1,5 @@
+# Ignore csv, xlsx, geojson
+*.csv
+*.xlsx
+*.DS_Store
+*.geojson
