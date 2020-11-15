@@ -27,8 +27,21 @@
     font-family: Arial;
     font-size: 16px;
   }
+  .header_buttons_2 {
+    padding: 10px;
+    text-align: center;
+    background: rgba(20,20,130,0.9);
+    color: white;
+    font-family: Arial;
+    font-size: 16px;
+  }
   .hyperlink{
     color: black;
+    font-family: Arial;
+    text-decoration: none;
+  }
+  .hyperlink_2{
+    color: white;
     font-family: Arial;
     text-decoration: none;
   }
@@ -85,7 +98,7 @@
 
   <!-- Document-->
   <div class="header">
-    <a>Sverige COVID-19 - Bekräftade Fall</a></br>
+    <a>Sverige COVID-19 - Bekräftade Fall per Dag - Län</a></br>
   </div>
 
   <div class="header_buttons">
@@ -95,7 +108,6 @@
         <a href="/Sweden-COVID-website/individual_pages/cases/index_daily_cases_all.html" class=hyperlink>Bekräftade Fall per Dag</a>
         <a href="/Sweden-COVID-website/individual_pages/cases/index_daily_cases_regions.html" class=hyperlink>Bekräftade Fall per Län</a>
         <a href="/Sweden-COVID-website/individual_pages/cases/index_percentage_cases.html" class=hyperlink>% Positiv Resultat</a>
-        <a href="/Sweden-COVID-website/individual_pages/cases/index_positive_antibody.html" class=hyperlink>Antikropps Testar</a>
       </div>
     </div>
 
@@ -144,21 +156,16 @@
     </div>
   </div>
 
+  <div class="header_buttons_2">
+    <a href="/Sweden-COVID-website/individual_pages/cases/index_daily_cases_regions.html" class=hyperlink_2>Split</a>
+    &emsp;
+    <a href="/Sweden-COVID-website/individual_pages/cases/index_daily_cases_regions_single.html" class=hyperlink_2>Single</a>
+  </div>
+
   <p class="aligncenter">
-      <embed type="text/html" src="/Sweden-COVID-website/graphs/cases/daily_cases_all.html" width="90%" height="600">
+      <embed type="text/html" src="/Sweden-COVID-website/graphs/cases/daily_cases_regions_single.html" width="90%" height="700">
   </p>
-  <hr>
-  <p class="aligncenter">
-      <embed type="text/html" src="/Sweden-COVID-website/graphs/cases/daily_cases_regions.html" width="90%" height="850">
-  </p>
-  <hr>
-  <p class="aligncenter">
-      <embed type="text/html" src="/Sweden-COVID-website/graphs/cases/percentage_cases.html" width="90%" height="600">
-  </p>
-  <hr>
-  <p class="aligncenter">
-      <embed type="text/html" src="/Sweden-COVID-website/graphs/cases/positive_antibody.html" width="90%" height="700">
-  </p>
+
   <div class="footer">
     <a>Contact: mwt.barnes@outlook.com</a>
   </div>
