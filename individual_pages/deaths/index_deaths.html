@@ -4,7 +4,7 @@
 
   <head>
     <meta charset="UTF-8">
-    <title>EU / OECD</title>
+    <title>COVID-19 - Dödsfall</title>
   </head>
 
   <!-- Styles-->
@@ -98,12 +98,12 @@
   <div class="header">
     <a>Sverige - COVID-19</a>
     <br>
-    <a style="font-size:20px">EU / OECD Länder</a>
+    <a style="font-size:20px">Antal Avlidna</a>
   </div>
 
   <div class="header_buttons">
     <div class="dropdown">
-      <button class="dropbtn"><a href="/Sweden-COVID-website/index.html" class=hyperlink>Fall</a></button>
+      <button class="dropbtn"><a href="/Sweden-COVID-website/individual_pages/cases/index_cases.html" class=hyperlink>Fall</a></button>
       <div class="dropdown-content">
         <a href="/Sweden-COVID-website/individual_pages/cases/index_daily_cases_all.html" class=hyperlink>Bekräftade Fall per Dag</a>
         <a href="/Sweden-COVID-website/individual_pages/cases/index_daily_cases_regions.html" class=hyperlink>Bekräftade Fall per Län</a>
@@ -116,7 +116,7 @@
     &emsp;
 
     <div class="dropdown">
-      <button class="dropbtn"><a href="/Sweden-COVID-website/index_deaths.html" class=hyperlink>Dödsfall</a></button>
+      <button class="dropbtn"><a href="/Sweden-COVID-website/individual_pages/deaths/index_deaths.html" class=hyperlink>Dödsfall</a></button>
       <div class="dropdown-content">
         <a href="/Sweden-COVID-website/individual_pages/deaths/index_deaths_all.html" class=hyperlink>Antal Avlidna per Dag</a>
         <a href="/Sweden-COVID-website/individual_pages/deaths/index_deaths_weekly.html" class=hyperlink>Antal Avlidna (5 År Medelvärde)</a>
@@ -130,7 +130,7 @@
     &emsp;
 
     <div class="dropdown">
-      <button class="dropbtn"><a href="/Sweden-COVID-website/index_intensiv.html" class=hyperlink>Intensivvård</a></button>
+      <button class="dropbtn"><a href="/Sweden-COVID-website/individual_pages/intensiv/index_intensiv.html" class=hyperlink>Intensivvård</a></button>
       <div class="dropdown-content">
         <a href="/Sweden-COVID-website/individual_pages/intensiv/index_intensiv_ward_all.html" class=hyperlink>Antal Intensivvårdade</a>
         <a href="/Sweden-COVID-website/individual_pages/intensiv/index_intensive_ward_regions.html" class=hyperlink>Antal Intensivvårdade per Län</a>
@@ -140,7 +140,7 @@
     &emsp;
 
     <div class="dropdown">
-      <button class="dropbtn"><a href="/Sweden-COVID-website/index_stockholm.html" class=hyperlink>Stockholms Län</a></button>
+      <button class="dropbtn"><a href="/Sweden-COVID-website/individual_pages/stockholm/index_stockholm.html" class=hyperlink>Stockholms Län</a></button>
       <div class="dropdown-content">
         <a href="/Sweden-COVID-website/individual_pages/stockholm/index_cases_stockholm_county.html" class=hyperlink>Stockholms Län</a>
         <a href="/Sweden-COVID-website/individual_pages/stockholm/index_cases_stockholm_kommun.html" class=hyperlink>Stockholms Kommun</a>
@@ -150,7 +150,7 @@
     &emsp;
 
     <div class="dropdown">
-      <button class="dropbtn"><a href="/Sweden-COVID-website/index_maps.html" class=hyperlink>Kartor</a></button>
+      <button class="dropbtn"><a href="/Sweden-COVID-website/individual_pages/maps/index_maps.html" class=hyperlink>Kartor</a></button>
       <div class="dropdown-content">
         <a href="/Sweden-COVID-website/individual_pages/maps/index_maps_cases.html" class=hyperlink>Bekräftade Fall</a>
         <a href="/Sweden-COVID-website/individual_pages/maps/index_maps_deaths.html" class=hyperlink>Antal Avlidna</a>
@@ -160,34 +160,65 @@
     &emsp;
 
     <div class="dropdown">
-      <button class="dropbtn"><a href="/Sweden-COVID-website/index_comparisons.html" class=hyperlink>EU/EEA / OECD</a></button>
+      <button class="dropbtn"><a href="/Sweden-COVID-website/individual_pages/comparisons/index_comparisons.html" class=hyperlink>EU/EEA / OECD</a></button>
       <div class="dropdown-content">
         <a href="/Sweden-COVID-website/individual_pages/comparisons/index_cases_EU_OECD.html" class=hyperlink>Bekräftade Fall</a>
         <a href="/Sweden-COVID-website/individual_pages/comparisons/index_deaths_EU_OECD.html" class=hyperlink>Antal Avlidna</a>
       </div>
     </div>
   </div>
-  <p class="a">The buttons to the top-right of the graph allow selection of either
-    EU/EEA or OECD regions and either absolute values or values per million inhabitants.
-  </p>
+
+  <h3 style="margin-left:8%; font-family:Arial; color:rgb(60,60,60);">Antal Avlidna - Folkhälsomyndigheten</h3>
+  <p class="a">- Statistiken över avlidna baseras på data som hittills rapporterats
+    till Folkhälsomyndigheten, skillnader mot den regionala rapporteringen förekommer.</p>
+  <p class="a">- Statistiken visar antalet personer med bekräftad COVID-19 som
+    avlidit, oavsett dödsorsak.</p>
+  <p class="a">- Tidserien med antalet avlidna per dag innehåller endast de fall
+    där datum för dödsfallet är känt, därför kan totalt antal avlidna skilja sig
+    mot det antal som redovisas i tidsserien.</p>
+  <br>
+  <h3 style="margin-left:8%; font-family:Arial; color:rgb(60,60,60);">Antal Avlidna - Socialstyrelsen</h3>
+  <p class="a">- Statistiken visar avlidna där den underliggande dödsorsaken var
+    COVID-19, enligt de dödsorsaksintyg som inkommit till Socialstyrelsen. </p>
+
   <hr>
+
   <p class="aligncenter">
-      <embed type="text/html" src="/Sweden-COVID-website/graphs/comparisons/daily_cases_EU_OECD.html" width="90%" height="700">
+      <embed type="text/html" src="/Sweden-COVID-website/graphs/deaths/deaths_all.html" width="90%" height="600">
   </p>
+
   <hr>
+
   <p class="aligncenter">
-      <embed type="text/html" src="/Sweden-COVID-website/graphs/comparisons/daily_deaths_EU_OECD.html" width="90%" height="700">
+      <embed type="text/html" src="/Sweden-COVID-website/graphs/deaths/deaths_weekly.html" width="90%" height="600">
   </p>
+
   <hr>
+
   <p class="aligncenter">
-      <embed type="text/html" src="/Sweden-COVID-website/graphs/comparisons/total_cases_EU_OECD.html" width="90%" height="700">
+      <embed type="text/html" src="/Sweden-COVID-website/graphs/deaths/case_fatality_rate.html" width="90%" height="600">
   </p>
-  </p>
+
+  <hr>
+
   <p class="aligncenter">
-      <embed type="text/html" src="/Sweden-COVID-website/graphs/comparisons/total_deaths_EU_OECD.html" width="90%" height="700">
+      <embed type="text/html" src="/Sweden-COVID-website/graphs/deaths/deaths_age_group.html" width="90%" height="600">
   </p>
+
+  <hr>
+
+  <p class="aligncenter">
+      <embed type="text/html" src="/Sweden-COVID-website/graphs/deaths/comorbidities.html" width="90%" height="600">
+  </p>
+
+  <hr>
+
+  <p class="aligncenter">
+      <embed type="text/html" src="/Sweden-COVID-website/graphs/deaths/number_of_comorbidities.html" width="90%" height="600">
+  </p>
+
+
   <div class="footer">
     <a>Contact: mwt.barnes@outlook.com</a>
   </div>
-
 </html>
