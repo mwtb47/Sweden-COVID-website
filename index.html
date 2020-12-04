@@ -44,6 +44,9 @@
     text-decoration: none;
   }
   .footer{
+    position: fixed;
+    bottom: 0px;
+    width: 100%;
     padding: 7px;
     text-align: center;
     background: rgba(20,20,130,0.9);
@@ -166,9 +169,23 @@
     </div>
   </div>
 
+  <script>
+  n =  new Date();
+  y = n.getFullYear();
+  m = n.getMonth() + 1;
+  d = n.getDate();
+  </script>
+
   <p class="a">
-      Text
+      This website contains a summary of information from Folkhälsomyndigheten,
+      Socialstyrelsen and Statistiska centralbyrån. Charts are interactive and
+      some have dropdowns in the top-right that allow selection of different
+      chart displays.
+      <br>
+      <br>
+      <i>The website was updated on </i> <script>document.write(y + "/" + m + "/" + d);</script>
   </p>
+
 
   <div class="footer">
     <a>Contact: mwt.barnes@outlook.com</a>

@@ -26,27 +26,35 @@
   .header {
     padding: 20px;
     text-align: center;
-    background: rgba(20,20,130,0.9);
+    background: rgb(40,40,140);
     color: white;
     font-family: Arial;
     font-size: 30px;
   }
   .header_buttons {
     text-align: center;
-    background: rgb(240,240,240);
+    background: rgb(40,40,140);
     color: white;
     font-family: Arial;
     font-size: 16px;
   }
+  .header_2 {
+    padding: 10px;
+    text-align: center;
+    background: rgb(220,220,220);
+    color: rgb(40,40,140);
+    font-family: Arial;
+    font-size: 24px;
+  }
   .hyperlink{
-    color: black;
+    color: white;
     font-family: Arial;
     text-decoration: none;
   }
   .footer{
     padding: 7px;
     text-align: center;
-    background: rgba(20,20,130,0.9);
+    background: rgb(40,40,140);
     color: white;
     font-family: Arial;
     font-size: 15px;
@@ -59,8 +67,8 @@
   }
 
   .dropbtn {
-    background-color: rgb(240,240,240);
-    color: white;
+    background-color: rgb(40,40,140);
+    color: rgb(40,40,140);
     padding: 8px;
     font-size: 16px;
     border: none;
@@ -68,39 +76,33 @@
   .dropdown {
     font-size: 16px;
     position: relative;
-    background-color: rgb(240,240,240);
+    background-color: rgb(40,40,140);
     display: inline-block;
   }
   .dropdown-content {
     text-align: left;
     display: none;
     position: absolute;
-    background-color: #rgb(240,240,240);
+    background-color: rgb(240,240,240);
     min-width: 160px;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 1;
   }
   .dropdown-content a {
     background-color: rgb(245,245,245);
-    color: black;
+    color: rgb(40,40,140);
     padding: 12px 16px;
     font-size: 14px;
     text-decoration: none;
     display: block;
   }
-  .dropdown-content a:hover {background-color: rgb(230,230,230);}
+  .dropdown-content a:hover {background-color: rgba(220,220,220,0.9);}
   .dropdown:hover .dropdown-content {display: block;}
-  .dropdown:hover .dropbtn {background-color: rgb(230,230,230);}
+  .dropdown:hover .dropbtn {background-color: rgb(40,40,140);}
   </style>
 
 
   <!-- Document-->
-  <div class="header">
-    <a>Sverige - COVID-19</a>
-    <br>
-    <a style="font-size:20px">Bekräftade Fall</a>
-  </div>
-
   <div class="header_buttons">
     <div class="dropdown">
       <button class="dropbtn"><a href="/Sweden-COVID-website/individual_pages/cases/index_cases.html" class=hyperlink>Fall</a></button>
@@ -166,6 +168,10 @@
         <a href="/Sweden-COVID-website/individual_pages/comparisons/index_deaths_EU_OECD.html" class=hyperlink>Antal Avlidna</a>
       </div>
     </div>
+  </div>
+
+  <div class="header_2">
+    <a style="font-size:20px">Bekräftade Fall</a>
   </div>
 
   <p class="aligncenter">
