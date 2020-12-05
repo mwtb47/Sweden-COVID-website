@@ -39,12 +39,20 @@
     font-size: 16px;
   }
   .header_2 {
-    padding: 15px;
+    padding: 15px 0px 2px 0px;
     text-align: center;
     background: rgb(200,220,240);
     color: rgb(50,50,70);
     font-family: Arial;
     font-size: 30px;
+  }
+  .header_date {
+    padding: 0px 0px 15px 0px;
+    text-align: center;
+    background: rgb(200,220,240);
+    color: rgb(50,50,70);
+    font-family: Arial;
+    font-size: 14px;
   }
   .hyperlink{
     color: white;
@@ -52,9 +60,12 @@
     text-decoration: none;
   }
   .footer{
+    position: fixed;
+    bottom: 0px;
+    width: 100%;
     padding: 7px;
     text-align: center;
-    background: rgb(40,40,140);
+    background: rgba(20,20,130,0.9);
     color: white;
     font-family: Arial;
     font-size: 15px;
@@ -101,8 +112,15 @@
   .dropdown:hover .dropbtn {background-color: rgb(40,40,140);}
   </style>
 
-
   <!-- Document-->
+
+  <script>
+  n =  new Date(document.lastModified);
+  y = n.getFullYear();
+  m = n.getMonth() + 1;
+  d = n.getDate();
+  </script>
+
   <div class="header_buttons">
     <div class="dropdown">
       <button class="dropbtn"><a href="/Sweden-COVID-website/individual_pages/cases/index_cases.html" class=hyperlink>Fall</a></button>
@@ -172,6 +190,10 @@
 
   <div class="header_2">
     <a>Bekräftade Fall</a>
+  </div>
+
+  <div class="header_date">
+    <i style="font-size:15px">Updated <script>document.write(y + "/" + m + "/" + d);</script></i>
   </div>
 
   <p class="aligncenter">
