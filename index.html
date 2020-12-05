@@ -170,7 +170,7 @@
   </div>
 
   <script>
-  n =  new Date();
+  n =  new Date(document.lastModified);
   y = n.getFullYear();
   m = n.getMonth() + 1;
   d = n.getDate();
@@ -183,7 +183,7 @@
       chart displays.
       <br>
       <br>
-      <i>The website was updated on </i> <script>document.write(y + "/" + m + "/" + d);</script>
+      <i>The website was last updated on <script>document.write(y + "/" + m + "/" + d);</script></i> 
   </p>
 
 
