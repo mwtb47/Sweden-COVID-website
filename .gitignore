@@ -3,4 +3,4 @@
 *.xlsx
 *.DS_Store
 *.geojson
-*.py
+config.py
