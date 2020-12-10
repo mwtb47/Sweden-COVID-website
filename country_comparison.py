@@ -15,6 +15,7 @@ import re
 
 URL_cases = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"
 URL_deaths = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"
+URL_excess = "https://raw.githubusercontent.com/TheEconomist/covid-19-excess-deaths-tracker/master/output-data/excess-deaths/all_weekly_excess_deaths.csv"
 
 # -----------
 # Deaths data
@@ -866,3 +867,76 @@ fig.update_layout(
 )
 
 fig.write_html('graphs/comparisons/total_cases_EU_OECD.html')
+
+# -------------
+# Excess deaths
+# -------------
+
+# Read data on excess deaths
+excess = pd.read_csv(URL_excess)
+
+# x100 to get percentage value
+excess['excess_deaths_pct_change'] = excess['excess_deaths_pct_change'] * 100
+
+# Some countries have regional data so this is dropped from the data frame
+drop_regions = ['United States', 'Spain', 'Britain',
+                'France', 'Italy', 'Chile']
+for country in drop_regions:
+    excess = excess.drop( excess[ (excess['country']==country) & \
+                              (excess['region']!=country) ].index )
+
+fig = go.Figure()
+
+for country in excess['country'].unique():
+    fig.add_trace(
+        go.Scatter(
+            x=list(excess['week'][excess['country'] == country]),
+            y=list(excess['excess_deaths_pct_change'][excess['country'] == country]),
+            name=country,
+            hovertemplate=
+            'Week %{x}<br>'+
+            'Excess: %{y}'
+        )
+    )
+
+fig.update_layout(
+    title=dict(
+        text="<b>Excess Deaths - % Over Expected Weekly Deaths</b>",
+        x=0,
+        xref='paper'),
+    hovermode='closest',
+    xaxis=dict(
+        linewidth=2,
+        linecolor='black',
+        gridcolor='whitesmoke',
+        gridwidth=1
+    ),
+    yaxis=dict(
+        title="% Excess",
+        linewidth=2,
+        linecolor='black',
+        gridcolor='whitesmoke',
+        gridwidth=1
+    ),
+    paper_bgcolor='white',
+    plot_bgcolor='white',
+    annotations=[
+        dict(
+            x=0,
+            y=-0.2,
+            text="Source: The Economist",
+            showarrow=False,
+            xref='paper',
+            yref='paper',
+            xanchor='left',
+            yanchor='auto',
+            xshift=0,
+            yshift=0,
+            font=dict(
+                size=11,
+                color='dimgray')
+            )
+    ]
+)
+
+fig.write_html('graphs/comparisons/excess_deaths.html')
