@@ -887,15 +887,25 @@ for country in drop_regions:
 
 fig = go.Figure()
 
-for country in excess['country'].unique():
+fig.add_shape(
+    x0=1, x1=excess['week'].max(),
+    y0=0, y1=0,
+    line=dict(
+        color='rgba(30, 30, 30, 0.4)',
+        dash='dot'
+    )
+)
+
+for country, col in zip(excess['country'].unique(), colors):
     fig.add_trace(
         go.Scatter(
             x=list(excess['week'][excess['country'] == country]),
             y=list(excess['excess_deaths_pct_change'][excess['country'] == country]),
+            marker=dict(color=col),
             name=country,
             hovertemplate=
             'Week %{x}<br>'+
-            'Excess: %{y}'
+            'Excess: %{y:.2f}%'
         )
     )
 
@@ -906,6 +916,7 @@ fig.update_layout(
         xref='paper'),
     hovermode='closest',
     xaxis=dict(
+        title="Week",
         linewidth=2,
         linecolor='black',
         gridcolor='whitesmoke',
