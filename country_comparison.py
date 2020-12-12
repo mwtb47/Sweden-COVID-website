@@ -1,6 +1,6 @@
 # =============================================================================
 # Plots graphs comparing cases and deaths data for COVID-19 using data from
-# Johns Hopkins Universtiy.
+# Johns Hopkins Universtiy and The Economist.
 #
 # Email: mwt.barnes@outlook.com
 # =============================================================================
@@ -217,7 +217,7 @@ for country, color, width in zip(countries_EU, colors_EU, line_width_EU) :
             customdata=np.stack((
                 df_EU['country'][df_EU['country'] == country],
                 df_EU['flag'][df_EU['country'] == country]),
-                axis = -1),
+                axis=-1),
             hovertemplate=
             '<b>7 dagar medelvärde:</b> %{y:.2f}' +
             '<br><b>Datum:</b> %{x}</br>' +
@@ -240,7 +240,7 @@ for country, color, width in zip(countries_EU, colors_EU, line_width_EU) :
             customdata=np.stack((
                 df_EU['country'][df_EU['country'] == country],
                 df_EU['flag'][df_EU['country'] == country]),
-                axis = -1),
+                axis=-1),
             hovertemplate=
             '<b>7 dagar medelvärde / miljon:</b> %{y:.2f}' +
             '<br><b>Datum:</b> %{x}</br>' +
@@ -263,7 +263,7 @@ for country, color, width in zip(countries_OECD, colors_OECD, line_width_OECD) :
             customdata=np.stack((
                 df_OECD['country'][df_OECD['country'] == country],
                 df_OECD['flag'][df_OECD['country'] == country]),
-                axis = -1),
+                axis=-1),
             hovertemplate=
             '<b>7 dagar medelvärde:</b> %{y:.2f}' +
             '<br><b>Datum:</b> %{x}</br>' +
@@ -286,7 +286,7 @@ for country, color, width in zip(countries_OECD, colors_OECD, line_width_OECD) :
             customdata=np.stack((
                 df_OECD['country'][df_OECD['country'] == country],
                 df_OECD['flag'][df_OECD['country'] == country]),
-                axis = -1),
+                axis=-1),
             hovertemplate=
             '<b>7 dagar medelvärde / miljon:</b> %{y:.2f}' +
             '<br><b>Datum:</b> %{x}</br>' +
@@ -314,7 +314,7 @@ fig.update_layout(
     annotations=[
         dict(
             x=0, y=-0.2,
-            text="Sources: John Hopkins University CSSE, World Bank",
+            text="Sources:  Hopkins University CSSE, World Bank",
             showarrow=False,
             xref='paper',
             yref='paper',
@@ -322,8 +322,10 @@ fig.update_layout(
             yanchor='auto',
             xshift=0,
             yshift=0,
-            font=dict(size=11,
-                      color='dimgray')
+            font=dict(
+                size=11,
+                color='dimgray'
+            )
         )
     ],
     updatemenus=[
@@ -378,7 +380,7 @@ for country, color, width in zip(countries_EU, colors_EU, line_width_EU) :
             customdata=np.stack((
                 df_EU['country'][df_EU['country'] == country],
                 df_EU['flag'][df_EU['country'] == country]),
-                axis = -1),
+                axis=-1),
             hovertemplate=
             '<b>Totalt:</b> %{y:.2f}' +
             '<br><b>Datum:</b> %{x}</br>' +
@@ -401,7 +403,7 @@ for country, color, width in zip(countries_EU, colors_EU, line_width_EU) :
             customdata=np.stack((
                 df_EU['country'][df_EU['country'] == country],
                 df_EU['flag'][df_EU['country'] == country]),
-                axis = -1),
+                axis=-1),
             hovertemplate=
             '<b>Totalt / miljon:</b> %{y:.2f}' +
             '<br><b>Datum:</b> %{x}</br>' +
@@ -424,7 +426,7 @@ for country, color, width in zip(countries_OECD, colors_OECD, line_width_OECD) :
             customdata=np.stack((
                 df_OECD['country'][df_OECD['country'] == country],
                 df_OECD['flag'][df_OECD['country'] == country]),
-                axis = -1),
+                axis=-1),
             hovertemplate=
             '<b>Totalt:</b> %{y:.2f}' +
             '<br><b>Datum:</b> %{x}</br>' +
@@ -447,7 +449,7 @@ for country, color, width in zip(countries_OECD, colors_OECD, line_width_OECD) :
             customdata=np.stack((
                 df_OECD['country'][df_OECD['country'] == country],
                 df_OECD['flag'][df_OECD['country'] == country]),
-                axis = -1),
+                axis=-1),
             hovertemplate=
             '<b>Totalt / miljon:</b> %{y:.2f}' +
             '<br><b>Datum:</b> %{x}</br>' +
@@ -475,7 +477,7 @@ fig.update_layout(
     annotations=[
         dict(
             x=0, y=-0.2,
-            text="Sources: John Hopkins University CSSE, World Bank",
+            text="Sources: JHU CSSE COVID-19 Data, World Bank",
             showarrow=False,
             xref='paper',
             yref='paper',
@@ -483,8 +485,10 @@ fig.update_layout(
             yanchor='auto',
             xshift=0,
             yshift=0,
-            font=dict(size=11,
-                      color='dimgray')
+            font=dict(
+                size=11,
+                color='dimgray'
+            )
         )
     ],
     updatemenus=[
@@ -567,7 +571,7 @@ for country, color, width in zip(countries_EU, colors_EU, line_width_EU) :
             customdata=np.stack((
                 df_EU['country'][df_EU['country'] == country],
                 df_EU['flag'][df_EU['country'] == country]),
-                axis = -1),
+                axis=-1),
             hovertemplate=
             '<b>7 dagar medelvärde:</b> %{y:.2f}' +
             '<br><b>Datum:</b> %{x}</br>' +
@@ -590,7 +594,7 @@ for country, color, width in zip(countries_EU, colors_EU, line_width_EU) :
             customdata=np.stack((
                 df_EU['country'][df_EU['country'] == country],
                 df_EU['flag'][df_EU['country'] == country]),
-                axis = -1),
+                axis=-1),
             hovertemplate=
             '<b>7 dagar medelvärde / miljon:</b> %{y:.2f}' +
             '<br><b>Datum:</b> %{x}</br>' +
@@ -613,7 +617,7 @@ for country, color, width in zip(countries_OECD, colors_OECD, line_width_OECD) :
             customdata=np.stack((
                 df_OECD['country'][df_OECD['country'] == country],
                 df_OECD['flag'][df_OECD['country'] == country]),
-                axis = -1),
+                axis=-1),
             hovertemplate=
             '<b>7 dagar medelvärde:</b> %{y:.2f}' +
             '<br><b>Datum:</b> %{x}</br>' +
@@ -636,7 +640,7 @@ for country, color, width in zip(countries_OECD, colors_OECD, line_width_OECD) :
             customdata=np.stack((
                 df_OECD['country'][df_OECD['country'] == country],
                 df_OECD['flag'][df_OECD['country'] == country]),
-                axis = -1),
+                axis=-1),
             hovertemplate=
             '<b>7 dagar medelvärde / miljon:</b> %{y:.2f}' +
             '<br><b>Datum:</b> %{x}</br>' +
@@ -664,7 +668,7 @@ fig.update_layout(
     annotations=[
         dict(
             x=0, y=-0.2,
-            text="Sources: John Hopkins University CSSE, World Bank",
+            text="Sources: JHU CSSE COVID-19 Data, World Bank",
             showarrow=False,
             xref='paper',
             yref='paper',
@@ -672,8 +676,10 @@ fig.update_layout(
             yanchor='auto',
             xshift=0,
             yshift=0,
-            font=dict(size=11,
-                      color='dimgray')
+            font=dict(
+                size=11,
+                color='dimgray'
+            )
         )
     ],
     updatemenus=[
@@ -728,7 +734,7 @@ for country, color, width in zip(countries_EU, colors_EU, line_width_EU) :
             customdata=np.stack((
                 df_EU['country'][df_EU['country'] == country],
                 df_EU['flag'][df_EU['country'] == country]),
-                axis = -1),
+                axis=-1),
             hovertemplate=
             '<b>Totalt:</b> %{y:.2f}' +
             '<br><b>Datum:</b> %{x}</br>' +
@@ -751,7 +757,7 @@ for country, color, width in zip(countries_EU, colors_EU, line_width_EU) :
             customdata=np.stack((
                 df_EU['country'][df_EU['country'] == country],
                 df_EU['flag'][df_EU['country'] == country]),
-                axis = -1),
+                axis=-1),
             hovertemplate=
             '<b>Totalt / miljon:</b> %{y:.2f}' +
             '<br><b>Datum:</b> %{x}</br>' +
@@ -774,7 +780,7 @@ for country, color, width in zip(countries_OECD, colors_OECD, line_width_OECD) :
             customdata=np.stack((
                 df_OECD['country'][df_OECD['country'] == country],
                 df_OECD['flag'][df_OECD['country'] == country]),
-                axis = -1),
+                axis=-1),
             hovertemplate=
             '<b>Totalt:</b> %{y:.2f}' +
             '<br><b>Datum:</b> %{x}</br>' +
@@ -797,7 +803,7 @@ for country, color, width in zip(countries_OECD, colors_OECD, line_width_OECD) :
             customdata=np.stack((
                 df_OECD['country'][df_OECD['country'] == country],
                 df_OECD['flag'][df_OECD['country'] == country]),
-                axis = -1),
+                axis=-1),
             hovertemplate=
             '<b>Totalt / miljon:</b> %{y:.2f}' +
             '<br><b>Datum:</b> %{x}</br>' +
@@ -825,7 +831,7 @@ fig.update_layout(
     annotations=[
         dict(
             x=0, y=-0.2,
-            text="Sources: John Hopkins University CSSE, World Bank",
+            text="Sources: JHU CSSE COVID-19 Data, World Bank",
             showarrow=False,
             xref='paper',
             yref='paper',
@@ -833,8 +839,10 @@ fig.update_layout(
             yanchor='auto',
             xshift=0,
             yshift=0,
-            font=dict(size=11,
-                      color='dimgray')
+            font=dict(
+                size=11,
+                color='dimgray'
+            )
         )
     ],
     updatemenus=[
@@ -901,7 +909,9 @@ for country, col in zip(excess['country'].unique(), colors):
         go.Scatter(
             x=list(excess['week'][excess['country'] == country]),
             y=list(excess['excess_deaths_pct_change'][excess['country'] == country]),
-            marker=dict(color=col),
+            marker=dict(
+                color=col
+            ),
             name=country,
             hovertemplate=
             'Week %{x}<br>'+
@@ -934,7 +944,7 @@ fig.update_layout(
     annotations=[
         dict(
             x=0,
-            y=-0.2,
+            y=-0.20,
             text="Source: The Economist",
             showarrow=False,
             xref='paper',
