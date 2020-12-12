@@ -57,7 +57,7 @@ counties_pop = pd.read_csv('data/sweden_counties.csv',
                                'county':str,
                                'population_2019':int
                             })
-                            
+
 # Total population
 total_pop = counties_pop['population_2019'].sum()
 
@@ -98,9 +98,9 @@ fig.add_trace(
         ),
         hovertemplate=
         '<extra></extra>'+
-        '%{x}<br>'+
-        'Medelvärde: %{y:.1f}<br>'+
-        'Daglig: %{text}'
+        '<b>%{x}</b><br>'+
+        '<b>Medelvärde</b>: %{y:.1f}<br>'+
+        '<b>Daglig</b>: %{text}'
     )
 )
 
@@ -182,7 +182,7 @@ for region, row, col in zip(regions, rows, cols):
             ),
             hovertemplate=
             '<extra></extra>'+
-            '%{x}<br>'+
+            '<b>%{x}</b><br>'+
             '%{y:.1f}'
         ),
         row, col
@@ -205,7 +205,7 @@ for region, row, col in zip(regions, rows, cols):
             ),
             hovertemplate=
             '<extra></extra>'+
-            '%{x}<br>'+
+            '<b>%{x}</b><br>'+
             '%{y:.1f}'
         ),
         row, col
@@ -296,7 +296,7 @@ for region in regions:
                 )
             ),
             hovertemplate=
-            '%{x}<br>'+
+            '<b>%{x}</b><br>'+
             '%{y:.1f}'
         )
     )
@@ -317,7 +317,7 @@ for region in regions:
                 )
             ),
             hovertemplate=
-            '%{x}<br>'+
+            '<b>%{x}</b><br>'+
             '%{y:.1f}'
         )
     )
@@ -577,7 +577,7 @@ fig.add_trace(
         ),
         hovertemplate=
         '<extra></extra>'+
-        'Vecka %{x}<br>'+
+        '<b>Vecka %{x}</b><br>'+
         '%{text}'
     )
 )
@@ -598,7 +598,7 @@ fig.add_trace(
         ),
         hovertemplate=
         '<extra></extra>'+
-        'Vecka %{x}<br>'+
+        '<b>Vecka %{x}</b><br>'+
         '%{text}'
     )
 )
@@ -620,7 +620,7 @@ fig.add_trace(
         ),
         hovertemplate=
         '<extra></extra>'+
-        'Vecka %{x}<br>'+
+        '<b>Vecka %{x}</b><br>'+
         '%{text}'
     )
 )
@@ -753,8 +753,8 @@ fig.add_trace(
         hovertemplate=
         '<extra></extra>'+
         '<b>%{y}</b><br>'+
-        '% Positiv: %{x:.2f}<br>'+
-        'Antal Tester: %{text}'
+        '<b>% Positiv</b>: %{x:.2f}<br>'+
+        '<b>Antal Tester</b>: %{text}'
 
     )
 )
@@ -871,7 +871,7 @@ for region, row, col in zip(stockholm_kommuns, rows, cols):
             ),
             hovertemplate=
             '<extra></extra>'+
-            'Vecka %{x}<br>'+
+            '<b>Vecka %{x}</b><br>'+
             'Cases: %{y}'
         ), row, col
     )
@@ -893,8 +893,8 @@ for region, row, col in zip(stockholm_kommuns, rows, cols):
             ),
             hovertemplate=
             '<extra></extra>'+
-            'Vecka %{x}<br>'+
-            'Cases: %{y:.2f}'
+            '<b>Vecka %{x}</b><br>'+
+            '<b>Cases</b>: %{y:.2f}'
         ), row, col
     )
 
@@ -981,8 +981,8 @@ for region in stockholm_kommuns:
                 )
             ),
             hovertemplate=
-            'Vecka %{x}<br>'+
-            'Cases: %{y}'
+            '<b>Vecka %{x}</b><br>'+
+            '<b>Cases</b>: %{y}'
         )
     )
 
@@ -1002,8 +1002,8 @@ for region in stockholm_kommuns:
                 )
             ),
             hovertemplate=
-            'Vecka %{x}<br>'+
-            'Cases: %{y:.2f}'
+            '<b>Vecka %{x}</b><br>'+
+            '<b>Cases</b>: %{y:.2f}'
         )
     )
 
@@ -1114,8 +1114,8 @@ for region, row, col in zip(regions, rows, cols):
             ),
             hovertemplate=
             '<extra></extra>'+
-            'Vecka %{x}<br>'+
-            'Cases: %{y}'
+            '<b>Vecka %{x}</b><br>'+
+            '<b>Cases</b>: %{y}'
         ), row, col
     )
 
@@ -1136,8 +1136,8 @@ for region, row, col in zip(regions, rows, cols):
             ),
             hovertemplate=
             '<extra></extra>'+
-            'Vecka %{x}<br>'+
-            'Cases: %{y}'
+            '<b>Vecka %{x}</b><br>'+
+            '<b>Cases</b>: %{y}'
         ), row, col
     )
 
@@ -1228,8 +1228,8 @@ for region in regions:
                 )
             ),
             hovertemplate=
-            'Vecka %{x}<br>'+
-            'Cases: %{y}'
+            '<b>Vecka %{x}</b><br>'+
+            '<b>Cases</b>: %{y}'
         )
     )
 
@@ -1249,8 +1249,8 @@ for region in regions:
                 )
             ),
             hovertemplate=
-            'Vecka %{x}<br>'+
-            'Cases: %{y}'
+            '<b>Vecka %{x}</b><br>'+
+            '<b>Cases</b>: %{y}'
         )
     )
 
@@ -1354,9 +1354,9 @@ fig.add_trace(
         ),
         hovertemplate=
         '<extra></extra>'+
-        '%{x}<br>'+
-        'Medelvärde: %{y:.1f}<br>'+
-        'Daglig: %{text}'
+        '<b>%{x}</b><br>'+
+        '<b>Medelvärde</b>: %{y:.1f}<br>'+
+        '<b>Daglig</b>: %{text}'
     )
 )
 
@@ -1455,8 +1455,8 @@ for region, row, col in zip(regions_list, rows, cols):
             ),
             hovertemplate=
             '<extra></extra>'+
-            'Vecka %{x}<br>'+
-            'Cases: %{y}',
+            '<b>Vecka %{x}</b><br>'+
+            '<b>Cases</b>: %{y}',
             showlegend=False
         ), row, col
     )
@@ -1475,8 +1475,8 @@ for region, row, col in zip(regions_list, rows, cols):
             ),
             hovertemplate=
             '<extra></extra>'+
-            'Vecka %{x}<br>'+
-            'Cases: %{y}',
+            '<b>Vecka %{x}</b><br>'+
+            '<b>Cases</b>: %{y}',
             showlegend=False,
             visible=False
         ), row, col
@@ -1566,8 +1566,8 @@ for region in regions_list:
                 )
             ),
             hovertemplate=
-            'Vecka %{x}<br>'+
-            'Cases: %{y}'
+            '<b>Vecka %{x}</b><br>'+
+            '<b>Cases</b>: %{y}'
         )
     )
 
@@ -1586,8 +1586,8 @@ for region in regions_list:
                 )
             ),
             hovertemplate=
-            'Vecka %{x}<br>'+
-            'Cases: %{y}'
+            '<b>Vecka %{x}</b><br>'+
+            '<b>Cases</b>: %{y}'
         )
     )
 
@@ -1695,9 +1695,9 @@ fig.add_trace(
         ),
         hovertemplate=
         '<extra></extra>'+
-        '%{x}<br>'+
-        'Medelvärde: %{y:.1f}<br>'+
-        'Daglig: %{text}'
+        '<b>%{x}</b><br>'+
+        '<b>Medelvärde</b>: %{y:.1f}<br>'+
+        '<b>Daglig</b>: %{text}'
     )
 )
 
@@ -1836,7 +1836,7 @@ fig.add_trace(
         ),
         hovertemplate=
         '<extra></extra>'+
-        'Vecka %{x} - 2015-2019<br>'+
+        '<b>Vecka %{x} - 2015-2019</b><br>'+
         '%{y:.1f}'
     )
 )
@@ -1857,7 +1857,7 @@ fig.add_trace(
         ),
         hovertemplate=
         '<extra></extra>'+
-        'Vecka %{x} - 2020<br>'+
+        '<b>Vecka %{x} - 2020</b><br>'+
         '%{y:.1f}'
     )
 )
@@ -1936,7 +1936,7 @@ fig.add_trace(
         hovertemplate=
         '<extra></extra>'+
         '<b>%{x}</b><br>'+
-        '%{y}'
+        '%{y:.4f}'
     )
 )
 fig.update_layout(
@@ -1984,8 +1984,11 @@ fig.write_html('graphs/deaths/case_fatality_rate.html')
 # Filename: deaths_age_group
 # ---------------------------
 
+åldersgrupp['deaths_%'] = åldersgrupp['Totalt_antal_avlidna'] / åldersgrupp['All'] * 100
+
 fig = go.Figure()
 
+# Total per age group
 fig.add_trace(
     go.Bar(
         x=list(åldersgrupp['Åldersgrupp']),
@@ -2011,6 +2014,35 @@ fig.add_trace(
         '%{y}'
     )
 )
+
+# % of age group
+fig.add_trace(
+    go.Bar(
+        x=list(åldersgrupp['Åldersgrupp']),
+        y=list(åldersgrupp['deaths_%']),
+        marker=dict(
+            color='skyblue'
+        ),
+        visible=False,
+        text=list(round(åldersgrupp['deaths_%'], 3)),
+        textposition="auto",
+        textfont=dict(
+            family='arial'
+        ),
+        hoverlabel=dict(
+            bgcolor='white',
+            bordercolor='skyblue',
+            font=dict(
+                color='black'
+            )
+        ),
+        hovertemplate=
+        '<extra></extra>'+
+        '<b>%{x}</b><br>'+
+        '%{y:.3f}%'
+    )
+)
+
 fig.update_layout(
     title="<b>Antal Avlidna per Åldersgrupp</b>",
     xaxis=dict(
@@ -2041,7 +2073,36 @@ fig.update_layout(
             font=dict(size=11,
                       color='dimgray')
         )
-    ]
+    ],
+    updatemenus=[
+        dict(
+            direction='down',
+            x=1,
+            xanchor='right',
+            y=1.1,
+            yanchor='top',
+            buttons=list([
+                dict(label="Antal Avlidna",
+                     method='update',
+                     args=[{'visible': [True, False]},
+                           {'title': "<b>Antal Avlidna per Åldersgrupp</b>",
+                            'yaxis': {'title': 'Antal Avlidna',
+                                      'gridcolor': 'rgb(240, 240, 240)',
+                                      'gridwidth': 2,
+                                      'linewidth': 2,
+                                      'linecolor': 'black'}}]),
+                dict(label="Andel Avlidna",
+                     method='update',
+                     args=[{'visible': [False, True]},
+                           {'title': "<b>Andel per Åldersgrupp som Dött i COVID-19 </b>",
+                            'yaxis': {'title': '% per Åldersgrupp',
+                                      'gridcolor': 'rgb(240, 240, 240)',
+                                      'gridwidth': 2,
+                                      'linewidth': 2,
+                                      'linecolor': 'black'}}]),
+                    ]
+            )
+    )]
 )
 
 fig.write_html('graphs/deaths/deaths_age_group.html')
@@ -2290,8 +2351,9 @@ fig = go.Figure(
         showscale=False,
         text=county_data['Region'],
         hovertemplate =
-        '<b>%{text}</b><br>%{z}' +
-        '<extra></extra>'
+        '<extra></extra>' +
+        '<b>%{text}</b><br>' +
+        '%{z}'
     )
 )
 
@@ -2367,8 +2429,9 @@ fig = go.Figure(
         showscale=False,
         text=county_data['Region'],
         hovertemplate =
-        '<b>%{text}</b><br>%{z}' +
-        '<extra></extra>'
+        '<extra></extra>' +
+        '<b>%{text}</b><br>' +
+        '%{z}'
     )
 )
 
@@ -2437,8 +2500,9 @@ fig = go.Figure(
         showscale=False,
         text=county_data['Region'],
         hovertemplate =
-        '<b>%{text}</b><br>%{z}' +
-        '<extra></extra>'
+        '<extra></extra>' +
+        '<b>%{text}</b><br>' +
+        '%{z}'
     )
 )
 
@@ -2506,8 +2570,9 @@ fig = go.Figure(
         showscale=False,
         text=county_data['Region'],
         hovertemplate =
-        '<b>%{text}</b><br>%{z}' +
-        '<extra></extra>'
+        '<extra></extra>' +
+        '<b>%{text}</b><br>' +
+        '%{z}'
     )
 )
 
