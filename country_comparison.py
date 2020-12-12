@@ -944,7 +944,7 @@ fig.update_layout(
     annotations=[
         dict(
             x=0,
-            y=-0.20,
+            y=-0.10,
             text="Source: The Economist",
             showarrow=False,
             xref='paper',
