@@ -219,8 +219,8 @@ for country, color, width in zip(countries_EU, colors_EU, line_width_EU) :
                 df_EU['flag'][df_EU['country'] == country]),
                 axis=-1),
             hovertemplate=
-            '<b>7 dagar medelvärde:</b> %{y:.2f}' +
-            '<br><b>Datum:</b> %{x}</br>' +
+            '<b>7 dagar medelvärde:</b> %{y:.2f}'+
+            '<br><b>Datum:</b> %{x}</br>'+
             '<extra>%{customdata[0]} %{customdata[1]}</extra>'
         )
     )
@@ -242,8 +242,8 @@ for country, color, width in zip(countries_EU, colors_EU, line_width_EU) :
                 df_EU['flag'][df_EU['country'] == country]),
                 axis=-1),
             hovertemplate=
-            '<b>7 dagar medelvärde / miljon:</b> %{y:.2f}' +
-            '<br><b>Datum:</b> %{x}</br>' +
+            '<b>7 dagar medelvärde / miljon:</b> %{y:.2f}'+
+            '<br><b>Datum:</b> %{x}</br>'+
             '<extra>%{customdata[0]} %{customdata[1]}</extra>'
         )
     )
@@ -265,8 +265,8 @@ for country, color, width in zip(countries_OECD, colors_OECD, line_width_OECD) :
                 df_OECD['flag'][df_OECD['country'] == country]),
                 axis=-1),
             hovertemplate=
-            '<b>7 dagar medelvärde:</b> %{y:.2f}' +
-            '<br><b>Datum:</b> %{x}</br>' +
+            '<b>7 dagar medelvärde:</b> %{y:.2f}'+
+            '<br><b>Datum:</b> %{x}</br>'+
             '<extra>%{customdata[0]} %{customdata[1]}</extra>'
         )
     )
@@ -288,8 +288,8 @@ for country, color, width in zip(countries_OECD, colors_OECD, line_width_OECD) :
                 df_OECD['flag'][df_OECD['country'] == country]),
                 axis=-1),
             hovertemplate=
-            '<b>7 dagar medelvärde / miljon:</b> %{y:.2f}' +
-            '<br><b>Datum:</b> %{x}</br>' +
+            '<b>7 dagar medelvärde / miljon:</b> %{y:.2f}'+
+            '<br><b>Datum:</b> %{x}</br>'+
             '<extra>%{customdata[0]} %{customdata[1]}</extra>'
         )
     )
@@ -382,8 +382,8 @@ for country, color, width in zip(countries_EU, colors_EU, line_width_EU) :
                 df_EU['flag'][df_EU['country'] == country]),
                 axis=-1),
             hovertemplate=
-            '<b>Totalt:</b> %{y:.2f}' +
-            '<br><b>Datum:</b> %{x}</br>' +
+            '<b>Totalt:</b> %{y:.2f}'+
+            '<br><b>Datum:</b> %{x}</br>'+
             '<extra>%{customdata[0]} %{customdata[1]}</extra>'
         )
     )
@@ -405,8 +405,8 @@ for country, color, width in zip(countries_EU, colors_EU, line_width_EU) :
                 df_EU['flag'][df_EU['country'] == country]),
                 axis=-1),
             hovertemplate=
-            '<b>Totalt / miljon:</b> %{y:.2f}' +
-            '<br><b>Datum:</b> %{x}</br>' +
+            '<b>Totalt / miljon:</b> %{y:.2f}'+
+            '<br><b>Datum:</b> %{x}</br>'+
             '<extra>%{customdata[0]} %{customdata[1]}</extra>'
         )
     )
@@ -428,8 +428,8 @@ for country, color, width in zip(countries_OECD, colors_OECD, line_width_OECD) :
                 df_OECD['flag'][df_OECD['country'] == country]),
                 axis=-1),
             hovertemplate=
-            '<b>Totalt:</b> %{y:.2f}' +
-            '<br><b>Datum:</b> %{x}</br>' +
+            '<b>Totalt:</b> %{y:.2f}'+
+            '<br><b>Datum:</b> %{x}</br>'+
             '<extra>%{customdata[0]} %{customdata[1]}</extra>'
         )
     )
@@ -451,8 +451,8 @@ for country, color, width in zip(countries_OECD, colors_OECD, line_width_OECD) :
                 df_OECD['flag'][df_OECD['country'] == country]),
                 axis=-1),
             hovertemplate=
-            '<b>Totalt / miljon:</b> %{y:.2f}' +
-            '<br><b>Datum:</b> %{x}</br>' +
+            '<b>Totalt / miljon:</b> %{y:.2f}'+
+            '<br><b>Datum:</b> %{x}</br>'+
             '<extra>%{customdata[0]} %{customdata[1]}</extra>'
         )
     )
@@ -573,8 +573,8 @@ for country, color, width in zip(countries_EU, colors_EU, line_width_EU) :
                 df_EU['flag'][df_EU['country'] == country]),
                 axis=-1),
             hovertemplate=
-            '<b>7 dagar medelvärde:</b> %{y:.2f}' +
-            '<br><b>Datum:</b> %{x}</br>' +
+            '<b>7 dagar medelvärde:</b> %{y:.2f}'+
+            '<br><b>Datum:</b> %{x}</br>'+
             '<extra>%{customdata[0]} %{customdata[1]}</extra>'
         )
     )
@@ -596,8 +596,8 @@ for country, color, width in zip(countries_EU, colors_EU, line_width_EU) :
                 df_EU['flag'][df_EU['country'] == country]),
                 axis=-1),
             hovertemplate=
-            '<b>7 dagar medelvärde / miljon:</b> %{y:.2f}' +
-            '<br><b>Datum:</b> %{x}</br>' +
+            '<b>7 dagar medelvärde / miljon:</b> %{y:.2f}'+
+            '<br><b>Datum:</b> %{x}</br>'+
             '<extra>%{customdata[0]} %{customdata[1]}</extra>'
         )
     )
@@ -619,8 +619,8 @@ for country, color, width in zip(countries_OECD, colors_OECD, line_width_OECD) :
                 df_OECD['flag'][df_OECD['country'] == country]),
                 axis=-1),
             hovertemplate=
-            '<b>7 dagar medelvärde:</b> %{y:.2f}' +
-            '<br><b>Datum:</b> %{x}</br>' +
+            '<b>7 dagar medelvärde:</b> %{y:.2f}'+
+            '<br><b>Datum:</b> %{x}</br>'+
             '<extra>%{customdata[0]} %{customdata[1]}</extra>'
         )
     )
@@ -642,8 +642,8 @@ for country, color, width in zip(countries_OECD, colors_OECD, line_width_OECD) :
                 df_OECD['flag'][df_OECD['country'] == country]),
                 axis=-1),
             hovertemplate=
-            '<b>7 dagar medelvärde / miljon:</b> %{y:.2f}' +
-            '<br><b>Datum:</b> %{x}</br>' +
+            '<b>7 dagar medelvärde / miljon:</b> %{y:.2f}'+
+            '<br><b>Datum:</b> %{x}</br>'+
             '<extra>%{customdata[0]} %{customdata[1]}</extra>'
         )
     )
@@ -736,8 +736,8 @@ for country, color, width in zip(countries_EU, colors_EU, line_width_EU) :
                 df_EU['flag'][df_EU['country'] == country]),
                 axis=-1),
             hovertemplate=
-            '<b>Totalt:</b> %{y:.2f}' +
-            '<br><b>Datum:</b> %{x}</br>' +
+            '<b>Totalt:</b> %{y:.2f}'+
+            '<br><b>Datum:</b> %{x}</br>'+
             '<extra>%{customdata[0]} %{customdata[1]}</extra>'
         )
     )
@@ -759,8 +759,8 @@ for country, color, width in zip(countries_EU, colors_EU, line_width_EU) :
                 df_EU['flag'][df_EU['country'] == country]),
                 axis=-1),
             hovertemplate=
-            '<b>Totalt / miljon:</b> %{y:.2f}' +
-            '<br><b>Datum:</b> %{x}</br>' +
+            '<b>Totalt / miljon:</b> %{y:.2f}'+
+            '<br><b>Datum:</b> %{x}</br>'+
             '<extra>%{customdata[0]} %{customdata[1]}</extra>'
         )
     )
@@ -782,8 +782,8 @@ for country, color, width in zip(countries_OECD, colors_OECD, line_width_OECD) :
                 df_OECD['flag'][df_OECD['country'] == country]),
                 axis=-1),
             hovertemplate=
-            '<b>Totalt:</b> %{y:.2f}' +
-            '<br><b>Datum:</b> %{x}</br>' +
+            '<b>Totalt:</b> %{y:.2f}'+
+            '<br><b>Datum:</b> %{x}</br>'+
             '<extra>%{customdata[0]} %{customdata[1]}</extra>'
         )
     )
@@ -805,8 +805,8 @@ for country, color, width in zip(countries_OECD, colors_OECD, line_width_OECD) :
                 df_OECD['flag'][df_OECD['country'] == country]),
                 axis=-1),
             hovertemplate=
-            '<b>Totalt / miljon:</b> %{y:.2f}' +
-            '<br><b>Datum:</b> %{x}</br>' +
+            '<b>Totalt / miljon:</b> %{y:.2f}'+
+            '<br><b>Datum:</b> %{x}</br>'+
             '<extra>%{customdata[0]} %{customdata[1]}</extra>'
         )
     )
@@ -893,6 +893,8 @@ for country in drop_regions:
     excess = excess.drop( excess[ (excess['country']==country) & \
                               (excess['region']!=country) ].index )
 
+excess = excess.replace('Britain', 'United Kingdom')
+
 fig = go.Figure()
 
 fig.add_shape(
@@ -914,8 +916,8 @@ for country, col in zip(excess['country'].unique(), colors):
             ),
             name=country,
             hovertemplate=
-            'Week %{x}<br>'+
-            'Excess: %{y:.2f}%'
+            '<b>Week %{x}<b/><br>'+
+            '<b>Excess</b>: %{y:.2f}%'
         )
     )
 
