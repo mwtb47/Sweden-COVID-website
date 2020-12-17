@@ -1078,7 +1078,7 @@ stockholm_kommun = kommun[kommun['KnNamn'] == 'Stockholm']
 stockholm_kommun = stockholm_kommun.replace(['<15', np.nan], 0)
 
 # Convert columns with COVID-19 cases and deaths to integers
-stockholm_kommun.iloc[:, 5:] = stockholm_kommun.iloc[:, 5:].astype(int)
+stockholm_kommun.iloc[:, 6:] = stockholm_kommun.iloc[:, 6:].astype(int)
 
 # Population data for each area of Stockholm Kommun
 stockholm_kommun_befolkning = pd.read_csv('data/stockholms_kommun.csv')
