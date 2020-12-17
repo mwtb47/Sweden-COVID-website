@@ -2094,7 +2094,7 @@ fig.update_layout(
                 dict(label="Andel Avlidna",
                      method='update',
                      args=[{'visible': [False, True]},
-                           {'title': "<b>Andel per Åldersgrupp som Dött i COVID-19 </b>",
+                           {'title': "<b>Andelen av Befolkningen som har Dött i COVID-19 - per Åldersgrupp</b>",
                             'yaxis': {'title': '% per Åldersgrupp',
                                       'gridcolor': 'rgb(240, 240, 240)',
                                       'gridwidth': 2,
