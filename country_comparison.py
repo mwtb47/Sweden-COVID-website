@@ -157,11 +157,11 @@ cases = cases.sort_values(['country', 'date'])
 # ------------------------
 
 colors = [
-    'rgba(0,17,255,0.6)',
-    'rgba(210,0,0,0.5)',
-    'rgba(0,150,30,0.5)',
-    'rgba(110,0,255,0.5)',
-    'rgba(0,200,255,0.5)'
+    'rgba(0, 17, 255, 0.6)',
+    'rgba(210, 0, 0, 0.5)',
+    'rgba(0, 150, 30, 0.5)',
+    'rgba(110, 0, 255, 0.5)',
+    'rgba(0, 200, 255, 0.5)'
 ] * 10
 
 # =============================================================================
@@ -895,6 +895,8 @@ for country in drop_regions:
 
 excess = excess.replace('Britain', 'United Kingdom')
 
+excess = excess.sort_values(['country', 'week'])
+
 fig = go.Figure()
 
 fig.add_shape(
@@ -915,9 +917,14 @@ for country, col in zip(excess['country'].unique(), colors):
                 color=col
             ),
             name=country,
+            customdata=np.stack((
+                excess['country'][excess['country'] == country],
+                excess['flag'][excess['country'] == country]),
+                axis=-1),
             hovertemplate=
-            '<b>Week %{x}<b/><br>'+
-            '<b>Excess</b>: %{y:.2f}%'
+            '<b>Week %{x}</b><br>'+
+            '<b>Excess</b>: %{y:.2f}%'+
+            '<extra>%{customdata[0]} %{customdata[1]}</extra>'
         )
     )
 
