@@ -897,6 +897,10 @@ excess = excess.replace('Britain', 'United Kingdom')
 
 excess = excess.sort_values(['country', 'week'])
 
+# Add iso3 codes for countries
+excess['iso3'] = coco.convert(list(excess['country']), to='ISO3')
+excess = excess.merge(countries_data[['iso3', 'flag']], on='iso3', how='left')
+
 fig = go.Figure()
 
 fig.add_shape(
