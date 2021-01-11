@@ -392,11 +392,13 @@ population_ages = pd.read_excel('data/age_pyramid.xlsx',
                                 skiprows=6,
                                 usecols=list(range(8,13)))
 
+population_ages = population_ages.dropna()
+
 # As the data was set up for a population pyramid split between males and
 # females, the population sizes for males are negative. This makes all
 # population numbers positive.
 population_ages[['födda i Sverige.4', 'utrikes födda.4']] = \
-    population_ages[['födda i Sverige.3', 'utrikes födda.3']].apply(lambda x: (x**2)**0.5)
+    population_ages[['födda i Sverige.3', 'utrikes födda.3']].abs()
 
 # Populations are broken down by domestic and foreign born, these are summed to
 # get the population totals.
@@ -1512,11 +1514,11 @@ fig.update_layout(
             y=1.1,
             yanchor='top',
             buttons=list([
-                dict(label="Antal Fall",
+                dict(label="Antal Intensivvådade",
                     method='update',
                     args=[{'visible': [True]*21 + [False]*21},
                           {'title': "<b>Antal Intensivvådade per Län</b>"}]),
-                dict(label="Antal Fall per 10,000",
+                dict(label="Antal per 10,000",
                     method='update',
                     args=[{'visible': [False]*21 + [True]*21},
                           {'title': "<b>Antal Intensivvådade per Län (per 10,000)</b>"}]),
@@ -1638,11 +1640,11 @@ fig.update_layout(
             y=1.1,
             yanchor='top',
             buttons=list([
-                dict(label="Antal Fall",
+                dict(label="Antal Intensivvådade",
                     method='update',
                     args=[{'visible': [True]*21 + [False]*21},
                           {'title': "<b>Antal Intensivvådade per Län</b>"}]),
-                dict(label="Antal Fall per 10,000",
+                dict(label="Antal per 10,000",
                     method='update',
                     args=[{'visible': [False]*21 + [True]*21},
                           {'title': "<b>Antal Intensivvådade per Län (per 10,000)</b>"}]),
