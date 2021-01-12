@@ -1013,12 +1013,12 @@ fig = go.Figure()
 # Vaccinated
 fig.add_trace(
     go.Bar(
-        name="Vaccinated",
+        name="Vaccinerade",
         y=list(" "),
         x=[percent_vaccinated],
         marker=dict(color='darkblue'),
         orientation='h',
-        text=['Vaccinated'],
+        text=['Vaccinerade'],
         hoverlabel=dict(
             bgcolor='white',
             bordercolor='gray',
@@ -1036,12 +1036,12 @@ fig.add_trace(
 # Not vaccinated
 fig.add_trace(
     go.Bar(
-        name='Not Vaccinated',
+        name="Ej Vaccinerade",
         y=list(" "),
         x=[100-percent_vaccinated],
         marker=dict(color='rgba(80, 80, 80, 0.8)'),
         orientation='h',
-        text=['Not Vaccinated'],
+        text=['Ej Vaccinerade'],
         hoverlabel=dict(
             bgcolor='white',
             bordercolor='gray',
