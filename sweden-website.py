@@ -800,6 +800,204 @@ fig.update_layout(
 fig.write_html('graphs/cases/positive_antibody.html')
 
 # =============================================================================
+# Vaccinations
+# =============================================================================
+
+# The following fetches the html for the webpage with the most up-to-date
+# vaccination numbers and extracts the table containing this information.
+vaccine_url = "https://www.folkhalsomyndigheten.se/smittskydd-beredskap/utbrott/aktuella-utbrott/covid-19/vaccination-mot-covid-19/statistik-over-vaccinerade-mot-covid-19/"
+page = requests.get(vaccine_url).text
+soup = BeautifulSoup(page, 'lxml')
+table = soup.findAll('table')[0]
+
+# Extract week numbers from the table
+vecka = []
+for row in table.findAll('th'):
+    if row.get('scope')=='row':
+        vecka.append(row.find(text=True))
+
+# Extract weekly totals for vaccines delivered to Sweden and vaccinations given 
+# to people.
+levererat = []
+förbrukat = []
+for row in table.findAll('tr'):
+    cells = row.findAll('td')
+    if len(cells)==3:
+        levererat.append(int(cells[0].find(text=True).replace(" ", "")))
+        förbrukat.append(int(cells[1].find(text=True).replace(" ", "")))
+        
+df = pd.DataFrame({'vecka': vecka, 'levererat':levererat, 'förbrukat':förbrukat})
+df = df[df['vecka']!='Totalt']
+
+# Weeks come in the form '1, 2021' so these are split into seperate columns and
+# then sorted.
+df['year'] = df['vecka'].apply(lambda x: int(x.split(',')[1]))
+df['vecka'] = df['vecka'].apply(lambda x: int(x.split(',')[0]))
+df = df.sort_values(['year', 'vecka'])
+
+# Cumulative totals of vaccines delivered and vaccinations given
+df[['levererat_total', 'förbrukat_total']] = df[['levererat', 'förbrukat']].cumsum()
+
+# Convert weeks to strings and label the first weeks in the data from each year.
+df['vecka'] = df['vecka'].astype(str)
+df.loc[df['vecka']=='52', 'vecka'] = '52 (2020)'
+df.loc[df['vecka']=='1', 'vecka'] = '1 (2021)'
+
+# ----------------------------------------------
+# Graph - total and weekly vaccinations
+# Filename: vaccinations
+# ----------------------------------------------
+
+fig = go.Figure()
+
+# Total vaccinations received
+fig.add_trace(
+    go.Scatter(
+        x=list(df['vecka']),
+        y=list(df['levererat_total']),
+        name="Levererat",
+        marker=dict(color='darkblue'),
+        hoverlabel=dict(
+            bgcolor='white',
+            bordercolor='darkblue',
+            font=dict(
+                color='black'
+            )
+        ),
+        hovertemplate=
+        '<extra></extra>'+
+        '<b>Vecka %{x}</b><br>'+
+        '%{y}'
+    )
+)
+
+# Total vaccinations given
+fig.add_trace(
+    go.Scatter(
+        x=list(df['vecka']),
+        y=list(df['förbrukat_total']),
+        name="Förbrukat",
+        marker=dict(color='skyblue'),
+        hoverlabel=dict(
+            bgcolor='white',
+            bordercolor='skyblue',
+            font=dict(
+                color='black'
+            )
+        ),
+        hovertemplate=
+        '<extra></extra>'+
+        '<b>Vecka %{x}</b><br>'+
+        '%{y}'
+    )
+)
+
+# Weekly vaccinations received
+fig.add_trace(
+    go.Bar(
+        x=list(df['vecka']),
+        y=list(df['levererat']),
+        visible=False,
+        name="Levererat",
+        marker=dict(color='darkblue'),
+        hoverlabel=dict(
+            bgcolor='white',
+            bordercolor='darkblue',
+            font=dict(
+                color='black'
+            )
+        ),
+        hovertemplate=
+        '<extra></extra>'+
+        '<b>Vecka %{x}</b><br>'+
+        '%{y}'
+    )
+)
+
+# Weekly vaccinations given
+fig.add_trace(
+    go.Bar(
+        x=list(df['vecka']),
+        y=list(df['förbrukat']),
+        visible=False,
+        marker=dict(color='skyblue'),
+        name="Förbrukat",
+        hoverlabel=dict(
+            bgcolor='white',
+            bordercolor='skyblue',
+            font=dict(
+                color='black'
+            )
+        ),
+        hovertemplate=
+        '<extra></extra>'+
+        '<b>Vecka %{x}</b><br>'+
+        '%{y}'
+    )
+)
+
+
+fig.update_layout(
+    title="<b>Totalt Levererade och Förbrukade Doser</b>",
+    font=dict(
+        family='Arial'
+    ),
+    xaxis=dict(
+        type='category',
+        title="Vecka",
+        linewidth=2,
+        linecolor='black',
+        gridwidth=1,
+        gridcolor='rgb(240, 240, 240)'
+    ),
+    yaxis=dict(
+        title="Antal Doser",
+        linewidth=2,
+        linecolor='black',
+        gridwidth=1,
+        gridcolor='rgb(240, 240, 240)'
+    ),
+    plot_bgcolor='white',
+    annotations=[
+        dict(
+            x=0,
+            y=-0.15,
+            text="Källa: Folkhälsomyndigheten",
+            showarrow=False,
+            xref='paper',
+            yref='paper',
+            xanchor='left',
+            yanchor='auto',
+            xshift=0,
+            yshift=0,
+            font=dict(
+                size=11,
+                color='dimgray'
+            )
+        )
+    ],
+    updatemenus=[dict(
+        direction='down',
+        x=1,
+        xanchor='right',
+        y=1.1,
+        yanchor='top',
+        buttons=list([
+            dict(label="Totalt",
+                 method='update',
+                 args=[{'visible': [True, True, False, False]},
+                       {'title': "<b>Totalt Levererade och Förbrukade Doser</b>"}]),
+            dict(label="Per Vecka",
+                 method='update',
+                 args=[{'visible': [False, False, True, True]},
+                       {'title': "<b>Levererade och Förbrukade Doser per Vecka</b>"}]),
+        ])
+    )]
+)
+
+fig.write_html('graphs/vaccine/vaccinations.html')
+
+# =============================================================================
 # Stockholm
 # =============================================================================
 
