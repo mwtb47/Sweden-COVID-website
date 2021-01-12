@@ -997,6 +997,90 @@ fig.update_layout(
 
 fig.write_html('graphs/vaccine/vaccinations.html')
 
+# ----------------------------------------------
+# Graph - % population vaccinated
+# Filename: percentage_vaccine
+# ----------------------------------------------
+
+# Sweden total population
+sweden_pop = population_ages['All'].sum()
+
+# Percentage of population vaccinated
+percent_vaccinated = df['levererat_total'].max() / sweden_pop * 100
+
+fig = go.Figure()
+
+# Vaccinated
+fig.add_trace(
+    go.Bar(
+        name="Vaccinated",
+        y=list(" "),
+        x=[percent_vaccinated],
+        marker=dict(color='darkblue'),
+        orientation='h',
+        text=['Vaccinated'],
+        hoverlabel=dict(
+            bgcolor='white',
+            bordercolor='gray',
+            font=dict(
+                color='black'
+            )
+        ),
+        hovertemplate=
+        '<extra></extra>'+
+        '<b>%{text}</b><br>'+
+        '%{x:.2f}%'
+    )
+)
+
+# Not vaccinated
+fig.add_trace(
+    go.Bar(
+        name='Not Vaccinated',
+        y=list(" "),
+        x=[100-percent_vaccinated],
+        marker=dict(color='rgba(80, 80, 80, 0.8)'),
+        orientation='h',
+        text=['Not Vaccinated'],
+        hoverlabel=dict(
+            bgcolor='white',
+            bordercolor='gray',
+            font=dict(
+                color='black'
+            )
+        ),
+        hovertemplate=
+        '<extra></extra>'+
+        '<b>%{text}</b><br>'+
+        '%{x:.2f}%'
+    )
+)
+
+
+fig.update_layout(
+    title="<b>Andelen av Befolkningen som Vaccinerat</b>",
+    barmode='stack',
+    legend_traceorder='normal',
+    font=dict(
+        family='Arial'
+    ),
+    xaxis=dict(
+        linewidth=2,
+        linecolor='black',
+        gridwidth=1,
+        gridcolor='rgb(220, 220, 220)'
+    ),
+    yaxis=dict(
+        linewidth=2,
+        linecolor='black',
+    ),
+    height=130,
+    margin=dict(t=30, b=0),
+    plot_bgcolor='white'
+)
+
+fig.write_html('graphs/vaccine/percent_vaccine.html')
+
 # =============================================================================
 # Stockholm
 # =============================================================================
