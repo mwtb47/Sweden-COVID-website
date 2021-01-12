@@ -38,14 +38,6 @@
     font-family: Arial;
     font-size: 16px;
   }
-  .header_buttons_2 {
-    padding: 10px;
-    text-align: center;
-    background: rgb(40,40,140);
-    color: white;
-    font-family: Arial;
-    font-size: 16px;
-  }
   .header_2 {
     padding: 15px 0px 2px 0px;
     text-align: center;
@@ -63,11 +55,6 @@
     font-size: 14px;
   }
   .hyperlink{
-    color: white;
-    font-family: Arial;
-    text-decoration: none;
-  }
-  .hyperlink_2{
     color: white;
     font-family: Arial;
     text-decoration: none;
@@ -125,7 +112,6 @@
   .dropdown:hover .dropbtn {background-color: rgb(40,40,140);}
   </style>
 
-
   <!-- Document-->
 
   <script>
@@ -180,7 +166,10 @@
     &emsp;
 
     <div class="dropdown">
-      <button class="dropbtn"><a href="/Sweden-COVID-website/individual_pages/vaccine/index_vaccine.html" class=hyperlink>Vaccinations</a></button>
+      <button class="dropbtn"><a href="/Sweden-COVID-website/individual_pages/cases/index_cases.html" class=hyperlink>Vaccinations</a></button>
+      <div class="dropdown-content">
+        <a href="/Sweden-COVID-website/individual_pages/vaccine/index_vaccine.html" class=hyperlink>Vaccinations</a>
+      </div>
     </div>
 
     &emsp;
@@ -226,23 +215,39 @@
   </div>
 
   <div class="header_2">
-    <a>Bekräftade Fall per Dag - Län</a>
+    <a>Bekräftade Fall</a>
   </div>
 
   <div class="header_date">
     <i style="font-size:15px">Updated <script>document.write(y + "/" + m + "/" + d);</script></i>
   </div>
 
-  <div class="header_buttons_2">
-    <a href="/Sweden-COVID-website/individual_pages/cases/index_daily_cases_regions.html" class=hyperlink_2>Split</a>
-    &emsp;
-    <a href="/Sweden-COVID-website/individual_pages/cases/index_daily_cases_regions_single.html" class=hyperlink_2>Single</a>
-  </div>
-
+  <p class="aligncenter">
+      <embed type="text/html" src="/Sweden-COVID-website/graphs/cases/daily_cases_all.html" width="90%" height="600">
+  </p>
+  <hr>
   <p class="aligncenter">
       <embed type="text/html" src="/Sweden-COVID-website/graphs/cases/daily_cases_per_county.html" width="90%" height="850">
   </p>
-
+  <hr>
+  <p class="aligncenter">
+      <embed type="text/html" src="/Sweden-COVID-website/graphs/cases/percentage_cases.html" width="90%" height="600">
+  </p>
+  <hr>
+  <h3 style="margin-left:8%; font-family:Arial; color:rgb(60,60,60) ">Antal Tester - Folkhälsomyndigheten</h3>
+  <p class="a">
+  Folkhälsomyndigheten mätte antalet tester genom att använda antalet personer
+  som testades för coronaviruset varje vecka, fram till 5 juli 2020 (vecka 27).
+  Sedan dess har de mätt antalet tester, vilket innebär att om samma person gjort
+  flera tester på samma vecka räknas dem separat.
+  </p>
+  <p class="aligncenter">
+      <embed type="text/html" src="/Sweden-COVID-website/graphs/cases/number_of_tests.html" width="90%" height="700">
+  </p>
+  <hr>
+  <p class="aligncenter">
+      <embed type="text/html" src="/Sweden-COVID-website/graphs/cases/positive_antibody.html" width="90%" height="750">
+  </p>
   <div class="footer">
     <a>Contact: mwt.barnes@outlook.com</a>
   </div>
