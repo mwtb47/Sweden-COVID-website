@@ -435,7 +435,8 @@ population_grouped_ages = population_ages.groupby('group')[
 
 åldersgrupp['Åldersgrupp'] = [
     '0-9', '10-19', '20-29', '30-39', '40-49',
-    '50-59', '60-69', '70-79', '80-89', '90+'
+    '50-59', '60-69', '70-79', '80-89', '90',
+    '100+'
 ]
 
 åldersgrupp['case_fatality_rate'] = åldersgrupp['Totalt_antal_avlidna'] / åldersgrupp['Totalt_antal_fall']
