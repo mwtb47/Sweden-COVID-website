@@ -435,8 +435,7 @@ population_grouped_ages = population_ages.groupby('group')[
 
 åldersgrupp['Åldersgrupp'] = [
     '0-9', '10-19', '20-29', '30-39', '40-49',
-    '50-59', '60-69', '70-79', '80-89', '90',
-    '100+'
+    '50-59', '60-69', '70-79', '80-89', '90+'
 ]
 
 åldersgrupp['case_fatality_rate'] = åldersgrupp['Totalt_antal_avlidna'] / åldersgrupp['Totalt_antal_fall']
@@ -816,7 +815,7 @@ for row in table.findAll('th'):
     if row.get('scope')=='row':
         vecka.append(row.find(text=True))
 
-# Extract weekly totals for vaccines delivered to Sweden and vaccinations given 
+# Extract weekly totals for vaccines delivered to Sweden and vaccinations given
 # to people.
 levererat = []
 förbrukat = []
@@ -825,7 +824,7 @@ for row in table.findAll('tr'):
     if len(cells)==3:
         levererat.append(int(cells[0].find(text=True).replace(" ", "")))
         förbrukat.append(int(cells[1].find(text=True).replace(" ", "")))
-        
+
 df = pd.DataFrame({'vecka': vecka, 'levererat':levererat, 'förbrukat':förbrukat})
 df = df[df['vecka']!='Totalt']
 
