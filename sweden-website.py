@@ -7,6 +7,7 @@
 
 from bs4 import BeautifulSoup
 import config
+from datetime import date
 import json
 import numpy as np
 import pandas as pd
@@ -542,6 +543,7 @@ for row in table_tests.findAll('tr'):
 vecka = vecka[1:]
 
 df_temp = pd.DataFrame({
+    'year': 2021,
     'vecka':vecka,
     'number_individual_tests':number_individuals,
     'number_tests': number_tests,
@@ -551,9 +553,18 @@ df_temp = pd.DataFrame({
 # Convert 'Vecka 10', 'Vecak 11' etc. into integer values 10, 11 etc.
 df_temp['vecka'] = df_temp['vecka'].apply(lambda x: int(x.split(" ")[1]))
 
+# Webpage displays most recent 5 weeks therefore there are still weeks from the
+# end of 2020 whjch need to be dropped. 
+current_week = int(date.today().strftime("%U"))
+df_temp = df_temp[df_temp['vecka'] <= current_week]
+
 # Append weekly test data from earlier in the year
 weekly_tests = pd.read_csv('data/weekly_tests.csv')
-weekly_tests = weekly_tests.append(df_temp).drop_duplicates().sort_values('vecka')
+weekly_tests = weekly_tests.append(df_temp).drop_duplicates()
+weekly_tests = weekly_tests.sort_values(['year', 'vecka'])
+
+# Write data to csv as webpage only displays data for the most recent 5 weeks.
+weekly_tests.to_csv('data/weekly_tests.csv', index=False)
 
 # Create string formats of the numbers which are thousand comma separated
 # making them easier to read
@@ -566,7 +577,7 @@ fig = go.Figure()
 # Number of individual tests
 fig.add_trace(
     go.Scatter(
-        x=list(weekly_tests['vecka']),
+        x=[[2020]*46 + [2021]*(len(weekly_tests.index)-46), list(weekly_tests['vecka'])],
         y=list(weekly_tests['number_individual_tests']),
         name="Individer",
         text=weekly_tests['str_ind'],
@@ -587,7 +598,7 @@ fig.add_trace(
 # Number of tests performed
 fig.add_trace(
     go.Scatter(
-        x=list(weekly_tests['vecka']),
+        x=[[2020]*46 + [2021]*(len(weekly_tests.index)-46), list(weekly_tests['vecka'])],
         y=list(weekly_tests['number_tests']),
         name="Totalt",
         text=weekly_tests['str_tests'],
@@ -608,8 +619,8 @@ fig.add_trace(
 # Number of antibody tests
 fig.add_trace(
     go.Scatter(
-        x=list(weekly_tests['vecka']),
-        y=list(weekly_tests['number_antibody']),
+        x=[[2020]*28 + [2021]*(len(weekly_tests.index)-46), list(weekly_tests['vecka'][18:])],
+        y=list(weekly_tests['number_antibody'][18:]),
         name="Totalt",
         visible=False,
         text=weekly_tests['str_antibody'],
@@ -830,7 +841,7 @@ df = df[df['vecka']!='Totalt']
 
 # Weeks come in the form '1, 2021' so these are split into seperate columns and
 # then sorted.
-df['year'] = df['vecka'].apply(lambda x: int(x.split(',')[1]))
+df['year'] = df['vecka'].apply(lambda x: int(x.split(', v. ')[1]))
 df['vecka'] = df['vecka'].apply(lambda x: int(x.split(',')[0]))
 df = df.sort_values(['year', 'vecka'])
 
