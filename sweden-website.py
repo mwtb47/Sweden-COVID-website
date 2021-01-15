@@ -432,7 +432,7 @@ population_grouped_ages = population_ages.groupby('group')[
                             sheet_name='Totalt antal per åldersgrupp')
 
 # Drop data with unknown groups
-åldersgrupp = åldersgrupp[åldersgrupp['Åldersgrupp'] != 'Uppgift saknas']
+åldersgrupp = åldersgrupp[åldersgrupp['Åldersgrupp'] != 'Uppgift saknas'].dropna(how='all')
 
 åldersgrupp['Åldersgrupp'] = [
     '0-9', '10-19', '20-29', '30-39', '40-49',
@@ -1131,7 +1131,7 @@ stockholm_län['Kommun_stadsdel'] = np.where(
     'Stockholm',
     stockholm_län['Kommun_stadsdel'])
 
-stockholm_län = stockholm_län.groupby(['Kommun_stadsdel', 'veckonummer'],
+stockholm_län = stockholm_län.groupby(['Kommun_stadsdel', 'veckonummer', 'år'],
                                       as_index=False)['nya_fall_vecka'].sum()
 
 stockholm_län = stockholm_län.merge(kommun_pop[['kommun', 'population_2019']],
@@ -1141,22 +1141,28 @@ stockholm_län = stockholm_län.merge(kommun_pop[['kommun', 'population_2019']],
 
 stockholm_län['fall_per_10000'] = stockholm_län['nya_fall_vecka'] / stockholm_län['population_2019'] * 10000
 
+stockholm_län = stockholm_län.sort_values(['år', 'veckonummer'])
+
 df = stockholm_län
 
-fig = make_subplots(6, 5,
+fig = make_subplots(4, 7,
                     subplot_titles=(stockholm_kommuns),
                     shared_xaxes=True)
 
-rows = [1,1,1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,4,4,5,5,5,5,5,6]
-cols = [1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1]
+rows = [1,1,1,1,1,1,1,2,2,2,2,2,2,2,3,3,3,3,3,3,3,4,4,4,4,4]
+cols = [1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5]
+
+xaxis_text = ["Vecka " + str(i) + ", 2020" for i in range(1, 54)]
+xaxis_text = xaxis_text + ["Vecka " + str(i) + ", 2021" for i in range(1, 53)]
 
 # New cases per week
 for region, row, col in zip(stockholm_kommuns, rows, cols):
     fig.add_trace(
         go.Scatter(
-            x=list(df['veckonummer'][df['Kommun_stadsdel'] == region]),
+            x=[list(df['år'][df['Kommun_stadsdel'] == region]), list(df['veckonummer'][df['Kommun_stadsdel'] == region])],
             y=list(df['nya_fall_vecka'][df['Kommun_stadsdel'] == region]),
             showlegend=False,
+            text=xaxis_text,
             hoverlabel=dict(
                 bgcolor='white',
                 bordercolor='gray',
@@ -1166,7 +1172,7 @@ for region, row, col in zip(stockholm_kommuns, rows, cols):
             ),
             hovertemplate=
             '<extra></extra>'+
-            '<b>Vecka %{x}</b><br>'+
+            '<b>%{text}</b><br>'+
             'Cases: %{y}'
         ), row, col
     )
@@ -1175,10 +1181,11 @@ for region, row, col in zip(stockholm_kommuns, rows, cols):
 for region, row, col in zip(stockholm_kommuns, rows, cols):
     fig.add_trace(
         go.Scatter(
-            x=list(df['veckonummer'][df['Kommun_stadsdel'] == region]),
+            x=[list(df['år'][df['Kommun_stadsdel'] == region]), list(df['veckonummer'][df['Kommun_stadsdel'] == region])],
             y=list(df['fall_per_10000'][df['Kommun_stadsdel'] == region]),
             visible=False,
             showlegend=False,
+            text=xaxis_text,
             hoverlabel=dict(
                 bgcolor='white',
                 bordercolor='gray',
@@ -1188,8 +1195,8 @@ for region, row, col in zip(stockholm_kommuns, rows, cols):
             ),
             hovertemplate=
             '<extra></extra>'+
-            '<b>Vecka %{x}</b><br>'+
-            '<b>Cases</b>: %{y:.2f}'
+            '<b>%{text}</b><br>'+
+            '<b>Cases</b>: %{y:.3f}'
         ), row, col
     )
 
@@ -1265,9 +1272,10 @@ fig = go.Figure()
 for region in stockholm_kommuns:
     fig.add_trace(
         go.Scatter(
-            x=list(df['veckonummer'][df['Kommun_stadsdel'] == region]),
+            x=[list(df['år'][df['Kommun_stadsdel'] == region]), list(df['veckonummer'][df['Kommun_stadsdel'] == region])],
             y=list(df['nya_fall_vecka'][df['Kommun_stadsdel'] == region]),
             name=region,
+            text=xaxis_text,
             hoverlabel=dict(
                 bgcolor='white',
                 bordercolor='gray',
@@ -1276,8 +1284,8 @@ for region in stockholm_kommuns:
                 )
             ),
             hovertemplate=
-            '<b>Vecka %{x}</b><br>'+
-            '<b>Cases</b>: %{y}'
+            '<b>%{text}</b><br>'+
+            'Cases: %{y}'
         )
     )
 
@@ -1285,10 +1293,11 @@ for region in stockholm_kommuns:
 for region in stockholm_kommuns:
     fig.add_trace(
         go.Scatter(
-            x=list(df['veckonummer'][df['Kommun_stadsdel'] == region]),
+            x=[list(df['år'][df['Kommun_stadsdel'] == region]), list(df['veckonummer'][df['Kommun_stadsdel'] == region])],
             y=list(df['fall_per_10000'][df['Kommun_stadsdel'] == region]),
             name=region,
             visible=False,
+            text=xaxis_text,
             hoverlabel=dict(
                 bgcolor='white',
                 bordercolor='gray',
@@ -1297,8 +1306,8 @@ for region in stockholm_kommuns:
                 )
             ),
             hovertemplate=
-            '<b>Vecka %{x}</b><br>'+
-            '<b>Cases</b>: %{y:.2f}'
+            '<b>%{text}</b><br>'+
+            '<b>Cases</b>: %{y:.3f}'
         )
     )
 
@@ -1393,13 +1402,15 @@ fig = make_subplots(5, 3, subplot_titles=(regions), shared_xaxes=True)
 rows = [1,1,1,2,2,2,3,3,3,4,4,4,5,5]
 cols = [1,2,3,1,2,3,1,2,3,1,2,3,1,2]
 
+
 # New cases per week
 for region, row, col in zip(regions, rows, cols):
     fig.add_trace(
         go.Scatter(
-            x=list(df['veckonummer'][df['Stadsdel'] == region]),
+            x=[list(df['år'][df['Stadsdel'] == region]), list(df['veckonummer'][df['Stadsdel'] == region])],
             y=list(df['nya_fall_vecka'][df['Stadsdel'] == region]),
             showlegend=False,
+            text=xaxis_text,
             hoverlabel=dict(
                 bgcolor='white',
                 bordercolor='gray',
@@ -1409,8 +1420,8 @@ for region, row, col in zip(regions, rows, cols):
             ),
             hovertemplate=
             '<extra></extra>'+
-            '<b>Vecka %{x}</b><br>'+
-            '<b>Cases</b>: %{y}'
+            '<b>%{text}</b><br>'+
+            'Cases: %{y}'
         ), row, col
     )
 
@@ -1418,10 +1429,11 @@ for region, row, col in zip(regions, rows, cols):
 for region, row, col in zip(regions, rows, cols):
     fig.add_trace(
         go.Scatter(
-            x=list(df['veckonummer'][df['Stadsdel'] == region]),
+            x=[list(df['år'][df['Stadsdel'] == region]), list(df['veckonummer'][df['Stadsdel'] == region])],
             y=list(df['nya_fall_vecka_10000'][df['Stadsdel'] == region]),
-            visible=False,
             showlegend=False,
+            visible=False,
+            text=xaxis_text,
             hoverlabel=dict(
                 bgcolor='white',
                 bordercolor='gray',
@@ -1431,8 +1443,8 @@ for region, row, col in zip(regions, rows, cols):
             ),
             hovertemplate=
             '<extra></extra>'+
-            '<b>Vecka %{x}</b><br>'+
-            '<b>Cases</b>: %{y}'
+            '<b>%{text}</b><br>'+
+            'Cases: %{y}'
         ), row, col
     )
 
@@ -1512,9 +1524,10 @@ fig = go.Figure()
 for region in regions:
     fig.add_trace(
         go.Scatter(
-            x=list(df['veckonummer'][df['Stadsdel'] == region]),
+            x=[list(df['år'][df['Stadsdel'] == region]), list(df['veckonummer'][df['Stadsdel'] == region])],
             y=list(df['nya_fall_vecka'][df['Stadsdel'] == region]),
             name=region,
+            text=xaxis_text,
             hoverlabel=dict(
                 bgcolor='white',
                 bordercolor='gray',
@@ -1523,8 +1536,9 @@ for region in regions:
                 )
             ),
             hovertemplate=
-            '<b>Vecka %{x}</b><br>'+
-            '<b>Cases</b>: %{y}'
+            '<extra></extra>'+
+            '<b>%{text}</b><br>'+
+            'Cases: %{y}'
         )
     )
 
@@ -1532,10 +1546,11 @@ for region in regions:
 for region in regions:
     fig.add_trace(
         go.Scatter(
-            x=list(df['veckonummer'][df['Stadsdel'] == region]),
+            x=[list(df['år'][df['Stadsdel'] == region]), list(df['veckonummer'][df['Stadsdel'] == region])],
             y=list(df['nya_fall_vecka_10000'][df['Stadsdel'] == region]),
             name=region,
             visible=False,
+            text=xaxis_text,
             hoverlabel=dict(
                 bgcolor='white',
                 bordercolor='gray',
@@ -1544,8 +1559,9 @@ for region in regions:
                 )
             ),
             hovertemplate=
-            '<b>Vecka %{x}</b><br>'+
-            '<b>Cases</b>: %{y}'
+            '<extra></extra>'+
+            '<b>%{text}</b><br>'+
+            'Cases: %{y}'
         )
     )
 
@@ -1731,16 +1747,20 @@ regions['Intensivvård_per_10000'] = regions['Antal_intensivvårdade_vecka'] / r
 df = regions
 regions_list = list(df['Region'].unique())
 
-fig = make_subplots(5, 5, subplot_titles=(regions_list), shared_xaxes=True)
+xaxis_text = ["Vecka " + str(i) + ", 2020" for i in range(1, 53)]
+xaxis_text = xaxis_text + ["Vecka " + str(i) + ", 2021" for i in range(1, 53)]
 
-rows = [1,1,1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,4,4,5]
-cols = [1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1]
+fig = make_subplots(3, 7, subplot_titles=(regions_list), shared_xaxes=True)
+
+rows = [1,1,1,1,1,1,1,2,2,2,2,2,2,2,3,3,3,3,3,3,3]
+cols = [1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7]
 
 for region, row, col in zip(regions_list, rows, cols):
     fig.add_trace(
         go.Scatter(
-            x=list(df['veckonummer'][df['Region'] == region]),
+            x=[list(df['år'][df['Region'] == region]), list(df['veckonummer'][df['Region'] == region])],
             y=list(df['Antal_intensivvårdade_vecka'][df['Region'] == region]),
+            text=xaxis_text,
             hoverlabel=dict(
                 bgcolor='white',
                 bordercolor='gray',
@@ -1750,7 +1770,7 @@ for region, row, col in zip(regions_list, rows, cols):
             ),
             hovertemplate=
             '<extra></extra>'+
-            '<b>Vecka %{x}</b><br>'+
+            '<b>%{text}</b><br>'+
             '<b>Cases</b>: %{y}',
             showlegend=False
         ), row, col
@@ -1759,8 +1779,9 @@ for region, row, col in zip(regions_list, rows, cols):
 for region, row, col in zip(regions_list, rows, cols):
     fig.add_trace(
         go.Scatter(
-            x=list(df['veckonummer'][df['Region'] == region]),
+            x=[list(df['år'][df['Region'] == region]), list(df['veckonummer'][df['Region'] == region])],
             y=list(df['Intensivvård_per_10000'][df['Region'] == region]),
+            text=xaxis_text,
             hoverlabel=dict(
                 bgcolor='white',
                 bordercolor='gray',
@@ -1770,7 +1791,7 @@ for region, row, col in zip(regions_list, rows, cols):
             ),
             hovertemplate=
             '<extra></extra>'+
-            '<b>Vecka %{x}</b><br>'+
+            '<b>%{text}</b><br>'+
             '<b>Cases</b>: %{y}',
             showlegend=False,
             visible=False
@@ -1793,7 +1814,7 @@ fig.update_yaxes(
 )
 
 fig.update_layout(
-    title="<b>Antal Intensivvådade per Län</b>",
+    title_text="<b>Antal Intensivvådade per Län</b>",
     font=dict(
         family='Arial'
     ),
@@ -1820,21 +1841,21 @@ fig.update_layout(
     ]
 )
 
-# Add source annotation
 fig.add_annotation(
-    x=0,
-    y=-0.15,
-    text="Källa: Folkhälsomyndigheten",
-    showarrow=False,
-    xref='paper',
-    yref='paper',
-    xanchor='left',
-    yanchor='auto',
-    xshift=0,
-    yshift=0,
-    font=dict(
-        size=11,
-        color='dimgray'
+    dict(
+        x=0, y=-0.08,
+        text="Källa: Folkhälsomyndigheten",
+        showarrow=False,
+        xref='paper',
+        yref='paper',
+        xanchor='left',
+        yanchor='auto',
+        xshift=0,
+        yshift=0,
+        font=dict(
+            size=11,
+            color='dimgray'
+        )
     )
 )
 
@@ -1847,12 +1868,14 @@ fig.write_html('graphs/intensiv/intensive_ward_per_county.html')
 
 fig = go.Figure()
 
+# Intensive ward
 for region in regions_list:
     fig.add_trace(
         go.Scatter(
-            x=list(df['veckonummer'][df['Region'] == region]),
+            x=[list(df['år'][df['Region'] == region]), list(df['veckonummer'][df['Region'] == region])],
             y=list(df['Antal_intensivvårdade_vecka'][df['Region'] == region]),
             name=region,
+            text=xaxis_text,
             hoverlabel=dict(
                 bgcolor='white',
                 bordercolor='gray',
@@ -1861,18 +1884,21 @@ for region in regions_list:
                 )
             ),
             hovertemplate=
-            '<b>Vecka %{x}</b><br>'+
+            '<extra></extra>'+
+            '<b>%{text}</b><br>'+
             '<b>Cases</b>: %{y}'
         )
     )
-
+ 
+# Intensive ward per 10,000
 for region in regions_list:
     fig.add_trace(
         go.Scatter(
-            x=list(df['veckonummer'][df['Region'] == region]),
+            x=[list(df['år'][df['Region'] == region]), list(df['veckonummer'][df['Region'] == region])],
             y=list(df['Intensivvård_per_10000'][df['Region'] == region]),
             name=region,
             visible=False,
+            text=xaxis_text,
             hoverlabel=dict(
                 bgcolor='white',
                 bordercolor='gray',
@@ -1881,11 +1907,11 @@ for region in regions_list:
                 )
             ),
             hovertemplate=
-            '<b>Vecka %{x}</b><br>'+
-            '<b>Cases</b>: %{y}'
+            '<extra></extra>'+
+            '<b>%{text}</b><br>'+
+            '<b>Cases</b>: %{y:.3f}'
         )
     )
-
 
 fig.update_layout(
     title="<b>Antal Intensivvådade per Län</b>",
@@ -2056,7 +2082,7 @@ all_deaths_url = "https://www.scb.se/en/finding-statistics/statistics-by-subject
 sweden_weekly = pd.read_excel(all_deaths_url,
                               sheet_name = 'Tabell 1',
                               skiprows = 6,
-                              usecols = [0,1,2,3,4,5,6]
+                              usecols = [0,1,2,3,4,5,6,7]
                              )
 
 # Remove 29th February to give same number of days in each year. Also drop the
@@ -2065,38 +2091,60 @@ sweden_weekly = sweden_weekly[
     ~sweden_weekly['DagMånad'].isin(['29 februari', 'Okänd dödsdag '])
 ]
 
-years = {
-    '2015': 'weekly_2015', '2016': 'weekly_2016', '2017': 'weekly_2017',
-    '2018': 'weekly_2018', '2019': 'weekly_2019', '2020': 'weekly_2020'
-}
+sweden_average = sweden_weekly[['DagMånad', '2015', '2016', 
+                                '2017', '2018', '2019']].copy()
+sweden_pandemic = sweden_weekly[['DagMånad', '2020', '2021']].copy()
 
 # Create new columns for each year with the 7 day rolling sum, i.e. the weekly
 # total. Then select every 7th day of the year to get week 1, week 2 etc.
 # totals.
-for year in years:
-    sweden_weekly[years[year]] = sweden_weekly[year].rolling(window=7).sum()
+years_average = {
+    '2015': 'weekly_2015', '2016': 'weekly_2016', '2017': 'weekly_2017',
+    '2018': 'weekly_2018', '2019': 'weekly_2019'
+}
 
-sweden_weekly = sweden_weekly.iloc[range(6, 365, 7), :].reset_index(drop=True)
+for year in years_average:
+    sweden_average[years_average[year]] = sweden_average[year].rolling(window=7).sum()
+
+sweden_pandemic['weekly_2020'] = sweden_pandemic['2020'].rolling(window=7).sum()
+sweden_pandemic['weekly_2021'] = sweden_pandemic['2021'].rolling(window=7).sum()
+
+# Take every 7th day to form 7-day periods
+sweden_average = sweden_average.iloc[range(6, 365, 7), :].reset_index(drop=True)
+sweden_pandemic = sweden_pandemic.iloc[range(6, 365, 7), :].reset_index(drop=True)
 
 # Create new columns with 5-year average, maximum and minimum
-sweden_weekly['5_year_average'] = sweden_weekly[
+sweden_average['5_year_average'] = sweden_average[
     ['weekly_2015', 'weekly_2016', 'weekly_2017',
      'weekly_2018', 'weekly_2019']].mean(axis=1)
 
-sweden_weekly['5_year_min'] = sweden_weekly[
+sweden_average['5_year_min'] = sweden_average[
     ['weekly_2015', 'weekly_2016', 'weekly_2017',
      'weekly_2018', 'weekly_2019']].min(axis=1)
 
-sweden_weekly['5_year_max'] = sweden_weekly[
+sweden_average['5_year_max'] = sweden_average[
     ['weekly_2015', 'weekly_2016', 'weekly_2017',
      'weekly_2018', 'weekly_2019']].max(axis=1)
 
-# As deaths are added to the weekly totals as they are registered, weekly
-# totals are often incomplete until 3 weeks later. Therefore data is selected
-# up to the week 3 weeks before the most recent.
-sweden_weekly = sweden_weekly.iloc[:sweden_weekly['weekly_2020'].idxmin() - 3 ,:]
+# Append the data frame to itself to create two years worth of averages.
+sweden_average = sweden_average.append(sweden_average)
+sweden_average['vecka'] = list(range(1,105))
 
-df = sweden_weekly
+# Create a data frame with 104 weeks and one columns with 2020 deaths followed
+# by 2021 deaths.
+sweden_pandemic = pd.DataFrame({
+    'vecka': list(range(1,105)),
+    'deaths': sweden_pandemic['weekly_2020'].append(sweden_pandemic['weekly_2021'])
+})
+
+# Drop the weeks which have not happened yet and then remove the most recent 3 
+# weeks to avoid showing incomplete data (it takes a couple of weeks for all
+# deaths to be published).
+sweden_pandemic = sweden_pandemic[sweden_pandemic['deaths'] != 0]
+sweden_pandemic = sweden_pandemic.iloc[:-3, :]
+sweden_average = sweden_average.iloc[:len(sweden_pandemic.index), :]
+
+df = sweden_average
 
 fig = go.Figure()
 
@@ -2105,7 +2153,7 @@ fig = go.Figure()
 # the origin.
 fig.add_trace(
     go.Scatter(
-        x=list(range(1, len(df['DagMånad']) + 1)) + list(range(1, len(df['DagMånad']) + 1))[::-1],
+        x=list(df['vecka']) + list(df['vecka'][::-1]),
         y=list(df['5_year_max']) + list(df['5_year_min'][::-1]),
         name="5 year min/max",
         line=dict(color='rgba(200, 200, 200, 0.5)'),
@@ -2118,10 +2166,11 @@ fig.add_trace(
 # 5-year average
 fig.add_trace(
     go.Scatter(
-        x=list(range(1, len(df['DagMånad']) + 1)),
+        x=list(df['vecka']),
         y=list(df['5_year_average']),
         name="5 year avg.",
         line=dict(dash='dash'),
+        text=list(range(1,53))*2,
         hoverlabel=dict(
             bgcolor='white',
             bordercolor='red',
@@ -2131,18 +2180,19 @@ fig.add_trace(
         ),
         hovertemplate=
         '<extra></extra>'+
-        '<b>Vecka %{x} - 2015-2019</b><br>'+
+        '<b>Vecka %{text}, 2015-2019</b><br>'+
         '%{y:.1f}'
     )
 )
 
-# 2020 deaths
+# Pandemic deaths
 fig.add_trace(
     go.Scatter(
-        x=list(range(1, len(df['DagMånad']) + 1)),
-        y=list(df['weekly_2020']),
+        x=list(sweden_pandemic['vecka']),
+        y=list(sweden_pandemic['deaths']),
         line=dict(color='blue'),
-        name="2020",
+        name="2020/2021",
+        text=xaxis_text,
         hoverlabel=dict(
             bgcolor='white',
             bordercolor='blue',
@@ -2152,13 +2202,30 @@ fig.add_trace(
         ),
         hovertemplate=
         '<extra></extra>'+
-        '<b>Vecka %{x} - 2020</b><br>'+
+        '<b>%{text}</b><br>'+
         '%{y:.1f}'
     )
 )
 
+# Set the tick values to show the start of 2020 and 2021
+tickvals = [1, 15, 30, 45, 53, 67, 82, 97, 104]
+ticktext = ['1 (2020)', '15', '30', '45', '1 (2021)', '15', '30', '45', '52']
+
+if len(df.index)==104:
+    tickvals, ticktext = tickvals, ticktext
+elif len(df.index)>=97:
+    tickvals, ticktext = tickvals[:8], ticktext[:8]
+elif len(df.index)>=82:
+    tickvals, ticktext = tickvals[:7], ticktext[:7]
+elif len(df.index)>=67:
+    tickvals, ticktext = tickvals[:6], ticktext[:6]
+elif len(df.index)>=53:
+    tickvals, ticktext = tickvals[:5], ticktext[:5]
+elif len(df.index)>=45:
+    tickvals, ticktext = tickvals[:4], ticktext[:4]
+
 fig.update_layout(
-    title="<b>Antal Avlidna per Vecka (2020) vs. Medelvärde över 5 år (2015-2019)",
+    title="<b>Antal Avlidna per Vecka (2020-2021) vs. Medelvärde över 5 år (2015-2019)",
     hovermode='x',
     font=dict(
         family='Arial'
@@ -2168,7 +2235,10 @@ fig.update_layout(
         linewidth=2,
         linecolor='black',
         gridwidth=1,
-        gridcolor='rgb(240, 240, 240)'
+        gridcolor='rgb(240, 240, 240)',
+        tickmode='array',
+        tickvals=tickvals,
+        ticktext=ticktext
     ),
     yaxis=dict(
         title="Antal Avlidna",
