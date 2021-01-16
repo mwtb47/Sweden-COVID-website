@@ -554,7 +554,7 @@ df_temp = pd.DataFrame({
 df_temp['vecka'] = df_temp['vecka'].apply(lambda x: int(x.split(" ")[1]))
 
 # Webpage displays most recent 5 weeks therefore there are still weeks from the
-# end of 2020 whjch need to be dropped. 
+# end of 2020 whjch need to be dropped.
 current_week = int(date.today().strftime("%U"))
 df_temp = df_temp[df_temp['vecka'] <= current_week]
 
@@ -841,17 +841,12 @@ df = df[df['vecka']!='Totalt']
 
 # Weeks come in the form '1, 2021' so these are split into seperate columns and
 # then sorted.
-df['year'] = df['vecka'].apply(lambda x: int(x.split(', v. ')[1]))
-df['vecka'] = df['vecka'].apply(lambda x: int(x.split(',')[0]))
+df['year'] = df['vecka'].apply(lambda x: int(x.split(',')[0]))
+df['vecka'] = df['vecka'].apply(lambda x: int(x.split(', v. ')[1]))
 df = df.sort_values(['year', 'vecka'])
 
 # Cumulative totals of vaccines delivered and vaccinations given
 df[['levererat_total', 'förbrukat_total']] = df[['levererat', 'förbrukat']].cumsum()
-
-# Convert weeks to strings and label the first weeks in the data from each year.
-df['vecka'] = df['vecka'].astype(str)
-df.loc[df['vecka']=='52', 'vecka'] = '52 (2020)'
-df.loc[df['vecka']=='1', 'vecka'] = '1 (2021)'
 
 # ----------------------------------------------
 # Graph - total and weekly vaccinations
@@ -863,7 +858,7 @@ fig = go.Figure()
 # Total vaccinations received
 fig.add_trace(
     go.Scatter(
-        x=list(df['vecka']),
+        x=[list(df['year']), list(df['vecka'])],
         y=list(df['levererat_total']),
         name="Levererat",
         marker=dict(color='darkblue'),
@@ -884,7 +879,7 @@ fig.add_trace(
 # Total vaccinations given
 fig.add_trace(
     go.Scatter(
-        x=list(df['vecka']),
+        x=[list(df['year']), list(df['vecka'])],
         y=list(df['förbrukat_total']),
         name="Förbrukat",
         marker=dict(color='skyblue'),
@@ -905,7 +900,7 @@ fig.add_trace(
 # Weekly vaccinations received
 fig.add_trace(
     go.Bar(
-        x=list(df['vecka']),
+        x=[list(df['year']), list(df['vecka'])],
         y=list(df['levererat']),
         visible=False,
         name="Levererat",
@@ -927,7 +922,7 @@ fig.add_trace(
 # Weekly vaccinations given
 fig.add_trace(
     go.Bar(
-        x=list(df['vecka']),
+        x=[list(df['year']), list(df['vecka'])],
         y=list(df['förbrukat']),
         visible=False,
         marker=dict(color='skyblue'),
@@ -953,7 +948,6 @@ fig.update_layout(
         family='Arial'
     ),
     xaxis=dict(
-        type='category',
         title="Vecka",
         linewidth=2,
         linecolor='black',
@@ -1755,6 +1749,7 @@ fig = make_subplots(3, 7, subplot_titles=(regions_list), shared_xaxes=True)
 rows = [1,1,1,1,1,1,1,2,2,2,2,2,2,2,3,3,3,3,3,3,3]
 cols = [1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7]
 
+# Intensive ward per week
 for region, row, col in zip(regions_list, rows, cols):
     fig.add_trace(
         go.Scatter(
@@ -1771,11 +1766,12 @@ for region, row, col in zip(regions_list, rows, cols):
             hovertemplate=
             '<extra></extra>'+
             '<b>%{text}</b><br>'+
-            '<b>Cases</b>: %{y}',
+            '<b>Antal Intensivvårdade</b>: %{y}',
             showlegend=False
         ), row, col
     )
 
+# Intensive ward per week per 10,000
 for region, row, col in zip(regions_list, rows, cols):
     fig.add_trace(
         go.Scatter(
@@ -1792,7 +1788,7 @@ for region, row, col in zip(regions_list, rows, cols):
             hovertemplate=
             '<extra></extra>'+
             '<b>%{text}</b><br>'+
-            '<b>Cases</b>: %{y}',
+            '<b>Antal Intensivvårdade</b>: %{y:.3f}',
             showlegend=False,
             visible=False
         ), row, col
@@ -1843,7 +1839,7 @@ fig.update_layout(
 
 fig.add_annotation(
     dict(
-        x=0, y=-0.08,
+        x=0, y=-0.15,
         text="Källa: Folkhälsomyndigheten",
         showarrow=False,
         xref='paper',
@@ -1868,7 +1864,7 @@ fig.write_html('graphs/intensiv/intensive_ward_per_county.html')
 
 fig = go.Figure()
 
-# Intensive ward
+# Intensive ward per week
 for region in regions_list:
     fig.add_trace(
         go.Scatter(
@@ -1886,11 +1882,11 @@ for region in regions_list:
             hovertemplate=
             '<extra></extra>'+
             '<b>%{text}</b><br>'+
-            '<b>Cases</b>: %{y}'
+            '<b>Antal Intensivvårdade</b>: %{y}'
         )
     )
- 
-# Intensive ward per 10,000
+
+# Intensive ward per week per 10,000
 for region in regions_list:
     fig.add_trace(
         go.Scatter(
@@ -1909,7 +1905,7 @@ for region in regions_list:
             hovertemplate=
             '<extra></extra>'+
             '<b>%{text}</b><br>'+
-            '<b>Cases</b>: %{y:.3f}'
+            '<b>Antal Intensivvårdade</b>: %{y:.3f}'
         )
     )
 
@@ -2091,7 +2087,7 @@ sweden_weekly = sweden_weekly[
     ~sweden_weekly['DagMånad'].isin(['29 februari', 'Okänd dödsdag '])
 ]
 
-sweden_average = sweden_weekly[['DagMånad', '2015', '2016', 
+sweden_average = sweden_weekly[['DagMånad', '2015', '2016',
                                 '2017', '2018', '2019']].copy()
 sweden_pandemic = sweden_weekly[['DagMånad', '2020', '2021']].copy()
 
@@ -2137,7 +2133,7 @@ sweden_pandemic = pd.DataFrame({
     'deaths': sweden_pandemic['weekly_2020'].append(sweden_pandemic['weekly_2021'])
 })
 
-# Drop the weeks which have not happened yet and then remove the most recent 3 
+# Drop the weeks which have not happened yet and then remove the most recent 3
 # weeks to avoid showing incomplete data (it takes a couple of weeks for all
 # deaths to be published).
 sweden_pandemic = sweden_pandemic[sweden_pandemic['deaths'] != 0]
