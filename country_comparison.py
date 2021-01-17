@@ -45,12 +45,11 @@ deaths = deaths.groupby(['country', 'date'], as_index=False)['deaths'].sum()
 # Use country converter to get iso3 codes. This is done in a seprate dataframe
 # and then merged to avoid running the country converter regex on the same
 # country for every date.
-iso3 = pd.DataFrame(
-    {
-        'country': deaths['country'].unique(),
-        'iso3': coco.convert(list(deaths['country'].unique()), to='ISO3')
-    }
-)
+iso3 = pd.DataFrame({
+    'country': deaths['country'].unique(),
+    'iso3': coco.convert(list(deaths['country'].unique()), to='ISO3')
+})
+
 deaths = deaths.merge(iso3, on='country', how='left')
 
 countries_data = pd.read_csv('data/countries_matthew.csv',
@@ -115,12 +114,11 @@ cases = cases.groupby(['country', 'date'], as_index=False)['cases'].sum()
 # Use country converter to get iso3 codes. This is done in a seprate dataframe
 # and then merged to avoid running the country converter regex on the same
 # country for every date.
-iso3 = pd.DataFrame(
-    {
-        'country': cases['country'].unique(),
-        'iso3': coco.convert(list(cases['country'].unique()), to='ISO3')
-    }
-)
+iso3 = pd.DataFrame({
+    'country': cases['country'].unique(),
+    'iso3': coco.convert(list(cases['country'].unique()), to='ISO3')
+})
+
 cases = cases.merge(iso3, on='country', how='left')
 
 cases = cases.merge(countries_data, on='iso3', how='left')
@@ -168,6 +166,36 @@ colors = [
 # Graphs
 # =============================================================================
 
+# --------
+# Template
+# --------
+
+template=dict(
+    layout=go.Layout(
+        title=dict(
+            x=0,
+            xref='paper'
+        ),
+        hovermode='closest',
+        paper_bgcolor='white',
+        plot_bgcolor='white',
+        xaxis=dict(
+            showline=True,
+            linewidth=1.5,
+            linecolor='black',
+            gridwidth=1,
+            gridcolor='whitesmoke'
+        ),
+        yaxis=dict(
+            showline=True,
+            linewidth=1.5,
+            linecolor='black',
+            gridwidth=1,
+            gridcolor='whitesmoke'
+        )
+    )
+)
+
 # ------------------------------
 # Graph - daily deaths EU OECD
 # Filename: daily_deaths_EU_OECD
@@ -201,120 +229,48 @@ vis_2 = [False] * len(countries_EU) + [True] * len(countries_EU) + [False] * len
 vis_3 = [False] * len(countries_EU) * 2 + [True] * len(countries_OECD) + [False] * len(countries_OECD)
 vis_4 = [False] * len(countries_EU) * 2 + [False] * len(countries_OECD) + [True] * len(countries_OECD)
 
+# Lists of data frames, metrics and plot visibilities to plot
+dataframes = [df_EU, df_EU, df_OECD, df_OECD]
+metrics = ['7_day_average', '7_day_average_per_million'] * 2
+visible = [True, False, False, False]
+
 fig = go.Figure()
 
+for df, metric, vis in zip(dataframes, metrics, visible):
 # Deaths - EU
-for country, color, width in zip(countries_EU, colors_EU, line_width_EU) :
-    fig.add_trace(
-        go.Scatter(
-            x=list(df_EU['date'][df_EU['country'] == country]),
-            y=list(df_EU['7_day_average'][df_EU['country'] == country]),
-            name=country,
-            mode='lines',
-            line=dict(
-                color=color,
-                width=width),
-            customdata=np.stack((
-                df_EU['country'][df_EU['country'] == country],
-                df_EU['flag'][df_EU['country'] == country]),
-                axis=-1),
-            hovertemplate=
-            '<b>7 dagar medelvärde:</b> %{y:.2f}'+
-            '<br><b>Datum:</b> %{x}</br>'+
-            '<extra>%{customdata[0]} %{customdata[1]}</extra>'
+    for country, color, width in zip(countries_EU, colors_EU, line_width_EU) :
+        fig.add_trace(
+            go.Scatter(
+                x=list(df['date'][df['country'] == country]),
+                y=list(df[metric][df['country'] == country]),
+                name=country,
+                mode='lines',
+                visible=vis,
+                line=dict(
+                    color=color,
+                    width=width),
+                customdata=np.stack((
+                    df['country'][df['country'] == country],
+                    df['flag'][df['country'] == country]),
+                    axis=-1),
+                hovertemplate=
+                '<b>7 dagar medelvärde:</b> %{y:.2f}'+
+                '<br><b>Datum:</b> %{x}</br>'+
+                '<extra>%{customdata[0]} %{customdata[1]}</extra>'
+            )
         )
-    )
-
-# Deaths per million - EU
-for country, color, width in zip(countries_EU, colors_EU, line_width_EU) :
-    fig.add_trace(
-        go.Scatter(
-            x=list(df_EU['date'][df_EU['country'] == country]),
-            y=list(df_EU['7_day_average_per_million'][df_EU['country'] == country]),
-            name=country,
-            visible=False,
-            mode='lines',
-            line=dict(
-                color=color,
-                width=width),
-            customdata=np.stack((
-                df_EU['country'][df_EU['country'] == country],
-                df_EU['flag'][df_EU['country'] == country]),
-                axis=-1),
-            hovertemplate=
-            '<b>7 dagar medelvärde / miljon:</b> %{y:.2f}'+
-            '<br><b>Datum:</b> %{x}</br>'+
-            '<extra>%{customdata[0]} %{customdata[1]}</extra>'
-        )
-    )
-
-# Deaths - OECD
-for country, color, width in zip(countries_OECD, colors_OECD, line_width_OECD) :
-    fig.add_trace(
-        go.Scatter(
-            x=list(df_OECD['date'][df_OECD['country'] == country]),
-            y=list(df_OECD['7_day_average'][df_OECD['country'] == country]),
-            name=country,
-            visible=False,
-            mode='lines',
-            line=dict(
-                color=color,
-                width=width),
-            customdata=np.stack((
-                df_OECD['country'][df_OECD['country'] == country],
-                df_OECD['flag'][df_OECD['country'] == country]),
-                axis=-1),
-            hovertemplate=
-            '<b>7 dagar medelvärde:</b> %{y:.2f}'+
-            '<br><b>Datum:</b> %{x}</br>'+
-            '<extra>%{customdata[0]} %{customdata[1]}</extra>'
-        )
-    )
-
-# Deaths per million - OECD
-for country, color, width in zip(countries_OECD, colors_OECD, line_width_OECD) :
-    fig.add_trace(
-        go.Scatter(
-            x=list(df_OECD['date'][df_OECD['country'] == country]),
-            y=list(df_OECD['7_day_average_per_million'][df_OECD['country'] == country]),
-            name=country,
-            visible=False,
-            mode='lines',
-            line=dict(
-                color=color,
-                width=width),
-            customdata=np.stack((
-                df_OECD['country'][df_OECD['country'] == country],
-                df_OECD['flag'][df_OECD['country'] == country]),
-                axis=-1),
-            hovertemplate=
-            '<b>7 dagar medelvärde / miljon:</b> %{y:.2f}'+
-            '<br><b>Datum:</b> %{x}</br>'+
-            '<extra>%{customdata[0]} %{customdata[1]}</extra>'
-        )
-    )
 
 fig.update_layout(
-    title="<b>Antal Avlidna per Dag - EU / EEA</b><br><sup>(7 dagar glidande medelvärde)",
-    xaxis=dict(
-        showline=True,
-        linewidth=2,
-        linecolor='black',
-        gridcolor='whitesmoke'
-    ),
+    template=template,
+    title="<b>Antal Avlidna per Dag - EU / EEA</b><br><sup>7 dagar glidande medelvärde",
     yaxis=dict(
         title="Antal Avlidna per Dag",
-        showline=True,
-        linewidth=2,
-        linecolor='black',
-        gridcolor='whitesmoke'
     ),
-    paper_bgcolor='white',
-    plot_bgcolor='white',
     annotations=[
         dict(
-            x=0, y=-0.2,
-            text="Sources:  Hopkins University CSSE, World Bank",
+            x=0,
+            y=-0.1,
+            text="Källor: JHU CSSE COVID-19 Data, World Bank",
             showarrow=False,
             xref='paper',
             yref='paper',
@@ -333,25 +289,29 @@ fig.update_layout(
             direction='down',
             x=1,
             xanchor='right',
-            y=1.1,
+            y=1.075,
             yanchor='top',
             buttons=list([
                 dict(label="EU",
                      method='update',
                      args=[{'visible': vis_1},
-                           {'title': "<b>Antal Avlidna per Dag - EU / EEA</b><br><sup>(7 dagar glidande medelvärde)"}]),
+                           {'title': "<b>Antal Avlidna per Dag - EU / EEA</b><br><sup>7 dagar glidande medelvärde",
+                            'yaxis': {'title': 'Antal Avlidna per Dag'}}]),
                 dict(label="EU / miljon",
                      method='update',
                      args=[{'visible': vis_2},
-                           {'title': "<b>Antal Avlidna per Dag (per miljon) - EU / EEA</b><br><sup>(7 dagar glidande medelvärde)"}]),
+                           {'title': "<b>Antal Avlidna per Dag (per miljon) - EU / EEA</b><br><sup>7 dagar glidande medelvärde",
+                            'yaxis': {'title': 'Antal Avlidna per Dag (per miljon)'}}]),
                 dict(label="OECD",
                      method='update',
                      args=[{'visible': vis_3},
-                           {'title': "<b>Antal Avlidna per Dag - OECD</b><br><sup>(7 dagar glidande medelvärde)"}]),
+                           {'title': "<b>Antal Avlidna per Dag - OECD</b><br><sup>7 dagar glidande medelvärde",
+                            'yaxis': {'title': 'Antal Avlidna per Dag'}}]),
                 dict(label="OECD / miljon",
                      method='update',
                      args=[{'visible': vis_4},
-                           {'title': "<b>Antal Avlidna per Dag (per miljon) - OECD</b><br><sup>(7 dagar glidande medelvärde)"}]),
+                           {'title': "<b>Antal Avlidna per Dag (per miljon) - OECD</b><br><sup>7 dagar glidande medelvärde",
+                            'yaxis': {'title': 'Antal Avlidna per Dag (per miljon)'}}]),
             ])
         )
     ]
@@ -364,120 +324,44 @@ fig.write_html('graphs/comparisons/daily_deaths_EU_OECD.html')
 # Filename: total_deaths_EU_OECD
 # ------------------------------
 
+metrics = ['deaths', 'deaths_per_million'] * 2
+
 fig = go.Figure()
 
-# Deaths - EU
-for country, color, width in zip(countries_EU, colors_EU, line_width_EU) :
-    fig.add_trace(
-        go.Scatter(
-            x=list(df_EU['date'][df_EU['country'] == country]),
-            y=list(df_EU['deaths'][df_EU['country'] == country]),
-            name=country,
-            mode='lines',
-            line=dict(
-                color=color,
-                width=width),
-            customdata=np.stack((
-                df_EU['country'][df_EU['country'] == country],
-                df_EU['flag'][df_EU['country'] == country]),
-                axis=-1),
-            hovertemplate=
-            '<b>Totalt:</b> %{y:.2f}'+
-            '<br><b>Datum:</b> %{x}</br>'+
-            '<extra>%{customdata[0]} %{customdata[1]}</extra>'
+for df, metric, vis in zip(dataframes, metrics, visible):
+    # Deaths - EU
+    for country, color, width in zip(countries_EU, colors_EU, line_width_EU) :
+        fig.add_trace(
+            go.Scatter(
+                x=list(df['date'][df['country'] == country]),
+                y=list(df[metric][df['country'] == country]),
+                name=country,
+                mode='lines',
+                visible=vis,
+                line=dict(
+                    color=color,
+                    width=width),
+                customdata=np.stack((
+                    df['country'][df['country'] == country],
+                    df['flag'][df['country'] == country]),
+                    axis=-1),
+                hovertemplate=
+                '<b>Totalt:</b> %{y:.2f}'+
+                '<br><b>Datum:</b> %{x}</br>'+
+                '<extra>%{customdata[0]} %{customdata[1]}</extra>'
+            )
         )
-    )
-
-# Deaths per million - EU
-for country, color, width in zip(countries_EU, colors_EU, line_width_EU) :
-    fig.add_trace(
-        go.Scatter(
-            x=list(df_EU['date'][df_EU['country'] == country]),
-            y=list(df_EU['deaths_per_million'][df_EU['country'] == country]),
-            name=country,
-            visible=False,
-            mode='lines',
-            line=dict(
-                color=color,
-                width=width),
-            customdata=np.stack((
-                df_EU['country'][df_EU['country'] == country],
-                df_EU['flag'][df_EU['country'] == country]),
-                axis=-1),
-            hovertemplate=
-            '<b>Totalt / miljon:</b> %{y:.2f}'+
-            '<br><b>Datum:</b> %{x}</br>'+
-            '<extra>%{customdata[0]} %{customdata[1]}</extra>'
-        )
-    )
-
-# Deaths - OECD
-for country, color, width in zip(countries_OECD, colors_OECD, line_width_OECD) :
-    fig.add_trace(
-        go.Scatter(
-            x=list(df_OECD['date'][df_OECD['country'] == country]),
-            y=list(df_OECD['deaths'][df_OECD['country'] == country]),
-            name=country,
-            visible=False,
-            mode='lines',
-            line=dict(
-                color=color,
-                width=width),
-            customdata=np.stack((
-                df_OECD['country'][df_OECD['country'] == country],
-                df_OECD['flag'][df_OECD['country'] == country]),
-                axis=-1),
-            hovertemplate=
-            '<b>Totalt:</b> %{y:.2f}'+
-            '<br><b>Datum:</b> %{x}</br>'+
-            '<extra>%{customdata[0]} %{customdata[1]}</extra>'
-        )
-    )
-
-# Deaths per million - OECD
-for country, color, width in zip(countries_OECD, colors_OECD, line_width_OECD) :
-    fig.add_trace(
-        go.Scatter(
-            x=list(df_OECD['date'][df_OECD['country'] == country]),
-            y=list(df_OECD['deaths_per_million'][df_OECD['country'] == country]),
-            name=country,
-            visible=False,
-            mode='lines',
-            line=dict(
-                color=color,
-                width=width),
-            customdata=np.stack((
-                df_OECD['country'][df_OECD['country'] == country],
-                df_OECD['flag'][df_OECD['country'] == country]),
-                axis=-1),
-            hovertemplate=
-            '<b>Totalt / miljon:</b> %{y:.2f}'+
-            '<br><b>Datum:</b> %{x}</br>'+
-            '<extra>%{customdata[0]} %{customdata[1]}</extra>'
-        )
-    )
 
 fig.update_layout(
+    template=template,
     title="<b>Totalt Antal Avlidna - EU / EEA</b>",
-    xaxis=dict(
-        showline=True,
-        linewidth=2,
-        linecolor='black',
-        gridcolor='whitesmoke'
-    ),
     yaxis=dict(
         title="Totalt Antal Avlidna",
-        showline=True,
-        linewidth=2,
-        linecolor='black',
-        gridcolor='whitesmoke'
     ),
-    paper_bgcolor='white',
-    plot_bgcolor='white',
     annotations=[
         dict(
-            x=0, y=-0.2,
-            text="Sources: JHU CSSE COVID-19 Data, World Bank",
+            x=0, y=-0.1,
+            text="Källor: JHU CSSE COVID-19 Data, World Bank",
             showarrow=False,
             xref='paper',
             yref='paper',
@@ -496,25 +380,29 @@ fig.update_layout(
             direction='down',
             x=1,
             xanchor='right',
-            y=1.1,
+            y=1.075,
             yanchor='top',
             buttons=list([
                 dict(label="EU",
                      method='update',
                      args=[{'visible': vis_1},
-                           {'title': "<b>Totalt Antal Avlidna - EU / EEA</b>"}]),
+                           {'title': "<b>Totalt Antal Avlidna - EU / EEA</b>",
+                            'yaxis': {'title': 'Totalt Antal Avlidna'}}]),
                 dict(label="EU / miljon",
                      method='update',
                      args=[{'visible': vis_2},
-                           {'title': "<b>Totalt Antal Avlidna (per miljon) - EU / EEA</b>"}]),
+                           {'title': "<b>Totalt Antal Avlidna (per miljon) - EU / EEA</b>",
+                            'yaxis': {'title': 'Totalt Antal Avlidna (per miljon)'}}]),
                 dict(label="OECD",
                      method='update',
                      args=[{'visible': vis_3},
-                           {'title': "<b>Totalt Antal Avlidna - OECD</b>"}]),
+                           {'title': "<b>Totalt Antal Avlidna - OECD</b>",
+                            'yaxis': {'title': 'Totalt Antal Avlidna'}}]),
                 dict(label="OECD / miljon",
                      method='update',
                      args=[{'visible': vis_4},
-                           {'title': "<b>Totalt Antal Avlidna (per miljon) - OECD</b>"}]),
+                           {'title': "<b>Totalt Antal Avlidna (per miljon) - OECD</b>",
+                            'yaxis': {'title': 'Totalt Antal Avlidna (per miljon)'}}]),
             ])
         )
     ]
@@ -555,120 +443,45 @@ vis_2 = [False] * len(countries_EU) + [True] * len(countries_EU) + [False] * len
 vis_3 = [False] * len(countries_EU) * 2 + [True] * len(countries_OECD) + [False] * len(countries_OECD)
 vis_4 = [False] * len(countries_EU) * 2 + [False] * len(countries_OECD) + [True] * len(countries_OECD)
 
+dataframes = [df_EU, df_EU, df_OECD, df_OECD]
+metrics = ['7_day_average', '7_day_average_per_million'] * 2
+
 fig = go.Figure()
 
-# Cases - EU
-for country, color, width in zip(countries_EU, colors_EU, line_width_EU) :
-    fig.add_trace(
-        go.Scatter(
-            x=list(df_EU['date'][df_EU['country'] == country]),
-            y=list(df_EU['7_day_average'][df_EU['country'] == country]),
-            name=country,
-            mode='lines',
-            line=dict(
-                color=color,
-                width=width),
-            customdata=np.stack((
-                df_EU['country'][df_EU['country'] == country],
-                df_EU['flag'][df_EU['country'] == country]),
-                axis=-1),
-            hovertemplate=
-            '<b>7 dagar medelvärde:</b> %{y:.2f}'+
-            '<br><b>Datum:</b> %{x}</br>'+
-            '<extra>%{customdata[0]} %{customdata[1]}</extra>'
+for df, metric, vis in zip(dataframes, metrics, visible):
+    # Cases - EU
+    for country, color, width in zip(countries_EU, colors_EU, line_width_EU) :
+        fig.add_trace(
+            go.Scatter(
+                x=list(df['date'][df['country'] == country]),
+                y=list(df[metric][df['country'] == country]),
+                name=country,
+                mode='lines',
+                visible=vis,
+                line=dict(
+                    color=color,
+                    width=width),
+                customdata=np.stack((
+                    df['country'][df['country'] == country],
+                    df['flag'][df['country'] == country]),
+                    axis=-1),
+                hovertemplate=
+                '<b>7 dagar medelvärde:</b> %{y:.2f}'+
+                '<br><b>Datum:</b> %{x}</br>'+
+                '<extra>%{customdata[0]} %{customdata[1]}</extra>'
+            )
         )
-    )
-
-# Cases per million - EU
-for country, color, width in zip(countries_EU, colors_EU, line_width_EU) :
-    fig.add_trace(
-        go.Scatter(
-            x=list(df_EU['date'][df_EU['country'] == country]),
-            y=list(df_EU['7_day_average_per_million'][df_EU['country'] == country]),
-            name=country,
-            visible=False,
-            mode='lines',
-            line=dict(
-                color=color,
-                width=width),
-            customdata=np.stack((
-                df_EU['country'][df_EU['country'] == country],
-                df_EU['flag'][df_EU['country'] == country]),
-                axis=-1),
-            hovertemplate=
-            '<b>7 dagar medelvärde / miljon:</b> %{y:.2f}'+
-            '<br><b>Datum:</b> %{x}</br>'+
-            '<extra>%{customdata[0]} %{customdata[1]}</extra>'
-        )
-    )
-
-# Cases - OECD
-for country, color, width in zip(countries_OECD, colors_OECD, line_width_OECD) :
-    fig.add_trace(
-        go.Scatter(
-            x=list(df_OECD['date'][df_OECD['country'] == country]),
-            y=list(df_OECD['7_day_average'][df_OECD['country'] == country]),
-            name=country,
-            visible=False,
-            mode='lines',
-            line=dict(
-                color=color,
-                width=width),
-            customdata=np.stack((
-                df_OECD['country'][df_OECD['country'] == country],
-                df_OECD['flag'][df_OECD['country'] == country]),
-                axis=-1),
-            hovertemplate=
-            '<b>7 dagar medelvärde:</b> %{y:.2f}'+
-            '<br><b>Datum:</b> %{x}</br>'+
-            '<extra>%{customdata[0]} %{customdata[1]}</extra>'
-        )
-    )
-
-# Cases per million - OECD
-for country, color, width in zip(countries_OECD, colors_OECD, line_width_OECD) :
-    fig.add_trace(
-        go.Scatter(
-            x=list(df_OECD['date'][df_OECD['country'] == country]),
-            y=list(df_OECD['7_day_average_per_million'][df_OECD['country'] == country]),
-            name=country,
-            visible=False,
-            mode='lines',
-            line=dict(
-                color=color,
-                width=width),
-            customdata=np.stack((
-                df_OECD['country'][df_OECD['country'] == country],
-                df_OECD['flag'][df_OECD['country'] == country]),
-                axis=-1),
-            hovertemplate=
-            '<b>7 dagar medelvärde / miljon:</b> %{y:.2f}'+
-            '<br><b>Datum:</b> %{x}</br>'+
-            '<extra>%{customdata[0]} %{customdata[1]}</extra>'
-        )
-    )
 
 fig.update_layout(
-    title="<b>Bekräftade Fall per Dag - EU / EEA</b><br><sup>(7 dagar glidande medelvärde)",
-    xaxis=dict(
-        showline=True,
-        linewidth=2,
-        linecolor='black',
-        gridcolor='whitesmoke'
-    ),
+    template=template,
+    title="<b>Bekräftade Fall per Dag - EU / EEA</b><br><sup>7 dagar glidande medelvärde",
     yaxis=dict(
         title="Bekräftade Fall per Dag",
-        showline=True,
-        linewidth=2,
-        linecolor='black',
-        gridcolor='whitesmoke'
     ),
-    paper_bgcolor='white',
-    plot_bgcolor='white',
     annotations=[
         dict(
-            x=0, y=-0.2,
-            text="Sources: JHU CSSE COVID-19 Data, World Bank",
+            x=0, y=-0.1,
+            text="Källor: JHU CSSE COVID-19 Data, World Bank",
             showarrow=False,
             xref='paper',
             yref='paper',
@@ -687,25 +500,29 @@ fig.update_layout(
             direction='down',
             x=1,
             xanchor='right',
-            y=1.1,
+            y=1.075,
             yanchor='top',
             buttons=list([
                 dict(label="EU",
                      method='update',
                      args=[{'visible': vis_1},
-                           {'title': "<b>Bekräftade Fall per Dag - EU / EEA</b><br><sup>(7 dagar glidande medelvärde)"}]),
+                           {'title': "<b>Bekräftade Fall per Dag - EU / EEA</b><br><sup>7 dagar glidande medelvärde",
+                            'yaxis': {'title': 'Bekräftade Fall per Dag'}}]),
                 dict(label="EU / miljon",
                      method='update',
                      args=[{'visible': vis_2},
-                           {'title': "<b>Bekräftade Fall per Dag (per miljon) - EU / EEA</b><br><sup>(7 dagar glidande medelvärde)"}]),
+                           {'title': "<b>Bekräftade Fall per Dag (per miljon) - EU / EEA</b><br><sup>7 dagar glidande medelvärde",
+                            'yaxis': {'title': 'Bekräftade Fall per Dag (per miljon)'}}]),
                 dict(label="OECD",
                      method='update',
                      args=[{'visible': vis_3},
-                           {'title': "<b>Bekräftade Fall per Dag - OECD</b><br><sup>(7 dagar glidande medelvärde)"}]),
+                           {'title': "<b>Bekräftade Fall per Dag - OECD</b><br><sup>7 dagar glidande medelvärde",
+                            'yaxis': {'title': 'Bekräftade Fall per Dag'}}]),
                 dict(label="OECD / miljon",
                      method='update',
                      args=[{'visible': vis_4},
-                           {'title': "<b>Bekräftade Fall per Dag (per miljon) - OECD</b><br><sup>(7 dagar glidande medelvärde)"}]),
+                           {'title': "<b>Bekräftade Fall per Dag (per miljon) - OECD</b><br><sup>7 dagar glidande medelvärde",
+                            'yaxis': {'title': 'Bekräftade Fall per Dag (per miljon)'}}]),
             ])
         )
     ]
@@ -718,120 +535,45 @@ fig.write_html('graphs/comparisons/daily_cases_EU_OECD.html')
 # Filename: total_cases_EU_OECD
 # -----------------------------
 
+metrics = ['cases', 'cases_per_million'] * 2
+
 fig = go.Figure()
 
-# Cases - EU
-for country, color, width in zip(countries_EU, colors_EU, line_width_EU) :
-    fig.add_trace(
-        go.Scatter(
-            x=list(df_EU['date'][df_EU['country'] == country]),
-            y=list(df_EU['cases'][df_EU['country'] == country]),
-            name=country,
-            mode='lines',
-            line=dict(
-                color=color,
-                width=width),
-            customdata=np.stack((
-                df_EU['country'][df_EU['country'] == country],
-                df_EU['flag'][df_EU['country'] == country]),
-                axis=-1),
-            hovertemplate=
-            '<b>Totalt:</b> %{y:.2f}'+
-            '<br><b>Datum:</b> %{x}</br>'+
-            '<extra>%{customdata[0]} %{customdata[1]}</extra>'
+for df, metric, vis in zip(dataframes, metrics, visible):
+    # Cases - EU
+    for country, color, width in zip(countries_EU, colors_EU, line_width_EU) :
+        fig.add_trace(
+            go.Scatter(
+                x=list(df['date'][df['country'] == country]),
+                y=list(df[metric][df['country'] == country]),
+                name=country,
+                mode='lines',
+                visible=vis,
+                line=dict(
+                    color=color,
+                    width=width),
+                customdata=np.stack((
+                    df['country'][df['country'] == country],
+                    df['flag'][df['country'] == country]),
+                    axis=-1),
+                hovertemplate=
+                '<b>Totalt:</b> %{y:.2f}'+
+                '<br><b>Datum:</b> %{x}</br>'+
+                '<extra>%{customdata[0]} %{customdata[1]}</extra>'
+            )
         )
-    )
 
-# Cases per million - EU
-for country, color, width in zip(countries_EU, colors_EU, line_width_EU) :
-    fig.add_trace(
-        go.Scatter(
-            x=list(df_EU['date'][df_EU['country'] == country]),
-            y=list(df_EU['cases_per_million'][df_EU['country'] == country]),
-            name=country,
-            visible=False,
-            mode='lines',
-            line=dict(
-                color=color,
-                width=width),
-            customdata=np.stack((
-                df_EU['country'][df_EU['country'] == country],
-                df_EU['flag'][df_EU['country'] == country]),
-                axis=-1),
-            hovertemplate=
-            '<b>Totalt / miljon:</b> %{y:.2f}'+
-            '<br><b>Datum:</b> %{x}</br>'+
-            '<extra>%{customdata[0]} %{customdata[1]}</extra>'
-        )
-    )
-
-# Cases - OECD
-for country, color, width in zip(countries_OECD, colors_OECD, line_width_OECD) :
-    fig.add_trace(
-        go.Scatter(
-            x=list(df_OECD['date'][df_OECD['country'] == country]),
-            y=list(df_OECD['cases'][df_OECD['country'] == country]),
-            name=country,
-            visible=False,
-            mode='lines',
-            line=dict(
-                color=color,
-                width=width),
-            customdata=np.stack((
-                df_OECD['country'][df_OECD['country'] == country],
-                df_OECD['flag'][df_OECD['country'] == country]),
-                axis=-1),
-            hovertemplate=
-            '<b>Totalt:</b> %{y:.2f}'+
-            '<br><b>Datum:</b> %{x}</br>'+
-            '<extra>%{customdata[0]} %{customdata[1]}</extra>'
-        )
-    )
-
-# Cases per million - OECD
-for country, color, width in zip(countries_OECD, colors_OECD, line_width_OECD) :
-    fig.add_trace(
-        go.Scatter(
-            x=list(df_OECD['date'][df_OECD['country'] == country]),
-            y=list(df_OECD['cases_per_million'][df_OECD['country'] == country]),
-            name=country,
-            visible=False,
-            mode='lines',
-            line=dict(
-                color=color,
-                width=width),
-            customdata=np.stack((
-                df_OECD['country'][df_OECD['country'] == country],
-                df_OECD['flag'][df_OECD['country'] == country]),
-                axis=-1),
-            hovertemplate=
-            '<b>Totalt / miljon:</b> %{y:.2f}'+
-            '<br><b>Datum:</b> %{x}</br>'+
-            '<extra>%{customdata[0]} %{customdata[1]}</extra>'
-        )
-    )
 
 fig.update_layout(
+    template=template,
     title="<b>Totalt Antal Bekräftade Fall - EU / EEA</b>",
-    xaxis=dict(
-        showline=True,
-        linewidth=2,
-        linecolor='black',
-        gridcolor='whitesmoke'
-    ),
     yaxis=dict(
         title="Totalt Bekräftade Fall",
-        showline=True,
-        linewidth=2,
-        linecolor='black',
-        gridcolor='whitesmoke'
     ),
-    paper_bgcolor='white',
-    plot_bgcolor='white',
     annotations=[
         dict(
-            x=0, y=-0.2,
-            text="Sources: JHU CSSE COVID-19 Data, World Bank",
+            x=0, y=-0.1,
+            text="Källor: JHU CSSE COVID-19 Data, World Bank",
             showarrow=False,
             xref='paper',
             yref='paper',
@@ -850,25 +592,29 @@ fig.update_layout(
             direction='down',
             x=1,
             xanchor='right',
-            y=1.1,
+            y=1.075,
             yanchor='top',
             buttons=list([
                 dict(label="EU",
                      method='update',
                      args=[{'visible': vis_1},
-                           {'title': "<b>Totalt Antal Bekräftade Fall - EU / EEA</b>"}]),
+                           {'title': "<b>Totalt Antal Bekräftade Fall - EU / EEA</b>",
+                            'yaxis': {'title': 'Totalt Bekräftade Fall'}}]),
                 dict(label="EU / miljon",
                      method='update',
                      args=[{'visible': vis_2},
-                           {'title': "<b>Totalt Antal Bekräftade Fall (per miljon) - EU / EEA</b>"}]),
+                           {'title': "<b>Totalt Antal Bekräftade Fall (per miljon) - EU / EEA</b>",
+                            'yaxis': {'title': 'Totalt Bekräftade Fall (per miljon)'}}]),
                 dict(label="OECD",
                      method='update',
                      args=[{'visible': vis_3},
-                           {'title': "<b>Totalt Antal Bekräftade Fall - OECD</b>"}]),
+                           {'title': "<b>Totalt Antal Bekräftade Fall - OECD</b>",
+                            'yaxis': {'title': 'Totalt Bekräftade Fall'}}]),
                 dict(label="OECD / miljon",
                      method='update',
                      args=[{'visible': vis_4},
-                           {'title': "<b>Totalt Antal Bekräftade Fall (per miljon) - OECD</b></b>"}]),
+                           {'title': "<b>Totalt Antal Bekräftade Fall (per miljon) - OECD</b></b>",
+                            'yaxis': {'title': 'Totalt Bekräftade Fall (per miljon)'}}]),
             ])
         )
     ]
@@ -926,39 +672,26 @@ for country, col in zip(excess['country'].unique(), colors):
                 excess['flag'][excess['country'] == country]),
                 axis=-1),
             hovertemplate=
-            '<b>Week %{x}</b><br>'+
+            '<b>Vecka %{x}</b><br>'+
             '<b>Excess</b>: %{y:.2f}%'+
             '<extra>%{customdata[0]} %{customdata[1]}</extra>'
         )
     )
 
 fig.update_layout(
-    title=dict(
-        text="<b>Excess Deaths - % Over Expected Weekly Deaths</b>",
-        x=0,
-        xref='paper'),
-    hovermode='closest',
+    template=template,
+    title="<b>Excess Deaths - % Over Expected Weekly Deaths</b>",
     xaxis=dict(
-        title="Week",
-        linewidth=2,
-        linecolor='black',
-        gridcolor='whitesmoke',
-        gridwidth=1
+        title="Vecka",
     ),
     yaxis=dict(
         title="% Excess",
-        linewidth=2,
-        linecolor='black',
-        gridcolor='whitesmoke',
-        gridwidth=1
     ),
-    paper_bgcolor='white',
-    plot_bgcolor='white',
     annotations=[
         dict(
             x=0,
             y=-0.10,
-            text="Source: The Economist",
+            text="Källa: The Economist",
             showarrow=False,
             xref='paper',
             yref='paper',
