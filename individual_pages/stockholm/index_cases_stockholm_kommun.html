@@ -5,9 +5,14 @@
   <head>
     <meta charset="UTF-8">
     <title>Bekräftade Fall i Stockholms Stad</title>
+    <script>
+      n =  new Date(document.lastModified);
+      y = n.getFullYear();
+      m = n.getMonth() + 1;
+      d = n.getDate();
+    </script>
   </head>
 
-  <!-- Styles-->
   <style>
   html, body {
     margin:0;
@@ -83,13 +88,11 @@
     font-family: Arial;
     font-size: 15px;
   }
-
   hr {
     width: 90%;
     height: 1px;
     background-color: rgb(200,200,200);
   }
-
   .dropbtn {
     background-color: rgb(40,40,140);
     color: white;
@@ -233,17 +236,18 @@
     <i style="font-size:15px">Updated <script>document.write(y + "/" + m + "/" + d);</script></i>
   </div>
 
-
   <div class="header_buttons_2">
     <a href="/Sweden-COVID-website/individual_pages/stockholm/index_cases_stockholm_kommun.html" class=hyperlink_2>Split</a>
     &emsp;
     <a href="/Sweden-COVID-website/individual_pages/stockholm/index_cases_stockholm_kommun_single.html" class=hyperlink_2>Single</a>
   </div>
 
-  <p class="aligncenter">
+  <div class="aligncenter">
       <embed type="text/html" src="/Sweden-COVID-website/graphs/stockholm/cases_stockholm_kommun.html" width="90%" height="700">
-  </p>
+  </div>
+
   <div class="footer">
     <a>Contact: mwt.barnes@outlook.com</a>
   </div>
+
 </html>

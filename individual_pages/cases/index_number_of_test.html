@@ -5,11 +5,15 @@
   <head>
     <meta charset="UTF-8">
     <title>Bekräftade Fall per Dag</title>
+    <script>
+    n =  new Date(document.lastModified);
+    y = n.getFullYear();
+    m = n.getMonth() + 1;
+    d = n.getDate();
+    </script>
   </head>
 
-  <body>
-    <!-- Styles-->
-    <style>
+  <style>
     html, body {
       margin:0;
       padding:0;
@@ -71,13 +75,11 @@
       font-family: Arial;
       font-size: 15px;
     }
-
     hr {
       width: 90%;
       height: 1px;
       background-color: rgb(200,200,200);
     }
-
     .dropbtn {
       background-color: rgb(40,40,140);
       color: white;
@@ -111,17 +113,9 @@
     .dropdown-content a:hover {background-color: rgba(220,220,220,0.9);}
     .dropdown:hover .dropdown-content {display: block;}
     .dropdown:hover .dropbtn {background-color: rgb(40,40,140);}
-    </style>
+  </style>
 
-
-    <!-- Document-->
-
-    <script>
-    n =  new Date(document.lastModified);
-    y = n.getFullYear();
-    m = n.getMonth() + 1;
-    d = n.getDate();
-    </script>
+  <body>
 
     <div class="header_buttons">
       <div class="dropdown">
@@ -222,20 +216,24 @@
     </div>
 
     <h3 style="margin-left:8%; font-family:Arial; color:rgb(60,60,60) ">Antal Tester - Folkhälsomyndigheten</h3>
+
     <p class="a">
-    Folkhälsomyndigheten mätte antalet tester genom att använda antalet personer
-    som testades för coronaviruset varje vecka, fram till 5 juli 2020 (vecka 27).
-    Sedan dess har de mätt antalet tester, vilket innebär att om samma person gjort
-    flera tester på samma vecka räknas dem separat
+    Folkhälsomyndigheten mätte antalet tester genom att använda antalet
+    personer som testades för coronaviruset varje vecka, fram till 5 juli 2020
+    (vecka 27). Sedan dess har de mätt antalet tester, vilket innebär att om
+    samma person gjort flera tester på samma vecka räknas dem separat.
     </p>
 
     <hr>
 
-    <p class="aligncenter">
+    <div class="aligncenter">
         <embed type="text/html" src="/Sweden-COVID-website/graphs/cases/number_of_tests.html" width="90%" height="600">
-    </p>
+    </div>
+
     <div class="footer">
       <a>Contact: mwt.barnes@outlook.com</a>
     </div>
+
   </body>
+
 </html>

@@ -5,11 +5,15 @@
   <head>
     <meta charset="UTF-8">
     <title>COVID-19 - Case Fatality Rate</title>
+    <script>
+      n =  new Date(document.lastModified);
+      y = n.getFullYear();
+      m = n.getMonth() + 1;
+      d = n.getDate();
+    </script>
   </head>
 
-  <body>
-    <!-- Styles-->
-    <style>
+  <style>
     html, body {
       margin:0;
       padding:0;
@@ -71,13 +75,11 @@
       font-family: Arial;
       font-size: 15px;
     }
-
     hr {
       width: 90%;
       height: 1px;
       background-color: rgb(200,200,200);
     }
-
     .dropbtn {
       background-color: rgb(40,40,140);
       color: white;
@@ -111,17 +113,9 @@
     .dropdown-content a:hover {background-color: rgba(220,220,220,0.9);}
     .dropdown:hover .dropdown-content {display: block;}
     .dropdown:hover .dropbtn {background-color: rgb(40,40,140);}
-    </style>
+  </style>
 
-
-    <!-- Document-->
-
-    <script>
-    n =  new Date(document.lastModified);
-    y = n.getFullYear();
-    m = n.getMonth() + 1;
-    d = n.getDate();
-    </script>
+  <body>
 
     <div class="header_buttons">
       <div class="dropdown">
@@ -222,20 +216,31 @@
     </div>
 
     <h3 style="margin-left:8%; font-family:Arial; color:rgb(60,60,60);">Antal Avlidna - Folkhälsomyndigheten</h3>
-    <p class="a">- Statistiken över avlidna baseras på data som hittills rapporterats
-      till Folkhälsomyndigheten, skillnader mot den regionala rapporteringen förekommer.</p>
-    <p class="a">- Statistiken visar antalet personer med bekräftad COVID-19 som
-      avlidit, oavsett dödsorsak.</p>
-    <p class="a">- Tidserien med antalet avlidna per dag innehåller endast de fall
-      där datum för dödsfallet är känt, därför kan totalt antal avlidna skilja sig
-      mot det antal som redovisas i tidsserien.</p>
+    <p class="a">
+      - Statistiken över avlidna baseras på data som hittills rapporterats
+      till Folkhälsomyndigheten, skillnader mot den regionala rapporteringen
+      förekommer.
+    </p>
+    <p class="a">
+      - Statistiken visar antalet personer med bekräftad COVID-19 som avlidit,
+      oavsett dödsorsak.
+    </p>
+    <p class="a">
+      - Tidserien med antalet avlidna per dag innehåller endast de fall där
+      datum för dödsfallet är känt, därför kan totalt antal avlidna skilja sig
+      mot det antal som redovisas i tidsserien.
+    </p>
+
     <hr>
 
-    <p class="aligncenter">
+    <div class="aligncenter">
         <embed type="text/html" src="/Sweden-COVID-website/graphs/deaths/case_fatality_rate.html" width="90%" height="600">
-    </p>
+    </div>
+
     <div class="footer">
       <a>Contact: mwt.barnes@outlook.com</a>
     </div>
+
   </body>
+
 </html>

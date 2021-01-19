@@ -5,246 +5,243 @@
   <head>
     <meta charset="UTF-8">
     <title>Bekräftade Fall</title>
+    <script>
+    n =  new Date(document.lastModified);
+    y = n.getFullYear();
+    m = n.getMonth() + 1;
+    d = n.getDate();
+    </script>
   </head>
 
-  <!-- Styles-->
   <style>
-  html, body {
-    margin:0;
-    padding:0;
-  }
-  .aligncenter {
+    html, body {
+      margin:0;
+      padding:0;
+    }
+    .aligncenter {
+        text-align: center;
+    }
+    p.a {
+      margin-left: 8%;
+      margin-right: 8%;
+      font-family: Arial;
+      font-size: 18px;
+      color: rgb(60,60,60)
+    }
+    .header {
+      padding: 20px;
       text-align: center;
-  }
-  p.a {
-    margin-left: 8%;
-    margin-right: 8%;
-    font-family: Arial;
-    font-size: 18px;
-    color: rgb(60,60,60)
-  }
-  .header {
-    padding: 20px;
-    text-align: center;
-    background: rgb(40,40,140);
-    color: white;
-    font-family: Arial;
-    font-size: 30px;
-  }
-  .header_buttons {
-    text-align: center;
-    background: rgb(40,40,140);
-    color: white;
-    font-family: Arial;
-    font-size: 16px;
-  }
-  .header_buttons_2 {
-    padding: 10px;
-    text-align: center;
-    background: rgb(40,40,140);
-    color: white;
-    font-family: Arial;
-    font-size: 16px;
-  }
-  .header_2 {
-    padding: 15px 0px 2px 0px;
-    text-align: center;
-    background: rgb(200,220,240);
-    color: rgb(50,50,70);
-    font-family: Arial;
-    font-size: 30px;
-  }
-  .header_date {
-    padding: 0px 0px 15px 0px;
-    text-align: center;
-    background: rgb(200,220,240);
-    color: rgb(50,50,70);
-    font-family: Arial;
-    font-size: 14px;
-  }
-  .hyperlink{
-    color: white;
-    font-family: Arial;
-    text-decoration: none;
-  }
-  .hyperlink_2{
-    color: white;
-    font-family: Arial;
-    text-decoration: none;
-  }
-  .footer{
-    position: fixed;
-    bottom: 0px;
-    width: 100%;
-    padding: 7px;
-    text-align: center;
-    background: rgba(20,20,130,0.9);
-    color: white;
-    font-family: Arial;
-    font-size: 15px;
-  }
-
-  hr {
-    width: 90%;
-    height: 1px;
-    background-color: rgb(200,200,200);
-  }
-
-  .dropbtn {
-    background-color: rgb(40,40,140);
-    color: white;
-    padding: 8px;
-    font-size: 16px;
-    border: none;
-  }
-  .dropdown {
-    font-size: 16px;
-    position: relative;
-    background-color: rgb(40,40,140);
-    display: inline-block;
-  }
-  .dropdown-content {
-    text-align: left;
-    display: none;
-    position: absolute;
-    background-color: rgb(240,240,240);
-    min-width: 160px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 1;
-  }
-  .dropdown-content a {
-    background-color: rgb(245,245,245);
-    color: rgb(40,40,140);
-    padding: 12px 16px;
-    font-size: 14px;
-    text-decoration: none;
-    display: block;
-  }
-  .dropdown-content a:hover {background-color: rgba(220,220,220,0.9);}
-  .dropdown:hover .dropdown-content {display: block;}
+      background: rgb(40,40,140);
+      color: white;
+      font-family: Arial;
+      font-size: 30px;
+    }
+    .header_buttons {
+      text-align: center;
+      background: rgb(40,40,140);
+      color: white;
+      font-family: Arial;
+      font-size: 16px;
+    }
+    .header_buttons_2 {
+      padding: 10px;
+      text-align: center;
+      background: rgb(40,40,140);
+      color: white;
+      font-family: Arial;
+      font-size: 16px;
+    }
+    .header_2 {
+      padding: 15px 0px 2px 0px;
+      text-align: center;
+      background: rgb(200,220,240);
+      color: rgb(50,50,70);
+      font-family: Arial;
+      font-size: 30px;
+    }
+    .header_date {
+      padding: 0px 0px 15px 0px;
+      text-align: center;
+      background: rgb(200,220,240);
+      color: rgb(50,50,70);
+      font-family: Arial;
+      font-size: 14px;
+    }
+    .hyperlink{
+      color: white;
+      font-family: Arial;
+      text-decoration: none;
+    }
+    .hyperlink_2{
+      color: white;
+      font-family: Arial;
+      text-decoration: none;
+    }
+    .footer{
+      position: fixed;
+      bottom: 0px;
+      width: 100%;
+      padding: 7px;
+      text-align: center;
+      background: rgba(20,20,130,0.9);
+      color: white;
+      font-family: Arial;
+      font-size: 15px;
+    }
+    hr {
+      width: 90%;
+      height: 1px;
+      background-color: rgb(200,200,200);
+    }
+    .dropbtn {
+      background-color: rgb(40,40,140);
+      color: white;
+      padding: 8px;
+      font-size: 16px;
+      border: none;
+    }
+    .dropdown {
+      font-size: 16px;
+      position: relative;
+      background-color: rgb(40,40,140);
+      display: inline-block;
+    }
+    .dropdown-content {
+      text-align: left;
+      display: none;
+      position: absolute;
+      background-color: rgb(240,240,240);
+      min-width: 160px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      z-index: 1;
+    }
+    .dropdown-content a {
+      background-color: rgb(245,245,245);
+      color: rgb(40,40,140);
+      padding: 12px 16px;
+      font-size: 14px;
+      text-decoration: none;
+      display: block;
+    }
+    .dropdown-content a:hover {background-color: rgba(220,220,220,0.9);}
+    .dropdown:hover .dropdown-content {display: block;}
   .dropdown:hover .dropbtn {background-color: rgb(40,40,140);}
   </style>
 
+  <body>
 
-  <!-- Document-->
+    <div class="header_buttons">
+      <div class="dropdown">
+        <button class="dropbtn"><a href="/Sweden-COVID-website/index.html" class=hyperlink>Hem</a></button>
+      </div>
 
-  <script>
-  n =  new Date(document.lastModified);
-  y = n.getFullYear();
-  m = n.getMonth() + 1;
-  d = n.getDate();
-  </script>
+      &emsp;
 
-  <div class="header_buttons">
-    <div class="dropdown">
-      <button class="dropbtn"><a href="/Sweden-COVID-website/index.html" class=hyperlink>Hem</a></button>
-    </div>
+      <div class="dropdown">
+        <button class="dropbtn"><a href="/Sweden-COVID-website/individual_pages/cases/index_cases.html" class=hyperlink>Fall</a></button>
+        <div class="dropdown-content">
+          <a href="/Sweden-COVID-website/individual_pages/cases/index_daily_cases_all.html" class=hyperlink>Bekräftade Fall per Dag</a>
+          <a href="/Sweden-COVID-website/individual_pages/cases/index_daily_cases_regions.html" class=hyperlink>Bekräftade Fall per Län</a>
+          <a href="/Sweden-COVID-website/individual_pages/cases/index_percentage_cases.html" class=hyperlink>% Positiv Resultat</a>
+          <a href="/Sweden-COVID-website/individual_pages/cases/index_number_of_test.html" class=hyperlink>Antal Testar</a>
+          <a href="/Sweden-COVID-website/individual_pages/cases/index_positive_antibody.html" class=hyperlink>Antikropps Testar</a>
+        </div>
+      </div>
 
-    &emsp;
+      &emsp;
 
-    <div class="dropdown">
-      <button class="dropbtn"><a href="/Sweden-COVID-website/individual_pages/cases/index_cases.html" class=hyperlink>Fall</a></button>
-      <div class="dropdown-content">
-        <a href="/Sweden-COVID-website/individual_pages/cases/index_daily_cases_all.html" class=hyperlink>Bekräftade Fall per Dag</a>
-        <a href="/Sweden-COVID-website/individual_pages/cases/index_daily_cases_regions.html" class=hyperlink>Bekräftade Fall per Län</a>
-        <a href="/Sweden-COVID-website/individual_pages/cases/index_percentage_cases.html" class=hyperlink>% Positiv Resultat</a>
-        <a href="/Sweden-COVID-website/individual_pages/cases/index_number_of_test.html" class=hyperlink>Antal Testar</a>
-        <a href="/Sweden-COVID-website/individual_pages/cases/index_positive_antibody.html" class=hyperlink>Antikropps Testar</a>
+      <div class="dropdown">
+        <button class="dropbtn"><a href="/Sweden-COVID-website/individual_pages/deaths/index_deaths.html" class=hyperlink>Dödsfall</a></button>
+        <div class="dropdown-content">
+          <a href="/Sweden-COVID-website/individual_pages/deaths/index_deaths_all.html" class=hyperlink>Antal Avlidna per Dag</a>
+          <a href="/Sweden-COVID-website/individual_pages/deaths/index_deaths_weekly.html" class=hyperlink>Antal Avlidna (5 År Medelvärde)</a>
+          <a href="/Sweden-COVID-website/individual_pages/deaths/index_case_fatality_rate.html" class=hyperlink>Case Fatality Rate</a>
+          <a href="/Sweden-COVID-website/individual_pages/deaths/index_deaths_age_group.html" class=hyperlink>Antal Avlidna per Åldersgruppa</a>
+          <a href="/Sweden-COVID-website/individual_pages/deaths/index_comorbidities.html" class=hyperlink>Sjukdomsgrupper</a>
+          <a href="/Sweden-COVID-website/individual_pages/deaths/index_number_of_comorbidities.html" class=hyperlink>Antal av Sjukdomsgrupperna</a>
+        </div>
+      </div>
+
+      &emsp;
+
+      <div class="dropdown">
+        <button class="dropbtn"><a href="/Sweden-COVID-website/individual_pages/intensiv/index_intensiv.html" class=hyperlink>Intensivvård</a></button>
+        <div class="dropdown-content">
+          <a href="/Sweden-COVID-website/individual_pages/intensiv/index_intensiv_ward_all.html" class=hyperlink>Antal Intensivvårdade</a>
+          <a href="/Sweden-COVID-website/individual_pages/intensiv/index_intensive_ward_regions.html" class=hyperlink>Antal Intensivvårdade per Län</a>
+        </div>
+      </div>
+
+      &emsp;
+
+      <div class="dropdown">
+        <button class="dropbtn"><a href="/Sweden-COVID-website/individual_pages/vaccine/index_vaccine.html" class=hyperlink>Vaccinations</a></button>
+      </div>
+
+      &emsp;
+
+      <div class="dropdown">
+        <button class="dropbtn"><a href="/Sweden-COVID-website/individual_pages/stockholm/index_stockholm.html" class=hyperlink>Stockholms Län</a></button>
+        <div class="dropdown-content">
+          <a href="/Sweden-COVID-website/individual_pages/stockholm/index_cases_stockholm_county.html" class=hyperlink>Stockholms Län</a>
+          <a href="/Sweden-COVID-website/individual_pages/stockholm/index_cases_stockholm_kommun.html" class=hyperlink>Stockholms Kommun</a>
+        </div>
+      </div>
+
+      &emsp;
+
+      <div class="dropdown">
+        <button class="dropbtn"><a href="/Sweden-COVID-website/individual_pages/maps/index_maps.html" class=hyperlink>Kartor</a></button>
+        <div class="dropdown-content">
+          <a href="/Sweden-COVID-website/individual_pages/maps/index_maps_cases.html" class=hyperlink>Bekräftade Fall</a>
+          <a href="/Sweden-COVID-website/individual_pages/maps/index_maps_deaths.html" class=hyperlink>Antal Avlidna</a>
+        </div>
+      </div>
+
+      &emsp;
+
+      <div class="dropdown">
+        <button class="dropbtn"><a href="/Sweden-COVID-website/individual_pages/comparisons/index_comparisons.html" class=hyperlink>EU/EEA / OECD</a></button>
+        <div class="dropdown-content">
+          <a href="/Sweden-COVID-website/individual_pages/comparisons/index_cases_EU_OECD.html" class=hyperlink>Bekräftade Fall</a>
+          <a href="/Sweden-COVID-website/individual_pages/comparisons/index_deaths_EU_OECD.html" class=hyperlink>Antal Avlidna</a>
+          <a href="/Sweden-COVID-website/individual_pages/comparisons/index_excess_deaths.html" class=hyperlink>Excess Deaths</a>
+        </div>
+      </div>
+
+      &emsp;
+
+      <div class="dropdown">
+        <button class="dropbtn"><a>Other Data</a></button>
+        <div class="dropdown-content">
+          <a href="https://mwtb47.github.io/COVID-website/" class=hyperlink>Global</a>
+          <a href="https://mwtb47.github.io/UK-COVID-website/" class=hyperlink>United Kingdom</a>
+        </div>
       </div>
     </div>
 
-    &emsp;
-
-    <div class="dropdown">
-      <button class="dropbtn"><a href="/Sweden-COVID-website/individual_pages/deaths/index_deaths.html" class=hyperlink>Dödsfall</a></button>
-      <div class="dropdown-content">
-        <a href="/Sweden-COVID-website/individual_pages/deaths/index_deaths_all.html" class=hyperlink>Antal Avlidna per Dag</a>
-        <a href="/Sweden-COVID-website/individual_pages/deaths/index_deaths_weekly.html" class=hyperlink>Antal Avlidna (5 År Medelvärde)</a>
-        <a href="/Sweden-COVID-website/individual_pages/deaths/index_case_fatality_rate.html" class=hyperlink>Case Fatality Rate</a>
-        <a href="/Sweden-COVID-website/individual_pages/deaths/index_deaths_age_group.html" class=hyperlink>Antal Avlidna per Åldersgruppa</a>
-        <a href="/Sweden-COVID-website/individual_pages/deaths/index_comorbidities.html" class=hyperlink>Sjukdomsgrupper</a>
-        <a href="/Sweden-COVID-website/individual_pages/deaths/index_number_of_comorbidities.html" class=hyperlink>Antal av Sjukdomsgrupperna</a>
-      </div>
+    <div class="header_2">
+      <a>Bekräftade Fall per Dag - Län</a>
     </div>
 
-    &emsp;
-
-    <div class="dropdown">
-      <button class="dropbtn"><a href="/Sweden-COVID-website/individual_pages/intensiv/index_intensiv.html" class=hyperlink>Intensivvård</a></button>
-      <div class="dropdown-content">
-        <a href="/Sweden-COVID-website/individual_pages/intensiv/index_intensiv_ward_all.html" class=hyperlink>Antal Intensivvårdade</a>
-        <a href="/Sweden-COVID-website/individual_pages/intensiv/index_intensive_ward_regions.html" class=hyperlink>Antal Intensivvårdade per Län</a>
-      </div>
+    <div class="header_date">
+      <i style="font-size:15px">Updated <script>document.write(y + "/" + m + "/" + d);</script></i>
     </div>
 
-    &emsp;
-
-    <div class="dropdown">
-      <button class="dropbtn"><a href="/Sweden-COVID-website/individual_pages/vaccine/index_vaccine.html" class=hyperlink>Vaccinations</a></button>
+    <div class="header_buttons_2">
+      <a href="/Sweden-COVID-website/individual_pages/cases/index_daily_cases_regions.html" class=hyperlink_2>Split</a>
+      &emsp;
+      <a href="/Sweden-COVID-website/individual_pages/cases/index_daily_cases_regions_single.html" class=hyperlink_2>Single</a>
     </div>
 
-    &emsp;
-
-    <div class="dropdown">
-      <button class="dropbtn"><a href="/Sweden-COVID-website/individual_pages/stockholm/index_stockholm.html" class=hyperlink>Stockholms Län</a></button>
-      <div class="dropdown-content">
-        <a href="/Sweden-COVID-website/individual_pages/stockholm/index_cases_stockholm_county.html" class=hyperlink>Stockholms Län</a>
-        <a href="/Sweden-COVID-website/individual_pages/stockholm/index_cases_stockholm_kommun.html" class=hyperlink>Stockholms Kommun</a>
-      </div>
+    <div class="aligncenter">
+        <embed type="text/html" src="/Sweden-COVID-website/graphs/cases/daily_cases_per_county_single.html" width="90%" height="700">
     </div>
 
-    &emsp;
-
-    <div class="dropdown">
-      <button class="dropbtn"><a href="/Sweden-COVID-website/individual_pages/maps/index_maps.html" class=hyperlink>Kartor</a></button>
-      <div class="dropdown-content">
-        <a href="/Sweden-COVID-website/individual_pages/maps/index_maps_cases.html" class=hyperlink>Bekräftade Fall</a>
-        <a href="/Sweden-COVID-website/individual_pages/maps/index_maps_deaths.html" class=hyperlink>Antal Avlidna</a>
-      </div>
+    <div class="footer">
+      <a>Contact: mwt.barnes@outlook.com</a>
     </div>
 
-    &emsp;
-
-    <div class="dropdown">
-      <button class="dropbtn"><a href="/Sweden-COVID-website/individual_pages/comparisons/index_comparisons.html" class=hyperlink>EU/EEA / OECD</a></button>
-      <div class="dropdown-content">
-        <a href="/Sweden-COVID-website/individual_pages/comparisons/index_cases_EU_OECD.html" class=hyperlink>Bekräftade Fall</a>
-        <a href="/Sweden-COVID-website/individual_pages/comparisons/index_deaths_EU_OECD.html" class=hyperlink>Antal Avlidna</a>
-        <a href="/Sweden-COVID-website/individual_pages/comparisons/index_excess_deaths.html" class=hyperlink>Excess Deaths</a>
-      </div>
-    </div>
-
-    &emsp;
-
-    <div class="dropdown">
-      <button class="dropbtn"><a>Other Data</a></button>
-      <div class="dropdown-content">
-        <a href="https://mwtb47.github.io/COVID-website/" class=hyperlink>Global</a>
-        <a href="https://mwtb47.github.io/UK-COVID-website/" class=hyperlink>United Kingdom</a>
-      </div>
-    </div>
-  </div>
-
-  <div class="header_2">
-    <a>Bekräftade Fall per Dag - Län</a>
-  </div>
-
-  <div class="header_date">
-    <i style="font-size:15px">Updated <script>document.write(y + "/" + m + "/" + d);</script></i>
-  </div>
-
-  <div class="header_buttons_2">
-    <a href="/Sweden-COVID-website/individual_pages/cases/index_daily_cases_regions.html" class=hyperlink_2>Split</a>
-    &emsp;
-    <a href="/Sweden-COVID-website/individual_pages/cases/index_daily_cases_regions_single.html" class=hyperlink_2>Single</a>
-  </div>
-
-  <p class="aligncenter">
-      <embed type="text/html" src="/Sweden-COVID-website/graphs/cases/daily_cases_per_county_single.html" width="90%" height="700">
-  </p>
-
-  <div class="footer">
-    <a>Contact: mwt.barnes@outlook.com</a>
-  </div>
+  </body>
 
 </html>
