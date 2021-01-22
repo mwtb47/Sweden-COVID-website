@@ -5,16 +5,47 @@
 # Contact: mwt.barnes@outlook.com
 # =============================================================================
 
-from bs4 import BeautifulSoup
-import config
 from datetime import date
 import json
+from urllib.request import urlretrieve
+
+from bs4 import BeautifulSoup
+import config
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import requests
-import urllib
+from requests import get
+
+# --------------
+# Graph template
+# --------------
+
+template=dict(
+    layout=go.Layout(
+        title=dict(
+            x=0,
+            xref='paper'
+        ),
+        xaxis=dict(
+            showline=True,
+            linewidth=1.5,
+            linecolor='black',
+            gridwidth=1,
+            gridcolor='whitesmoke'
+        ),
+        yaxis=dict(
+            showline=True,
+            linewidth=1.5,
+            linecolor='black',
+            gridwidth=1,
+            gridcolor='whitesmoke'
+        ),
+        paper_bgcolor='white',
+        plot_bgcolor='white',
+        hovermode='closest'
+    )
+)
 
 # =============================================================================
 # Cases
@@ -24,72 +55,82 @@ import urllib
 # Read data from Folkhälsomyndigheten
 # -----------------------------------
 
-folkhälsomyndigheten_url = "https://www.arcgis.com/sharing/rest/content/items/b5e7488e117749c19881cce45db13f7e/data"
+fh_url = "https://www.arcgis.com/sharing/rest/content/items/" \
+         "b5e7488e117749c19881cce45db13f7e/data"
 
-urllib.request.urlretrieve(folkhälsomyndigheten_url, "data/Folkhälsomyndigheten.xlsx")
+urlretrieve(fh_url, "data/Folkhälsomyndigheten.xlsx")
 
-daily_cases = pd.read_excel("data/Folkhälsomyndigheten.xlsx",
-                            sheet_name='Antal per dag region')
+daily_cases = pd.read_excel(
+    "data/Folkhälsomyndigheten.xlsx",
+    sheet_name='Antal per dag region')
 
-daily_cases['Statistikdatum'] = pd.to_datetime(daily_cases['Statistikdatum'],
-                                               format='%Y-%m-%d')
+daily_cases['Statistikdatum'] = pd.to_datetime(
+    daily_cases['Statistikdatum'],
+    format='%Y-%m-%d')
 
 # Melt columns for each county into a single column
-daily_cases = daily_cases.melt(id_vars='Statistikdatum',
-                               var_name='county',
-                               value_name='cases')
+daily_cases = daily_cases.melt(
+    id_vars='Statistikdatum',
+    var_name='county',
+    value_name='cases')
 
 # Group data frame by county and create new column with 7 day rolling average
-daily_cases['7_day_rolling'] = daily_cases.groupby('county')['cases'].apply(lambda x: x.rolling(window=7).mean())
+daily_cases['cases_7_day'] = daily_cases.groupby('county')['cases'].apply(
+    lambda x: x.rolling(window=7).mean())
 
 # Replace region names with desired names
 daily_cases = daily_cases.replace(
     {
-        'Jämtland_Härjedalen': 'Jämtland',
-        'Västra_Götaland': 'Västra Götaland',
-        'Sörmland': 'Södermanland'
+        'Jämtland_Härjedalen': "Jämtland",
+        'Västra_Götaland': "Västra Götaland",
+        "Sörmland": "Södermanland"
     }
 )
 
 # County populations
-counties_pop = pd.read_csv('data/sweden_counties.csv',
-                           dtype={
-                               'county_code':str,
-                               'county':str,
-                               'population_2019':int
-                            })
+counties_pop = pd.read_csv(
+    'data/sweden_counties.csv',
+    dtype={
+        'county_code':str,
+        'county':str,
+        'population_2019':int
+    })
 
 # Total population
 total_pop = counties_pop['population_2019'].sum()
 
 # Merge population data and add total population
-daily_cases = daily_cases.merge(counties_pop,
-                                on='county',
-                                how='left')
+daily_cases = daily_cases.merge(
+    counties_pop,
+    on='county',
+    how='left')
 
-daily_cases.loc[daily_cases['county'] == 'Totalt_antal_fall',
+daily_cases.loc[daily_cases['county'] == 'Totalt_antal_fall', 
                 'population_2019'] = total_pop
 
 # Create columns with cases and 7 day rolling averages per 10,000 inhabitants
-daily_cases['cases_per_10000'] = daily_cases['cases'] / daily_cases['population_2019'] * 10000
-daily_cases['7_day_per_10000'] = daily_cases['7_day_rolling'] / daily_cases['population_2019'] * 10000
+daily_cases['cases_per_10000'] = (daily_cases['cases'] /
+                                  daily_cases['population_2019'] * 10000)
+daily_cases['cases_7_day_per_10000'] = (daily_cases['cases_7_day'] / 
+                                        daily_cases['population_2019'] * 10000)
 
 # -------------------------
 # Graph - daily cases
 # Filename: daily_cases_all
 # -------------------------
 
-df = daily_cases[daily_cases['Statistikdatum'] >= '2020-02-10']
+df = daily_cases[ (daily_cases['Statistikdatum'] >= '2020-02-10') 
+                 & (daily_cases['county'] == 'Totalt_antal_fall')]
 
 fig = go.Figure()
 
 # Daily cases - 7 day rolling average
 fig.add_trace(
     go.Scatter(
-        x=list(df['Statistikdatum'][df['county'] == 'Totalt_antal_fall']),
-        y=list(df['7_day_rolling'][df['county'] == 'Totalt_antal_fall']),
+        x=list(df['Statistikdatum']),
+        y=list(df['cases_7_day']),
         showlegend=False,
-        text=list(df['cases'][df['county'] == 'Totalt_antal_fall']),
+        text=list(df['cases']),
         hoverlabel=dict(
             bgcolor='white',
             bordercolor='blue',
@@ -108,8 +149,8 @@ fig.add_trace(
 # Daily cases - bar chart of daily cases as they are reported
 fig.add_trace(
     go.Bar(
-        x=list(df['Statistikdatum'][df['county'] == 'Totalt_antal_fall']),
-        y=list(df['cases'][df['county'] == 'Totalt_antal_fall']),
+        x=list(df['Statistikdatum']),
+        y=list(df['cases']),
         marker=dict(color='rgba(200, 220, 255, 0.5)'),
         showlegend=False,
         hoverinfo='skip'
@@ -117,24 +158,9 @@ fig.add_trace(
 )
 
 fig.update_layout(
+    template=template,
     title="<b>Bekräftade Fall per Dag</b><br><sup>7 dagar glidande medelvärde",
-    font=dict(
-        family='Arial'
-    ),
-    xaxis=dict(
-        linewidth=2,
-        linecolor='black',
-        gridwidth=1,
-        gridcolor='rgb(240, 240, 240)'
-    ),
-    yaxis=dict(
-        title="Antal Fall",
-        linewidth=2,
-        linecolor='black',
-        gridwidth=1,
-        gridcolor='rgb(240, 240, 240)'
-    ),
-    plot_bgcolor='white',
+    yaxis_title="Antal Fall",
     annotations=[
         dict(
             x=0, y=-0.15,
@@ -159,20 +185,19 @@ fig.write_html('graphs/cases/daily_cases_all.html')
 # Filename: daily_cases_per_county
 # --------------------------------
 
+df = daily_cases[daily_cases['Statistikdatum'] >= '2020-02-10']
+
 regions = list(daily_cases['county'].unique())
 regions.remove('Totalt_antal_fall')
-
-rows = [1,1,1,2,2,2,3,3,3,4,4,4,5,5,5,6,6,6,7,7,7]
-cols = [1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3]
 
 fig = make_subplots(7, 3, subplot_titles=(regions), shared_xaxes=True)
 
 # Cases
-for region, row, col in zip(regions, rows, cols):
+for value, region in enumerate(regions, start=3):
     fig.add_trace(
         go.Scatter(
             x=list(df['Statistikdatum'][df['county'] == region]),
-            y=list(df['7_day_rolling'][df['county'] == region]),
+            y=list(df['cases_7_day'][df['county'] == region]),
             showlegend=False,
             hoverlabel=dict(
                 bgcolor='white',
@@ -186,15 +211,15 @@ for region, row, col in zip(regions, rows, cols):
             '<b>%{x}</b><br>'+
             '%{y:.1f}'
         ),
-        row, col
+        row=value//3, col=value%3+1
     )
 
 # Cases per 10,000
-for region, row, col in zip(regions, rows, cols):
+for value, region in enumerate(regions, start=3):
     fig.add_trace(
         go.Scatter(
             x=list(df['Statistikdatum'][df['county'] == region]),
-            y=list(df['7_day_per_10000'][df['county'] == region]),
+            y=list(df['cases_7_day_per_10000'][df['county'] == region]),
             visible=False,
             showlegend=False,
             hoverlabel=dict(
@@ -209,7 +234,7 @@ for region, row, col in zip(regions, rows, cols):
             '<b>%{x}</b><br>'+
             '%{y:.1f}'
         ),
-        row, col
+        row=value//3, col=value%3+1
     )
 
 fig.update_xaxes(
@@ -242,17 +267,20 @@ fig.update_layout(
             y=1.1,
             yanchor='top',
             buttons=list([
-                    dict(label="Antal Fall",
-                         method='update',
-                         args=[{'visible': [True]*21 + [False]*21},
-                                 {'title': "<b>Bekräftade Fall per Län</b><br><sup>7 dagar glidande medelvärde"}]),
-                    dict(label="Antal Fall per 10,000",
-                         method='update',
-                         args=[{'visible': [False]*21 + [True]*21},
-                                 {'title': "<b>Bekräftade Fall per Län (per 10,000)</b><br><sup>7 dagar glidande medelvärde"}]),
-                        ]
-            )
-    )]
+                dict(label="Antal Fall",
+                     method='update',
+                     args=[{'visible': [True]*21 + [False]*21},
+                             {'title': ("<b>Bekräftade Fall per Län</b><br>"
+                                        "<sup>7 dagar glidande medelvärde")}]),
+                dict(label="Antal Fall per 10,000",
+                     method='update',
+                     args=[{'visible': [False]*21 + [True]*21},
+                             {'title': ("<b>Bekräftade Fall per Län "
+                                        "(per 10,000)</b><br><sup>7 dagar "
+                                        "glidande medelvärde")}]),
+            ])
+        )
+    ]
 )
 
 fig.add_annotation(
@@ -287,7 +315,7 @@ for region in regions:
     fig.add_trace(
         go.Scatter(
             x=list(df['Statistikdatum'][df['county'] == region]),
-            y=list(df['7_day_rolling'][df['county'] == region]),
+            y=list(df['cases_7_day'][df['county'] == region]),
             name=region,
             hoverlabel=dict(
                 bgcolor='white',
@@ -307,7 +335,7 @@ for region in regions:
     fig.add_trace(
         go.Scatter(
             x=list(df['Statistikdatum'][df['county'] == region]),
-            y=list(df['7_day_per_10000'][df['county'] == region]),
+            y=list(df['cases_7_day_per_10000'][df['county'] == region]),
             name=region,
             visible=False,
             hoverlabel=dict(
@@ -324,23 +352,8 @@ for region in regions:
     )
 
 fig.update_layout(
+    template=template,
     title="<b>Bekräftade Fall per Län</b><br><sup>7 dagar glidande medelvärde",
-    font=dict(
-        family='Arial'
-    ),
-    xaxis=dict(
-        linewidth=1,
-        linecolor='black',
-        gridwidth=1,
-        gridcolor='rgb(240, 240, 240)'
-    ),
-    yaxis=dict(
-        linewidth=1,
-        linecolor='black',
-        gridwidth=1,
-        gridcolor='rgb(240, 240, 240)'
-    ),
-    plot_bgcolor='white',
     height=600,
     annotations=[
         dict(
@@ -370,11 +383,14 @@ fig.update_layout(
                 dict(label="Antal Fall",
                      method='update',
                      args=[{'visible': [True]*21 + [False]*21},
-                           {'title': "<b>Bekräftade Fall per Län</b><br><sup>7 dagar glidande medelvärde"}]),
+                           {'title': ("<b>Bekräftade Fall per Län</b><br>"
+                                      "<sup>7 dagar glidande medelvärde")}]),
                 dict(label="Antal Fall per 10,000",
                      method='update',
                      args=[{'visible': [False]*21 + [True]*21},
-                           {'title': "<b>Bekräftade Fall per Län (per 10,000)</b><br><sup>7 dagar glidande medelvärde"}]),
+                           {'title': ("<b>Bekräftade Fall per Län (per 10,000)"
+                                      "</b><br><sup>7 dagar "
+                                      "glidande medelvärde")}]),
                     ]
             )
     )]
@@ -388,23 +404,26 @@ fig.write_html('graphs/cases/daily_cases_per_county_single.html')
 # ---------------------------------------------------
 
 # Data on population by age group
-population_ages = pd.read_excel('data/age_pyramid.xlsx',
-                                sheet_name='Data',
-                                skiprows=6,
-                                usecols=list(range(8,13)))
+population_ages = pd.read_excel(
+    'data/age_pyramid.xlsx',
+    sheet_name='Data',
+    skiprows=6,
+    usecols=list(range(8,13)))
 
 population_ages = population_ages.dropna()
 
 # As the data was set up for a population pyramid split between males and
 # females, the population sizes for males are negative. This makes all
 # population numbers positive.
-population_ages[['födda i Sverige.4', 'utrikes födda.4']] = \
-    population_ages[['födda i Sverige.3', 'utrikes födda.3']].abs()
+population_ages[['födda i Sverige.4', 'utrikes födda.4']] = population_ages[
+    ['födda i Sverige.3', 'utrikes födda.3']].abs()
 
 # Populations are broken down by domestic and foreign born, these are summed to
 # get the population totals.
-population_ages['Men'] = population_ages['födda i Sverige.3'] + population_ages['utrikes födda.3']
-population_ages['Women'] = population_ages['födda i Sverige.4'] + population_ages['utrikes födda.4']
+population_ages['Men'] = (population_ages['födda i Sverige.3'] 
+                          + population_ages['utrikes födda.3'])
+population_ages['Women'] = (population_ages['födda i Sverige.4'] 
+                            + population_ages['utrikes födda.4'])
 population_ages['All'] = population_ages['Men'] + population_ages['Women']
 
 population_ages = population_ages[['Ålder.1', 'Men', 'Women', 'All']]
@@ -428,31 +447,38 @@ population_grouped_ages = population_ages.groupby('group')[
     ['Men', 'Women', 'All']].sum().reset_index()
 
 # Data on cases and deaths by age group
-åldersgrupp = pd.read_excel("data/Folkhälsomyndigheten.xlsx",
-                            sheet_name='Totalt antal per åldersgrupp')
+åldersgrupp = pd.read_excel(
+    "data/Folkhälsomyndigheten.xlsx",
+    sheet_name='Totalt antal per åldersgrupp')
 
 # Drop data with unknown groups
-åldersgrupp = åldersgrupp[åldersgrupp['Åldersgrupp'] != 'Uppgift saknas'].dropna(how='all')
+åldersgrupp = åldersgrupp[(åldersgrupp['Åldersgrupp']
+                           != 'Uppgift saknas')].dropna(how='all')
 
 åldersgrupp['Åldersgrupp'] = [
     '0-9', '10-19', '20-29', '30-39', '40-49',
     '50-59', '60-69', '70-79', '80-89', '90+'
 ]
 
-åldersgrupp['case_fatality_rate'] = åldersgrupp['Totalt_antal_avlidna'] / åldersgrupp['Totalt_antal_fall']
+åldersgrupp['case_fatality_rate'] = (åldersgrupp['Totalt_antal_avlidna'] 
+                                     / åldersgrupp['Totalt_antal_fall'])
 
-åldersgrupp['case_fatality_rate_rounded'] = round(åldersgrupp['case_fatality_rate'], 4)
+åldersgrupp['case_fatality_rate_rounded'] = round(
+    åldersgrupp['case_fatality_rate'], 4)
 
-åldersgrupp = åldersgrupp.merge(population_grouped_ages[['group', 'All']],
-                                left_on='Åldersgrupp',
-                                right_on='group',
-                                how='left')
+åldersgrupp = åldersgrupp.merge(
+    population_grouped_ages[['group', 'All']],
+    left_on='Åldersgrupp',
+    right_on='group',
+    how='left')
 
 # Percentage of people in each age group who have tested positive
-åldersgrupp['case_%'] = åldersgrupp['Totalt_antal_fall'] / åldersgrupp['All'] * 100
+åldersgrupp['case_%'] = (åldersgrupp['Totalt_antal_fall'] 
+                         / åldersgrupp['All'] * 100)
 
 # Percentage of population which has tested positive
-total_percentage = sum(åldersgrupp['Totalt_antal_fall']) / sum(åldersgrupp['All']) * 100
+total_percentage = (sum(åldersgrupp['Totalt_antal_fall']) 
+                    / sum(åldersgrupp['All']) * 100)
 
 fig = go.Figure()
 
@@ -476,20 +502,13 @@ fig.add_trace(
 )
 
 fig.update_layout(
+    template=template,
     title="<b>Andelen av Befolkningen som har Testat Positivt i COVID-19</b>",
     xaxis=dict(
         title="Åldersgrupp",
-        linewidth=2,
-        linecolor='black'
+        gridwidth=0
     ),
-    yaxis=dict(
-        title="%",
-        gridcolor='rgb(240, 240, 240)',
-        gridwidth=2,
-        linewidth=2,
-        linecolor='black'
-    ),
-    plot_bgcolor='white',
+    yaxis_title="%",
     annotations=[
         dict(
             x=0, y=-0.15,
@@ -519,8 +538,11 @@ fig.write_html('graphs/cases/percentage_cases.html')
 
 # The following fetches the html for the webpage containing the most up-to-date
 # test numbers and extracts the table containing this information.
-url = "https://www.folkhalsomyndigheten.se/smittskydd-beredskap/utbrott/aktuella-utbrott/covid-19/statistik-och-analyser/antalet-testade-for-covid-19/"
-page = requests.get(url).text
+tests_url = ("https://www.folkhalsomyndigheten.se/smittskydd-beredskap/"
+             "utbrott/aktuella-utbrott/covid-19/statistik-och-analyser/"
+             "antalet-testade-for-covid-19/")
+
+page = get(tests_url).text
 soup = BeautifulSoup(page, 'lxml')
 tables = soup.findAll('table')
 table_tests = tables[0]
@@ -540,15 +562,15 @@ for row in table_tests.findAll('tr'):
         number_tests.append(int(cells[1].find(text=True).replace(" ", "")))
         number_antibody.append(int(cells[3].find(text=True).replace(" ", "")))
 
-vecka = vecka[1:]
-
-df_temp = pd.DataFrame({
-    'year': 2021,
-    'vecka':vecka,
-    'number_individual_tests':number_individuals,
-    'number_tests': number_tests,
-    'number_antibody': number_antibody
-})
+df_temp = pd.DataFrame(
+    {
+        'year': 2021,
+        'vecka':vecka[1:],
+        'number_individual_tests':number_individuals,
+        'number_tests': number_tests,
+        'number_antibody': number_antibody
+    }
+)
 
 # Convert 'Vecka 10', 'Vecak 11' etc. into integer values 10, 11 etc.
 df_temp['vecka'] = df_temp['vecka'].apply(lambda x: int(x.split(" ")[1]))
@@ -569,15 +591,18 @@ weekly_tests.to_csv('data/weekly_tests.csv', index=False)
 # Create string formats of the numbers which are thousand comma separated
 # making them easier to read
 weekly_tests['str_ind'] = weekly_tests['number_individual_tests'].apply(lambda x: "{:,}".format(x))
-weekly_tests['str_tests'] = weekly_tests['number_tests'].apply(lambda x: "{:,}".format(x))
-weekly_tests['str_antibody'] = weekly_tests['number_antibody'].apply(lambda x: "{:,}".format(x))
+weekly_tests['str_tests'] = weekly_tests['number_tests'].apply(
+    lambda x: "{:,}".format(x))
+weekly_tests['str_antibody'] = weekly_tests['number_antibody'].apply(
+    lambda x: "{:,}".format(x))
 
 fig = go.Figure()
 
 # Number of individual tests
 fig.add_trace(
     go.Scatter(
-        x=[[2020]*46 + [2021]*(len(weekly_tests.index)-46), list(weekly_tests['vecka'])],
+        x=[[2020]*46 + [2021]*(len(weekly_tests.index)-46),
+           list(weekly_tests['vecka'])],
         y=list(weekly_tests['number_individual_tests']),
         name="Individer",
         text=weekly_tests['str_ind'],
@@ -598,7 +623,8 @@ fig.add_trace(
 # Number of tests performed
 fig.add_trace(
     go.Scatter(
-        x=[[2020]*46 + [2021]*(len(weekly_tests.index)-46), list(weekly_tests['vecka'])],
+        x=[[2020]*46 + [2021]*(len(weekly_tests.index)-46),
+           list(weekly_tests['vecka'])],
         y=list(weekly_tests['number_tests']),
         name="Totalt",
         text=weekly_tests['str_tests'],
@@ -619,7 +645,8 @@ fig.add_trace(
 # Number of antibody tests
 fig.add_trace(
     go.Scatter(
-        x=[[2020]*28 + [2021]*(len(weekly_tests.index)-46), list(weekly_tests['vecka'][18:])],
+        x=[[2020]*28 + [2021]*(len(weekly_tests.index)-46),
+           list(weekly_tests['vecka'][18:])],
         y=list(weekly_tests['number_antibody'][18:]),
         name="Totalt",
         visible=False,
@@ -718,12 +745,9 @@ for row in table_antibody.findAll('tr'):
         number_antibody.append(int(cells[0].find(text=True).replace(" ", "")))
         positive_antibody.append(int(cells[1].find(text=True).replace(" ", "")))
 
-# Drop 'Region' from the list of counties
-län = län[1:]
-
 df = pd.DataFrame(
     {
-        "län": län,
+        "län": län[1:],
         "number_tests": number_antibody,
         "number_positive": positive_antibody
     }
@@ -815,191 +839,44 @@ fig.write_html('graphs/cases/positive_antibody.html')
 
 # The following fetches the html for the webpage with the most up-to-date
 # vaccination numbers and extracts the table containing this information.
-vaccine_url = "https://www.folkhalsomyndigheten.se/smittskydd-beredskap/utbrott/aktuella-utbrott/covid-19/vaccination-mot-covid-19/statistik-over-vaccinerade-mot-covid-19/"
-page = requests.get(vaccine_url).text
+vaccine_url = ("https://www.folkhalsomyndigheten.se/smittskydd-beredskap/"
+               "utbrott/aktuella-utbrott/covid-19/vaccination-mot-covid-19/"
+               "statistik-over-vaccinerade-mot-covid-19/")
+
+page = get(vaccine_url).text
 soup = BeautifulSoup(page, 'lxml')
-table = soup.findAll('table')[0]
+table = soup.findAll('table')[1]
 
 # Extract week numbers from the table
-vecka = []
-for row in table.findAll('th'):
-    if row.get('scope')=='row':
-        vecka.append(row.find(text=True))
-
-# Extract weekly totals for vaccines delivered to Sweden and vaccinations given
-# to people.
-levererat = []
-förbrukat = []
+county = []
+pfizer = []
+moderna = []
 for row in table.findAll('tr'):
-    cells = row.findAll('td')
-    if len(cells)==3:
-        levererat.append(int(cells[0].find(text=True).replace(" ", "")))
-        förbrukat.append(int(cells[1].find(text=True).replace(" ", "")))
+    if row.find('th').get('scope')=='row':
+        county.append(row.find(text=True))
+        cells = row.findAll('td')
+        pfizer.append(int(cells[0].find(text=True).replace(" ", "")))
+        moderna.append(int(cells[1].find(
+            text=True).replace(" ", "").replace("–", "0")))
 
-df = pd.DataFrame({'vecka': vecka, 'levererat':levererat, 'förbrukat':förbrukat})
-df = df[df['vecka']!='Totalt']
-
-# Weeks come in the form '1, 2021' so these are split into seperate columns and
-# then sorted.
-df['year'] = df['vecka'].apply(lambda x: int(x.split(',')[0]))
-df['vecka'] = df['vecka'].apply(lambda x: int(x.split(', v. ')[1]))
-df = df.sort_values(['year', 'vecka'])
-
-# Cumulative totals of vaccines delivered and vaccinations given
-df[['levererat_total', 'förbrukat_total']] = df[['levererat', 'förbrukat']].cumsum()
-
-# ----------------------------------------------
-# Graph - total and weekly vaccinations
-# Filename: vaccinations
-# ----------------------------------------------
-
-fig = go.Figure()
-
-# Total vaccinations received
-fig.add_trace(
-    go.Scatter(
-        x=[list(df['year']), list(df['vecka'])],
-        y=list(df['levererat_total']),
-        name="Levererat",
-        marker=dict(color='darkblue'),
-        hoverlabel=dict(
-            bgcolor='white',
-            bordercolor='darkblue',
-            font=dict(
-                color='black'
-            )
-        ),
-        hovertemplate=
-        '<extra></extra>'+
-        '<b>Vecka %{x}</b><br>'+
-        '%{y}'
-    )
+vaccine_region = pd.DataFrame(
+    {
+        'county': county,
+        'pfizer': pfizer,
+        'moderna': moderna
+    }
 )
 
-# Total vaccinations given
-fig.add_trace(
-    go.Scatter(
-        x=[list(df['year']), list(df['vecka'])],
-        y=list(df['förbrukat_total']),
-        name="Förbrukat",
-        marker=dict(color='skyblue'),
-        hoverlabel=dict(
-            bgcolor='white',
-            bordercolor='skyblue',
-            font=dict(
-                color='black'
-            )
-        ),
-        hovertemplate=
-        '<extra></extra>'+
-        '<b>Vecka %{x}</b><br>'+
-        '%{y}'
-    )
-)
+vaccine_region = vaccine_region[
+    vaccine_region['county'] != 'Totala summan'].merge(
+    counties_pop,
+    on='county',                                                                   how='left')
 
-# Weekly vaccinations received
-fig.add_trace(
-    go.Bar(
-        x=[list(df['year']), list(df['vecka'])],
-        y=list(df['levererat']),
-        visible=False,
-        name="Levererat",
-        marker=dict(color='darkblue'),
-        hoverlabel=dict(
-            bgcolor='white',
-            bordercolor='darkblue',
-            font=dict(
-                color='black'
-            )
-        ),
-        hovertemplate=
-        '<extra></extra>'+
-        '<b>Vecka %{x}</b><br>'+
-        '%{y}'
-    )
-)
-
-# Weekly vaccinations given
-fig.add_trace(
-    go.Bar(
-        x=[list(df['year']), list(df['vecka'])],
-        y=list(df['förbrukat']),
-        visible=False,
-        marker=dict(color='skyblue'),
-        name="Förbrukat",
-        hoverlabel=dict(
-            bgcolor='white',
-            bordercolor='skyblue',
-            font=dict(
-                color='black'
-            )
-        ),
-        hovertemplate=
-        '<extra></extra>'+
-        '<b>Vecka %{x}</b><br>'+
-        '%{y}'
-    )
-)
-
-
-fig.update_layout(
-    title="<b>Totalt Levererade och Förbrukade Doser</b>",
-    font=dict(
-        family='Arial'
-    ),
-    xaxis=dict(
-        title="Vecka",
-        linewidth=2,
-        linecolor='black',
-        gridwidth=1,
-        gridcolor='rgb(240, 240, 240)'
-    ),
-    yaxis=dict(
-        title="Antal Doser",
-        linewidth=2,
-        linecolor='black',
-        gridwidth=1,
-        gridcolor='rgb(240, 240, 240)'
-    ),
-    plot_bgcolor='white',
-    annotations=[
-        dict(
-            x=0,
-            y=-0.15,
-            text="Källa: Folkhälsomyndigheten",
-            showarrow=False,
-            xref='paper',
-            yref='paper',
-            xanchor='left',
-            yanchor='auto',
-            xshift=0,
-            yshift=0,
-            font=dict(
-                size=11,
-                color='dimgray'
-            )
-        )
-    ],
-    updatemenus=[dict(
-        direction='down',
-        x=1,
-        xanchor='right',
-        y=1.1,
-        yanchor='top',
-        buttons=list([
-            dict(label="Totalt",
-                 method='update',
-                 args=[{'visible': [True, True, False, False]},
-                       {'title': "<b>Totalt Levererade och Förbrukade Doser</b>"}]),
-            dict(label="Per Vecka",
-                 method='update',
-                 args=[{'visible': [False, False, True, True]},
-                       {'title': "<b>Levererade och Förbrukade Doser per Vecka</b>"}]),
-        ])
-    )]
-)
-
-fig.write_html('graphs/vaccine/vaccinations.html')
+vaccine_region['total_vaccinations'] = (vaccine_region['pfizer'] 
+                                        + vaccine_region['moderna'])
+vaccine_region['percent_vaccinated'] = (vaccine_region['total_vaccinations'] 
+                                        / vaccine_region['population_2019'] 
+                                        * 100)
 
 # ----------------------------------------------
 # Graph - % population vaccinated
@@ -1007,10 +884,11 @@ fig.write_html('graphs/vaccine/vaccinations.html')
 # ----------------------------------------------
 
 # Sweden total population
-sweden_pop = population_ages['All'].sum()
+sweden_pop = vaccine_region['population_2019'].sum()
 
 # Percentage of population vaccinated
-percent_vaccinated = df['levererat_total'].max() / sweden_pop * 100
+percent_vaccinated = (vaccine_region['total_vaccinations'].sum() 
+                      / sweden_pop * 100)
 
 fig = go.Figure()
 
@@ -1020,7 +898,7 @@ fig.add_trace(
         name="Vaccinerade",
         y=list(" "),
         x=[percent_vaccinated],
-        marker=dict(color='darkblue'),
+        marker=dict(color='rgb(40, 40, 140)'),
         orientation='h',
         text=['Vaccinerade'],
         hoverlabel=dict(
@@ -1043,7 +921,7 @@ fig.add_trace(
         name="Ej Vaccinerade",
         y=list(" "),
         x=[100-percent_vaccinated],
-        marker=dict(color='rgba(80, 80, 80, 0.8)'),
+        marker=dict(color='rgba(140, 140, 140, 0.8)'),
         orientation='h',
         text=['Ej Vaccinerade'],
         hoverlabel=dict(
@@ -1069,6 +947,7 @@ fig.update_layout(
         family='Arial'
     ),
     xaxis=dict(
+        title="% Vaccinerade",
         linewidth=2,
         linecolor='black',
         gridwidth=1,
@@ -1085,6 +964,90 @@ fig.update_layout(
 
 fig.write_html('graphs/vaccine/percent_vaccine.html')
 
+# --------------------------------------
+# Graph - % population vaccinated county
+# Filename: percentage_vaccine_county
+# --------------------------------------
+
+# I do not know why this is needed but without it the plot returns:
+# RecursionError: maximum recursion depth exceeded while calling a Python object
+vaccine_region['county'] = vaccine_region['county'].apply(lambda x: x[:20])
+
+vaccine_region = vaccine_region.sort_values('percent_vaccinated')
+
+fig = go.Figure()
+
+# Vaccinated
+fig.add_trace(
+    go.Bar(
+        name="Vaccinerade",
+        y=list(vaccine_region['county']),
+        x=list(vaccine_region['percent_vaccinated']),
+        marker=dict(color='rgb(40, 40, 140)'),
+        orientation='h',
+        text=['Vaccinerade']*21,
+        hoverlabel=dict(
+            bgcolor='white',
+            bordercolor='gray',
+            font=dict(
+                color='black'
+            )
+        ),
+        hovertemplate=
+        '<extra>%{y}</extra>'+
+        '<b>%{text}</b><br>'+
+        '%{x:.2f}%'
+    )
+)
+
+# Not vaccinated
+fig.add_trace(
+    go.Bar(
+        name="Ej Vaccinerade",
+        y=list(vaccine_region['county']),
+        x=list(100-vaccine_region['percent_vaccinated']),
+        marker=dict(color='rgba(140, 140, 140, 0.8)'),
+        orientation='h',
+        text=['Ej Vaccinerade']*21,
+        hoverlabel=dict(
+            bgcolor='white',
+            bordercolor='gray',
+            font=dict(
+                color='black'
+            )
+        ),
+        hovertemplate=
+        '<extra>%{y}</extra>'+
+        '<b>%{text}</b><br>'+
+        '%{x:.2f}%'
+    )
+)
+
+fig.update_layout(
+    title="<b>Andelen av Befolkningen som Vaccinerat per Län</b>",
+    barmode='stack',
+    legend_traceorder='normal',
+    font=dict(
+        family='Arial'
+    ),
+    xaxis=dict(
+        title="% Vaccinerade",
+        linewidth=2,
+        linecolor='black',
+        gridwidth=1,
+        gridcolor='rgb(220, 220, 220)'
+    ),
+    yaxis=dict(
+        linewidth=2,
+        linecolor='black',
+    ),
+    height=700,
+    margin=dict(t=30, b=0),
+    plot_bgcolor='white'
+)
+
+fig.write_html('graphs/vaccine/percent_vaccine_county.html')
+
 # =============================================================================
 # Stockholm
 # =============================================================================
@@ -1095,22 +1058,25 @@ fig.write_html('graphs/vaccine/percent_vaccine.html')
 # ----------------------------------------------
 
 # COVID-19 data for each kommun
-kommun = pd.read_excel("data/Folkhälsomyndigheten.xlsx",
-                       sheet_name='Veckodata Kommun_stadsdel')
+kommun = pd.read_excel(
+    "data/Folkhälsomyndigheten.xlsx",
+    sheet_name='Veckodata Kommun_stadsdel')
 
 # Data on the populations of each kommun
-kommun_pop = pd.read_csv('data/sweden_kommun.csv',
-                         dtype={
-                             'kommun_code': str,
-                             'kommun': str,
-                             'population_2019': int,
-                             'county_code': str,
-                             'county': str
-                         })
+kommun_pop = pd.read_csv(
+    'data/sweden_kommun.csv',
+     dtype={
+         'kommun_code': str,
+         'kommun': str,
+         'population_2019': int,
+         'county_code': str,
+         'county': str
+     })
 
 # Get a list of the kommuns that make up Stockholm County and create a new data
 # frame with only Stockholm kommuns.
-stockholm_kommuns = list(kommun_pop[kommun_pop['county_code'] == '01']['kommun'])
+stockholm_kommuns = list(
+    kommun_pop[kommun_pop['county_code'] == '01']['kommun'])
 stockholm_län = kommun[kommun['KnNamn'].isin(stockholm_kommuns)].copy()
 
 # Some figures are reported as strings '<15'. These are replaced with 0s.
@@ -1125,35 +1091,37 @@ stockholm_län['Kommun_stadsdel'] = np.where(
     'Stockholm',
     stockholm_län['Kommun_stadsdel'])
 
-stockholm_län = stockholm_län.groupby(['Kommun_stadsdel', 'veckonummer', 'år'],
-                                      as_index=False)['nya_fall_vecka'].sum()
+stockholm_län = stockholm_län.groupby(
+    ['Kommun_stadsdel', 'veckonummer', 'år'], as_index=False
+)['nya_fall_vecka'].sum()
 
-stockholm_län = stockholm_län.merge(kommun_pop[['kommun', 'population_2019']],
-                                    left_on='Kommun_stadsdel',
-                                    right_on='kommun',
-                                    how='left')
+stockholm_län = stockholm_län.merge(
+    kommun_pop[['kommun', 'population_2019']],
+    left_on='Kommun_stadsdel',
+    right_on='kommun',
+    how='left')
 
-stockholm_län['fall_per_10000'] = stockholm_län['nya_fall_vecka'] / stockholm_län['population_2019'] * 10000
+stockholm_län['fall_per_10000'] = (stockholm_län['nya_fall_vecka'] /
+                                   stockholm_län['population_2019'] * 10000)
 
 stockholm_län = stockholm_län.sort_values(['år', 'veckonummer'])
 
 df = stockholm_län
 
-fig = make_subplots(4, 7,
-                    subplot_titles=(stockholm_kommuns),
-                    shared_xaxes=True)
-
-rows = [1,1,1,1,1,1,1,2,2,2,2,2,2,2,3,3,3,3,3,3,3,4,4,4,4,4]
-cols = [1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5]
+fig = make_subplots(
+    4, 7,
+    subplot_titles=(stockholm_kommuns),
+    shared_xaxes=True)
 
 xaxis_text = ["Vecka " + str(i) + ", 2020" for i in range(1, 54)]
 xaxis_text = xaxis_text + ["Vecka " + str(i) + ", 2021" for i in range(1, 53)]
 
 # New cases per week
-for region, row, col in zip(stockholm_kommuns, rows, cols):
+for value, region in enumerate(stockholm_kommuns, start=7):
     fig.add_trace(
         go.Scatter(
-            x=[list(df['år'][df['Kommun_stadsdel'] == region]), list(df['veckonummer'][df['Kommun_stadsdel'] == region])],
+            x=[list(df['år'][df['Kommun_stadsdel'] == region]),
+               list(df['veckonummer'][df['Kommun_stadsdel'] == region])],
             y=list(df['nya_fall_vecka'][df['Kommun_stadsdel'] == region]),
             showlegend=False,
             text=xaxis_text,
@@ -1168,14 +1136,15 @@ for region, row, col in zip(stockholm_kommuns, rows, cols):
             '<extra></extra>'+
             '<b>%{text}</b><br>'+
             'Cases: %{y}'
-        ), row, col
+        ), value//7, value%7+1
     )
 
 # New cases per week per 10,000
-for region, row, col in zip(stockholm_kommuns, rows, cols):
+for value, region in enumerate(stockholm_kommuns, start=7):
     fig.add_trace(
         go.Scatter(
-            x=[list(df['år'][df['Kommun_stadsdel'] == region]), list(df['veckonummer'][df['Kommun_stadsdel'] == region])],
+            x=[list(df['år'][df['Kommun_stadsdel'] == region]),
+               list(df['veckonummer'][df['Kommun_stadsdel'] == region])],
             y=list(df['fall_per_10000'][df['Kommun_stadsdel'] == region]),
             visible=False,
             showlegend=False,
@@ -1191,7 +1160,7 @@ for region, row, col in zip(stockholm_kommuns, rows, cols):
             '<extra></extra>'+
             '<b>%{text}</b><br>'+
             '<b>Cases</b>: %{y:.3f}'
-        ), row, col
+        ), value//7, value%7+1
     )
 
 fig.update_xaxes(
@@ -1226,11 +1195,13 @@ fig.update_layout(
             dict(label="Antal Fall",
                  method='update',
                  args=[{'visible': [True]*26 + [False]*26},
-                         {'title': "<b>Bekräftade Fall inom Stockholms Län per Vecka</b>"}]),
+                         {'title': ("<b>Bekräftade Fall inom Stockholms Län " 
+                                    "per Vecka</b>")}]),
             dict(label="Antal Fall per 10,000",
                  method='update',
                  args=[{'visible': [False]*26 + [True]*26},
-                         {'title': "<b>Bekräftade Fall inom Stockholms Län per Vecka (per 10,000)</b>"}]),
+                         {'title': ("<b>Bekräftade Fall inom Stockholms Län "
+                                    "per Vecka (per 10,000)</b>")}]),
         ])
     )]
 )
@@ -1267,7 +1238,8 @@ fig = go.Figure()
 for region in stockholm_kommuns:
     fig.add_trace(
         go.Scatter(
-            x=[list(df['år'][df['Kommun_stadsdel'] == region]), list(df['veckonummer'][df['Kommun_stadsdel'] == region])],
+            x=[list(df['år'][df['Kommun_stadsdel'] == region]),
+               list(df['veckonummer'][df['Kommun_stadsdel'] == region])],
             y=list(df['nya_fall_vecka'][df['Kommun_stadsdel'] == region]),
             name=region,
             text=xaxis_text,
@@ -1288,7 +1260,8 @@ for region in stockholm_kommuns:
 for region in stockholm_kommuns:
     fig.add_trace(
         go.Scatter(
-            x=[list(df['år'][df['Kommun_stadsdel'] == region]), list(df['veckonummer'][df['Kommun_stadsdel'] == region])],
+            x=[list(df['år'][df['Kommun_stadsdel'] == region]),
+               list(df['veckonummer'][df['Kommun_stadsdel'] == region])],
             y=list(df['fall_per_10000'][df['Kommun_stadsdel'] == region]),
             name=region,
             visible=False,
@@ -1353,11 +1326,13 @@ fig.update_layout(
                 dict(label="Antal Fall",
                      method='update',
                      args=[{'visible': [True]*26 + [False]*26},
-                             {'title': "<b>Bekräftade Fall inom Stockholms Län</b>"}]),
+                             {'title': ("<b>Bekräftade Fall inom Stockholms "
+                                        "Län</b>")}]),
                 dict(label="Antal Fall per 10,000",
                      method='update',
                      args=[{'visible': [False]*26 + [True]*26},
-                             {'title': "<b>Bekräftade Fall inom Stockholms Län (per 10,000)</b>"}]),
+                             {'title': ("<b>Bekräftade Fall inom Stockholms "
+                                        "Län (per 10,000)</b>")}]),
             ])
         )
     ]
@@ -1382,27 +1357,27 @@ stockholm_kommun.iloc[:, 6:] = stockholm_kommun.iloc[:, 6:].astype(int)
 # Population data for each area of Stockholm Kommun
 stockholm_kommun_befolkning = pd.read_csv('data/stockholms_kommun.csv')
 
-stockholm_kommun = stockholm_kommun.merge(stockholm_kommun_befolkning,
-                                          left_on="Stadsdel",
-                                          right_on="stadsdelsområde",
-                                          how="left")
+stockholm_kommun = stockholm_kommun.merge(
+    stockholm_kommun_befolkning,
+    left_on="Stadsdel",
+    right_on="stadsdelsområde",
+    how="left")
 
-stockholm_kommun['nya_fall_vecka_10000'] = stockholm_kommun['nya_fall_vecka'] / stockholm_kommun['befolkning_2019'] * 10000
+stockholm_kommun['nya_fall_vecka_10000'] = (stockholm_kommun['nya_fall_vecka']
+                                            / stockholm_kommun['befolkning_2019']
+                                            * 10000)
 
 df = stockholm_kommun
 regions = list(df['Stadsdel'].unique())
 
 fig = make_subplots(5, 3, subplot_titles=(regions), shared_xaxes=True)
 
-rows = [1,1,1,2,2,2,3,3,3,4,4,4,5,5]
-cols = [1,2,3,1,2,3,1,2,3,1,2,3,1,2]
-
-
 # New cases per week
-for region, row, col in zip(regions, rows, cols):
+for value, region in enumerate(regions, start=3):
     fig.add_trace(
         go.Scatter(
-            x=[list(df['år'][df['Stadsdel'] == region]), list(df['veckonummer'][df['Stadsdel'] == region])],
+            x=[list(df['år'][df['Stadsdel'] == region]),
+               list(df['veckonummer'][df['Stadsdel'] == region])],
             y=list(df['nya_fall_vecka'][df['Stadsdel'] == region]),
             showlegend=False,
             text=xaxis_text,
@@ -1417,14 +1392,15 @@ for region, row, col in zip(regions, rows, cols):
             '<extra></extra>'+
             '<b>%{text}</b><br>'+
             'Cases: %{y}'
-        ), row, col
+        ), value//3, value%3+1
     )
 
 # New cases per week per 10,000
-for region, row, col in zip(regions, rows, cols):
+for value, region in enumerate(regions, start=3):
     fig.add_trace(
         go.Scatter(
-            x=[list(df['år'][df['Stadsdel'] == region]), list(df['veckonummer'][df['Stadsdel'] == region])],
+            x=[list(df['år'][df['Stadsdel'] == region]),
+               list(df['veckonummer'][df['Stadsdel'] == region])],
             y=list(df['nya_fall_vecka_10000'][df['Stadsdel'] == region]),
             showlegend=False,
             visible=False,
@@ -1440,7 +1416,7 @@ for region, row, col in zip(regions, rows, cols):
             '<extra></extra>'+
             '<b>%{text}</b><br>'+
             'Cases: %{y}'
-        ), row, col
+        ), value//3, value%3+1
     )
 
 fig.update_xaxes(
@@ -1477,11 +1453,13 @@ fig.update_layout(
                 dict(label="Antal Fall",
                      method='update',
                      args=[{'visible': [True]*14 + [False]*14},
-                             {'title': "<b>Bekräftade Fall inom Stockholms Kommun per Vecka</b>"}]),
+                             {'title': ("<b>Bekräftade Fall inom Stockholms "
+                                        "Kommun per Vecka</b>")}]),
                 dict(label="Antal Fall per 10,000",
                      method='update',
                      args=[{'visible': [False]*14 + [True]*14},
-                             {'title': "<b>Bekräftade Fall inom Stockholms Kommun per Vecka (per 10,000)</b>"}]),
+                             {'title': ("<b>Bekräftade Fall inom Stockholms "
+                                        "Kommun per Vecka (per 10,000)</b>")}]),
             ])
         )
     ]
@@ -1520,7 +1498,8 @@ fig = go.Figure()
 for region in regions:
     fig.add_trace(
         go.Scatter(
-            x=[list(df['år'][df['Stadsdel'] == region]), list(df['veckonummer'][df['Stadsdel'] == region])],
+            x=[list(df['år'][df['Stadsdel'] == region]),
+               list(df['veckonummer'][df['Stadsdel'] == region])],
             y=list(df['nya_fall_vecka'][df['Stadsdel'] == region]),
             name=region,
             text=xaxis_text,
@@ -1542,7 +1521,8 @@ for region in regions:
 for region in regions:
     fig.add_trace(
         go.Scatter(
-            x=[list(df['år'][df['Stadsdel'] == region]), list(df['veckonummer'][df['Stadsdel'] == region])],
+            x=[list(df['år'][df['Stadsdel'] == region]),
+               list(df['veckonummer'][df['Stadsdel'] == region])],
             y=list(df['nya_fall_vecka_10000'][df['Stadsdel'] == region]),
             name=region,
             visible=False,
@@ -1610,11 +1590,13 @@ fig.update_layout(
                 dict(label="Antal Fall",
                      method='update',
                      args=[{'visible': [True]*14 + [False]*14},
-                             {'title': "<b>Bekräftade Fall inom Stockholms Kommun per Vecka</b>"}]),
+                             {'title': ("<b>Bekräftade Fall inom Stockholms "
+                                        "Kommun per Vecka</b>")}]),
                 dict(label="Antal Fall per 10,000",
                      method='update',
                      args=[{'visible': [False]*14 + [True]*14},
-                             {'title': "<b>Bekräftade Fall inom Stockholms Kommun per Vecka (per 10,000)</b>"}]),
+                             {'title': ("<b>Bekräftade Fall inom Stockholms "
+                                        "Kommun per Vecka (per 10,000)</b>")}]),
             ])
         )
     ]
@@ -1632,14 +1614,16 @@ fig.write_html('graphs/stockholm/cases_stockholm_kommun_single.html')
 # ----------------------------
 
 # Data on intensive ward patients
-hospital = pd.read_excel("data/Folkhälsomyndigheten.xlsx",
-                         sheet_name='Antal intensivvårdade per dag')
+hospital = pd.read_excel(
+    "data/Folkhälsomyndigheten.xlsx",
+    sheet_name='Antal intensivvårdade per dag')
 
-hospital['Datum_vårdstart'] = pd.to_datetime(hospital['Datum_vårdstart'],
-                                             format='%Y-%m-%d')
+hospital['Datum_vårdstart'] = pd.to_datetime(
+    hospital['Datum_vårdstart'], format='%Y-%m-%d')
 
 # 7 day rolling average
-hospital['7_day_rolling'] = hospital['Antal_intensivvårdade'].rolling(window=7).mean()
+hospital['7_day_rolling'] = hospital['Antal_intensivvårdade'].rolling(
+    window=7).mean()
 
 hospital = hospital.dropna()
 
@@ -1679,24 +1663,10 @@ fig.add_trace(
 )
 
 fig.update_layout(
-    title="<b>Antal Intensivvårdade per Dag</b><br><sup>7 dagar glidande medelvärde",
-    font=dict(
-        family='Arial'
-    ),
-    plot_bgcolor='white',
-    xaxis=dict(
-        linewidth=2,
-        linecolor='black',
-        gridwidth=1,
-        gridcolor='rgb(240, 240, 240)'
-    ),
-    yaxis=dict(
-        title="Antal Intensivvårdade",
-        linewidth=2,
-        linecolor='black',
-        gridwidth=1,
-        gridcolor='rgb(240, 240, 240)'
-    ),
+    template=template,
+    title=("<b>Antal Intensivvårdade per Dag</b>"
+           "<br><sup>7 dagar glidande medelvärde"),
+    yaxis_title="Antal Intensivvårdade",
     annotations=[
         dict(
             x=0,
@@ -1723,22 +1693,26 @@ fig.write_html('graphs/intensiv/intensive_ward_all.html')
 # ---------------------------------------
 
 # Read regional data
-regions = pd.read_excel("data/Folkhälsomyndigheten.xlsx",
-                        sheet_name='Veckodata Region')
+regions = pd.read_excel(
+    "data/Folkhälsomyndigheten.xlsx",
+    sheet_name='Veckodata Region')
 
 # Replace county names with desired names
 regions = regions.replace(
     {
         'Jämtland Härjedalen': 'Jämtland',
         'Sörmland': 'Södermanland'
-    })
+    }
+)
 
-regions = regions.merge(counties_pop[['county', 'population_2019']],
-                        left_on='Region',
-                        right_on='county',
-                        how='left')
+regions = regions.merge(
+    counties_pop[['county', 'population_2019']],
+    left_on='Region',
+    right_on='county',
+    how='left')
 
-regions['Intensivvård_per_10000'] = regions['Antal_intensivvårdade_vecka'] / regions['population_2019'] * 10000
+regions['Intensivvård_per_10000'] = (regions['Antal_intensivvårdade_vecka'] 
+                                     / regions['population_2019'] * 10000)
 
 df = regions
 regions_list = list(df['Region'].unique())
@@ -1748,14 +1722,12 @@ xaxis_text = xaxis_text + ["Vecka " + str(i) + ", 2021" for i in range(1, 53)]
 
 fig = make_subplots(3, 7, subplot_titles=(regions_list), shared_xaxes=True)
 
-rows = [1,1,1,1,1,1,1,2,2,2,2,2,2,2,3,3,3,3,3,3,3]
-cols = [1,2,3,4,5,6,7,1,2,3,4,5,6,7,1,2,3,4,5,6,7]
-
 # Intensive ward per week
-for region, row, col in zip(regions_list, rows, cols):
+for value, region in enumerate(regions_list, start=7):
     fig.add_trace(
         go.Scatter(
-            x=[list(df['år'][df['Region'] == region]), list(df['veckonummer'][df['Region'] == region])],
+            x=[list(df['år'][df['Region'] == region]),
+               list(df['veckonummer'][df['Region'] == region])],
             y=list(df['Antal_intensivvårdade_vecka'][df['Region'] == region]),
             text=xaxis_text,
             hoverlabel=dict(
@@ -1770,14 +1742,15 @@ for region, row, col in zip(regions_list, rows, cols):
             '<b>%{text}</b><br>'+
             '<b>Antal Intensivvårdade</b>: %{y}',
             showlegend=False
-        ), row, col
+        ), value//7, value%7+1
     )
 
 # Intensive ward per week per 10,000
-for region, row, col in zip(regions_list, rows, cols):
+for value, region in enumerate(regions_list, start=7):
     fig.add_trace(
         go.Scatter(
-            x=[list(df['år'][df['Region'] == region]), list(df['veckonummer'][df['Region'] == region])],
+            x=[list(df['år'][df['Region'] == region]),
+               list(df['veckonummer'][df['Region'] == region])],
             y=list(df['Intensivvård_per_10000'][df['Region'] == region]),
             text=xaxis_text,
             hoverlabel=dict(
@@ -1793,7 +1766,7 @@ for region, row, col in zip(regions_list, rows, cols):
             '<b>Antal Intensivvårdade</b>: %{y:.3f}',
             showlegend=False,
             visible=False
-        ), row, col
+        ), value//7, value%7+1
     )
 
 
@@ -1834,7 +1807,8 @@ fig.update_layout(
                 dict(label="Antal per 10,000",
                     method='update',
                     args=[{'visible': [False]*21 + [True]*21},
-                          {'title': "<b>Antal Intensivvådade per Län (per 10,000)</b>"}]),
+                          {'title': ("<b>Antal Intensivvådade per Län "
+                                     "(per 10,000)</b>")}]),
             ])
         )
     ]
@@ -1871,7 +1845,8 @@ fig = go.Figure()
 for region in regions_list:
     fig.add_trace(
         go.Scatter(
-            x=[list(df['år'][df['Region'] == region]), list(df['veckonummer'][df['Region'] == region])],
+            x=[list(df['år'][df['Region'] == region]),
+               list(df['veckonummer'][df['Region'] == region])],
             y=list(df['Antal_intensivvårdade_vecka'][df['Region'] == region]),
             name=region,
             text=xaxis_text,
@@ -1893,7 +1868,8 @@ for region in regions_list:
 for region in regions_list:
     fig.add_trace(
         go.Scatter(
-            x=[list(df['år'][df['Region'] == region]), list(df['veckonummer'][df['Region'] == region])],
+            x=[list(df['år'][df['Region'] == region]),
+               list(df['veckonummer'][df['Region'] == region])],
             y=list(df['Intensivvård_per_10000'][df['Region'] == region]),
             name=region,
             visible=False,
@@ -1913,24 +1889,9 @@ for region in regions_list:
     )
 
 fig.update_layout(
+    template=template,
     title="<b>Antal Intensivvådade per Län</b>",
-    xaxis=dict(
-        title="Vecka",
-        linewidth=1,
-        linecolor='black',
-        gridwidth=1,
-        gridcolor='rgb(240, 240, 240)'
-    ),
-    yaxis=dict(
-        linewidth=1,
-        linecolor='black',
-        gridwidth=1,
-        gridcolor='rgb(240, 240, 240)'
-    ),
-    font=dict(
-        family='Arial'
-    ),
-    plot_bgcolor='white',
+    xaxis_title="Vecka",
     height=700,
     annotations=[
         dict(
@@ -1965,7 +1926,8 @@ fig.update_layout(
                 dict(label="Antal per 10,000",
                     method='update',
                     args=[{'visible': [False]*21 + [True]*21},
-                          {'title': "<b>Antal Intensivvådade per Län (per 10,000)</b>"}]),
+                          {'title': ("<b>Antal Intensivvådade per Län "
+                                     "(per 10,000)</b>")}]),
             ])
         )
     ]
@@ -1983,17 +1945,19 @@ fig.write_html('graphs/intensiv/intensive_ward_per_county_single.html')
 # --------------------
 
 # Data on daily deaths
-daily_deaths = pd.read_excel("data/Folkhälsomyndigheten.xlsx",
-                             sheet_name='Antal avlidna per dag')
+daily_deaths = pd.read_excel(
+    "data/Folkhälsomyndigheten.xlsx",
+    sheet_name='Antal avlidna per dag')
 
 # Drop row which shows deaths where the date is unknown
 daily_deaths = daily_deaths[daily_deaths['Datum_avliden'] != 'Uppgift saknas']
 
-daily_deaths['Datum_avliden'] = pd.to_datetime(daily_deaths['Datum_avliden'],
-                                               format='%Y-%m-%d')
+daily_deaths['Datum_avliden'] = pd.to_datetime(
+    daily_deaths['Datum_avliden'],format='%Y-%m-%d')
 
 # 7 day rolling average
-daily_deaths['total_7_day'] = daily_deaths['Antal_avlidna'].rolling(window=7).mean()
+daily_deaths['total_7_day'] = daily_deaths['Antal_avlidna'].rolling(
+    window=7).mean()
 
 fig = go.Figure()
 
@@ -2033,21 +1997,9 @@ fig.add_trace(
 )
 
 fig.update_layout(
+    template=template,
     title="<b>Antal Avlidna i COVID-19</b><br><sup>7 dagar glidande medelvärde",
-    xaxis=dict(
-        linewidth=2,
-        linecolor='black',
-        gridwidth=1,
-        gridcolor='rgb(240, 240, 240)'
-    ),
-    yaxis=dict(
-        title="Antal Avlidna",
-        linewidth=2,
-        linecolor='black',
-        gridwidth=1,
-        gridcolor='rgb(240, 240, 240)'
-    ),
-    plot_bgcolor='white',
+    yaxis_title="Antal Avlidna",
     annotations=[
         dict(
             x=0,
@@ -2076,19 +2028,21 @@ fig.write_html('graphs/deaths/deaths_all.html')
 # ----------------------------------------
 
 # Statistiska centralbyrån data on weekly deaths from 2015 to 2019
-all_deaths_url = "https://www.scb.se/en/finding-statistics/statistics-by-subject-area/population/population-composition/population-statistics/pong/tables-and-graphs/preliminary-statistics-on-deaths/"
+all_deaths_url = ("https://www.scb.se/en/finding-statistics/"
+                  "statistics-by-subject-area/population/"
+                  "population-composition/population-statistics/pong/"
+                  "tables-and-graphs/preliminary-statistics-on-deaths/")
 
-sweden_weekly = pd.read_excel(all_deaths_url,
-                              sheet_name = 'Tabell 1',
-                              skiprows = 6,
-                              usecols = [0,1,2,3,4,5,6,7]
-                             )
+sweden_weekly = pd.read_excel(
+    all_deaths_url, 
+    sheet_name = 'Tabell 1',
+    skiprows = 6,
+    usecols = [0,1,2,3,4,5,6,7])
 
 # Remove 29th February to give same number of days in each year. Also drop the
 # row that contained deaths with an unknown date.
-sweden_weekly = sweden_weekly[
-    ~sweden_weekly['DagMånad'].isin(['29 februari', 'Okänd dödsdag '])
-]
+sweden_weekly = sweden_weekly[~sweden_weekly['DagMånad'].isin(
+    ['29 februari', 'Okänd dödsdag '])]
 
 sweden_average = sweden_weekly[['DagMånad', '2015', '2016',
                                 '2017', '2018', '2019']].copy()
@@ -2103,14 +2057,19 @@ years_average = {
 }
 
 for year in years_average:
-    sweden_average[years_average[year]] = sweden_average[year].rolling(window=7).sum()
+    sweden_average[years_average[year]] = sweden_average[year].rolling(
+        window=7).sum()
 
-sweden_pandemic['weekly_2020'] = sweden_pandemic['2020'].rolling(window=7).sum()
-sweden_pandemic['weekly_2021'] = sweden_pandemic['2021'].rolling(window=7).sum()
+sweden_pandemic['weekly_2020'] = sweden_pandemic['2020'].rolling(
+    window=7).sum()
+sweden_pandemic['weekly_2021'] = sweden_pandemic['2021'].rolling(
+    window=7).sum()
 
 # Take every 7th day to form 7-day periods
-sweden_average = sweden_average.iloc[range(6, 365, 7), :].reset_index(drop=True)
-sweden_pandemic = sweden_pandemic.iloc[range(6, 365, 7), :].reset_index(drop=True)
+sweden_average = sweden_average.iloc[range(6, 365, 7), :].reset_index(
+    drop=True)
+sweden_pandemic = sweden_pandemic.iloc[range(6, 365, 7), :].reset_index(
+    drop=True)
 
 # Create new columns with 5-year average, maximum and minimum
 sweden_average['5_year_average'] = sweden_average[
@@ -2131,10 +2090,13 @@ sweden_average['vecka'] = list(range(1,105))
 
 # Create a data frame with 104 weeks and one columns with 2020 deaths followed
 # by 2021 deaths.
-sweden_pandemic = pd.DataFrame({
-    'vecka': list(range(1,105)),
-    'deaths': sweden_pandemic['weekly_2020'].append(sweden_pandemic['weekly_2021'])
-})
+sweden_pandemic = pd.DataFrame(
+    {
+        'vecka': list(range(1,105)),
+        'deaths': sweden_pandemic['weekly_2020'].append(
+            sweden_pandemic['weekly_2021'])
+    }
+)
 
 # Drop the weeks which have not happened yet and then remove the most recent 3
 # weeks to avoid showing incomplete data (it takes a couple of weeks for all
@@ -2210,43 +2172,23 @@ fig.add_trace(
 tickvals = [1, 15, 30, 45, 53, 67, 82, 97, 104]
 ticktext = ['1 (2020)', '15', '30', '45', '1 (2021)', '15', '30', '45', '52']
 
-if len(df.index)==104:
-    tickvals, ticktext = tickvals, ticktext
-elif len(df.index)>=97:
-    tickvals, ticktext = tickvals[:8], ticktext[:8]
-elif len(df.index)>=82:
-    tickvals, ticktext = tickvals[:7], ticktext[:7]
-elif len(df.index)>=67:
-    tickvals, ticktext = tickvals[:6], ticktext[:6]
-elif len(df.index)>=53:
-    tickvals, ticktext = tickvals[:5], ticktext[:5]
-elif len(df.index)>=45:
-    tickvals, ticktext = tickvals[:4], ticktext[:4]
+# Set the length of values and text lists to the correct length given the size
+# of the data frame.
+max_index = np.min([i for i in tickvals if i >= len(df.index)])
+ticktext = ticktext[:tickvals.index(max_index)]
+tickvals = tickvals[:tickvals.index(max_index)]
 
 fig.update_layout(
-    title="<b>Antal Avlidna per Vecka (2020-2021) vs. Medelvärde över 5 år (2015-2019)",
-    hovermode='x',
-    font=dict(
-        family='Arial'
-    ),
+    template=template,
+    title=("<b>Antal Avlidna per Vecka (2020-2021) vs. "
+           "Medelvärde över 5 år (2015-2019)"),
     xaxis=dict(
         title="Vecka",
-        linewidth=2,
-        linecolor='black',
-        gridwidth=1,
-        gridcolor='rgb(240, 240, 240)',
         tickmode='array',
         tickvals=tickvals,
         ticktext=ticktext
     ),
-    yaxis=dict(
-        title="Antal Avlidna",
-        linewidth=2,
-        linecolor='black',
-        gridwidth=1,
-        gridcolor='rgb(240, 240, 240)'
-    ),
-    plot_bgcolor='white',
+    yaxis_title="Antal Avlidna",
     legend=dict(traceorder='reversed'),
     annotations=[
         dict(
@@ -2304,23 +2246,14 @@ fig.add_trace(
     )
 )
 fig.update_layout(
+    template=template,
     title="<b>Case Fatality Rate by Age Group</b>",
-    font=dict(
-        family='Arial'
-    ),
     plot_bgcolor='white',
     xaxis=dict(
         title="Åldersgrupp",
-        linewidth=2,
-        linecolor='black'
+        gridwidth=0
     ),
-    yaxis=dict(
-        title="Case Fatality Rate",
-        gridcolor='rgb(240, 240, 240)',
-        gridwidth=2,
-        linewidth=2,
-        linecolor='black'
-    ),
+    yaxis_title="Case Fatality Rate",
     annotations=[
         dict(
             x=0,
@@ -2348,7 +2281,8 @@ fig.write_html('graphs/deaths/case_fatality_rate.html')
 # Filename: deaths_age_group
 # ---------------------------
 
-åldersgrupp['deaths_%'] = åldersgrupp['Totalt_antal_avlidna'] / åldersgrupp['All'] * 100
+åldersgrupp['deaths_%'] = (åldersgrupp['Totalt_antal_avlidna'] 
+                           / åldersgrupp['All'] * 100)
 
 fig = go.Figure()
 
@@ -2408,20 +2342,13 @@ fig.add_trace(
 )
 
 fig.update_layout(
+    template=template,
     title="<b>Antal Avlidna per Åldersgrupp</b>",
     xaxis=dict(
         title="Åldersgrupp",
-        linewidth=2,
-        linecolor='black'
+        gridwidth=0
     ),
-    yaxis=dict(
-        title="Antal Avlidna",
-        gridcolor='rgb(240, 240, 240)',
-        gridwidth=2,
-        linewidth=2,
-        linecolor='black'
-    ),
-    plot_bgcolor='white',
+    yaxis_title="Antal Avlidna",
     annotations=[
         dict(
             x=0,
@@ -2458,15 +2385,16 @@ fig.update_layout(
                 dict(label="Andel Avlidna",
                      method='update',
                      args=[{'visible': [False, True]},
-                           {'title': "<b>Andelen av Befolkningen som har Dött i COVID-19 - per Åldersgrupp</b>",
+                           {'title': ("<b>Andelen av Befolkningen som har "
+                                      "Dött i COVID-19 - per Åldersgrupp</b>"),
                             'yaxis': {'title': '% per Åldersgrupp',
                                       'gridcolor': 'rgb(240, 240, 240)',
                                       'gridwidth': 2,
                                       'linewidth': 2,
                                       'linecolor': 'black'}}]),
-                    ]
-            )
-    )]
+            ])
+        )
+    ]
 )
 
 fig.write_html('graphs/deaths/deaths_age_group.html')
@@ -2476,13 +2404,16 @@ fig.write_html('graphs/deaths/deaths_age_group.html')
 # Filename: comorbidities
 # -----------------------
 
-URL_socialstyrelsen = "https://www.socialstyrelsen.se/globalassets/1-globalt/covid-19-statistik/statistik-over-antal-avlidna-i-covid-19/statistik-covid19-avlidna.xlsx"
+ss_url = ("https://www.socialstyrelsen.se/globalassets/1-globalt/"
+          "covid-19-statistik/statistik-over-antal-avlidna-i-covid-19/"
+          "statistik-covid19-avlidna.xlsx")
 
 # Read data from socialstyrelsen on deaths by age group and comorbidities
-socialstyrelsen = pd.read_excel(URL_socialstyrelsen,
-                                sheet_name="Övergripande statistik",
-                                skiprows=6,
-                                usecols=[0,1,3,5])
+socialstyrelsen = pd.read_excel(
+    ss_url,
+    sheet_name="Övergripande statistik",
+    skiprows=6,
+    usecols=[0,1,3,5])
 
 # Select rows with data on comorbidities
 comorbidities = socialstyrelsen.iloc[[15,16,17,18,20], :]
@@ -2538,22 +2469,12 @@ fig.add_trace(
 )
 
 fig.update_layout(
+    template=template,
     title="<b>Antal Avlidna i COVID-19 Uppdelat på Sjukdomsgrupper</b>",
-    font=dict(
-        family='Arial'
-    ),
     xaxis=dict(
-        linewidth=2,
-        linecolor='black'
+        gridwidth=0
     ),
-    yaxis=dict(
-        title="Antal Avlidna",
-        linewidth=2,
-        linecolor='black',
-        gridwidth=1,
-        gridcolor='rgb(240, 240, 240)'
-    ),
-    plot_bgcolor='white',
+    yaxis_title="Antal Avlidna",
     annotations=[
         dict(
             x=0,
@@ -2634,22 +2555,12 @@ fig.add_trace(
 )
 
 fig.update_layout(
+    template=template,
     title="<b>Antal av Sjukdomsgrupper</b>",
-    font=dict(
-        family='Arial'
-    ),
     xaxis=dict(
-        linewidth=2,
-        linecolor='black'
+        gridwidth=0
     ),
-    yaxis=dict(
-        title="Antal Avlidna",
-        linewidth=2,
-        linecolor='black',
-        gridwidth=1,
-        gridcolor='rgb(240, 240, 240)'
-    ),
-    plot_bgcolor='white',
+    yaxis_title="Antal Avlidna",
     annotations=[
         dict(
             x=0,
@@ -2684,8 +2595,9 @@ fig.write_html('graphs/deaths/number_of_comorbidities.html')
 mapbox_access_token = config.mapbox_key
 
 # Read data on Swedish counties
-county_data = pd.read_excel("data/Folkhälsomyndigheten.xlsx",
-                            sheet_name='Totalt antal per region')
+county_data = pd.read_excel(
+    "data/Folkhälsomyndigheten.xlsx",
+    sheet_name='Totalt antal per region')
 
 # Replace region names desired names
 county_data = county_data.replace(
@@ -2770,12 +2682,15 @@ fig.write_html('maps/Sweden_map_cases.html')
 # --------------------------------
 
 # Merge county populations
-county_data = county_data.merge(counties_pop[['county', 'population_2019']],
-                                left_on='Region',
-                                right_on='county',
-                                how='left')
+county_data = county_data.merge(
+    counties_pop[['county', 'population_2019']],
+    left_on='Region',
+    right_on='county',
+    how='left')
 
-county_data['cases_per_10000'] = round(county_data['Totalt_antal_fall'] / county_data['population_2019'] * 1000, 3)
+county_data['cases_per_10000'] = (round(
+    county_data['Totalt_antal_fall'] / 
+    county_data['population_2019'] * 1000, 3))
 
 # Create plot of total number of deaths per 1000 per county
 fig = go.Figure(
@@ -2916,7 +2831,9 @@ fig.write_html('maps/Sweden_map_deaths.html')
 # Filename: Sweden_map_deaths_10000
 # ---------------------------------
 
-county_data['deaths_per_10000'] = round(county_data['Totalt_antal_avlidna'] / county_data['population_2019'] * 1000, 3)
+county_data['deaths_per_10000'] = (round(
+    county_data['Totalt_antal_avlidna'] 
+    / county_data['population_2019'] * 1000, 3))
 
 # Create plot of total number of deaths per 10,000 per county
 fig = go.Figure(
