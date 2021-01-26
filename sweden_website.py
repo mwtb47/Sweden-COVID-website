@@ -55,8 +55,8 @@ template=dict(
 # Read data from Folkhälsomyndigheten
 # -----------------------------------
 
-fh_url = "https://www.arcgis.com/sharing/rest/content/items/" \
-         "b5e7488e117749c19881cce45db13f7e/data"
+fh_url = ("https://www.arcgis.com/sharing/rest/content/items/"
+          "b5e7488e117749c19881cce45db13f7e/data")
 
 urlretrieve(fh_url, "data/Folkhälsomyndigheten.xlsx")
 
@@ -590,11 +590,9 @@ weekly_tests.to_csv('data/weekly_tests.csv', index=False)
 
 # Create string formats of the numbers which are thousand comma separated
 # making them easier to read
-weekly_tests['str_ind'] = weekly_tests['number_individual_tests'].apply(lambda x: "{:,}".format(x))
-weekly_tests['str_tests'] = weekly_tests['number_tests'].apply(
-    lambda x: "{:,}".format(x))
-weekly_tests['str_antibody'] = weekly_tests['number_antibody'].apply(
-    lambda x: "{:,}".format(x))
+cols = ['number_individual_tests', 'number_tests', 'number_antibody']
+for c in cols:
+    weekly_tests[c + '_str'] = ["{:,}".format(x) for x in weekly_tests[c]]
 
 fig = go.Figure()
 
@@ -605,7 +603,7 @@ fig.add_trace(
            list(weekly_tests['vecka'])],
         y=list(weekly_tests['number_individual_tests']),
         name="Individer",
-        text=weekly_tests['str_ind'],
+        text=weekly_tests['number_individual_tests_str'],
         hoverlabel=dict(
             bgcolor='white',
             bordercolor='blue',
@@ -627,7 +625,7 @@ fig.add_trace(
            list(weekly_tests['vecka'])],
         y=list(weekly_tests['number_tests']),
         name="Totalt",
-        text=weekly_tests['str_tests'],
+        text=weekly_tests['number_tests_str'],
         hoverlabel=dict(
             bgcolor='white',
             bordercolor='red',
@@ -650,7 +648,7 @@ fig.add_trace(
         y=list(weekly_tests['number_antibody'][18:]),
         name="Totalt",
         visible=False,
-        text=weekly_tests['str_antibody'],
+        text=weekly_tests['number_antibody_str'],
         hoverlabel=dict(
             bgcolor='white',
             bordercolor='blue',
@@ -760,7 +758,7 @@ df['percent'] = round(df['number_positive'] / df['number_tests'] * 100, 4)
 df = df.sort_values('percent')
 
 # Not sure why this is needed, but graph would not plot without it.
-df['län'] = df['län'].apply(lambda x: x[:20])
+df['län'] = [x[:20] for x in df['län']]
 
 # Set the color as skyblue for all the counties, with the marker for the whole
 # country being darkblue.
@@ -837,216 +835,225 @@ fig.write_html('graphs/cases/positive_antibody.html')
 # Vaccinations
 # =============================================================================
 
-# The following fetches the html for the webpage with the most up-to-date
-# vaccination numbers and extracts the table containing this information.
-vaccine_url = ("https://www.folkhalsomyndigheten.se/smittskydd-beredskap/"
-               "utbrott/aktuella-utbrott/covid-19/vaccination-mot-covid-19/"
-               "statistik-over-vaccinerade-mot-covid-19/")
+# The website often changes the way it reports data hence the need for the
+# test on whether the current code works.
+try:
+    # The following fetches the html for the webpage with the most up-to-date
+    # vaccination numbers and extracts the table containing this information.
+    vaccine_url = ("https://www.folkhalsomyndigheten.se/smittskydd-beredskap/"
+                   "utbrott/aktuella-utbrott/covid-19/vaccination-mot-covid-19/"
+                   "statistik-over-vaccinerade-mot-covid-19/")
 
-page = get(vaccine_url).text
-soup = BeautifulSoup(page, 'lxml')
-table = soup.findAll('table')[1]
+    page = get(vaccine_url).text
+    soup = BeautifulSoup(page, 'lxml')
+    table = soup.findAll('table')[1]
 
-# Extract week numbers from the table
-county = []
-pfizer = []
-moderna = []
-for row in table.findAll('tr'):
-    if row.find('th').get('scope')=='row':
-        county.append(row.find(text=True))
-        cells = row.findAll('td')
-        pfizer.append(int(cells[0].find(text=True).replace(" ", "")))
-        moderna.append(int(cells[1].find(
-            text=True).replace(" ", "").replace("–", "0")))
+    # Extract week numbers from the table
+    county = []
+    pfizer = []
+    moderna = []
+    for row in table.findAll('tr'):
+        if row.find('th').get('scope')=='row':
+            county.append(row.find(text=True))
+            cells = row.findAll('td')
+            pfizer.append(int(cells[0].find(text=True).replace(" ", "")))
+            moderna.append(int(cells[1].find(
+                text=True).replace(" ", "").replace("–", "0")))
 
-vaccine_region = pd.DataFrame(
-    {
-        'county': county,
-        'pfizer': pfizer,
-        'moderna': moderna
-    }
-)
-
-vaccine_region = vaccine_region[
-    vaccine_region['county'] != 'Totala summan'].merge(
-    counties_pop,
-    on='county',                                                                   how='left')
-
-vaccine_region['total_vaccinations'] = (vaccine_region['pfizer'] 
-                                        + vaccine_region['moderna'])
-vaccine_region['percent_vaccinated'] = (vaccine_region['total_vaccinations'] 
-                                        / vaccine_region['population_2019'] 
-                                        * 100)
-
-# ----------------------------------------------
-# Graph - % population vaccinated
-# Filename: percentage_vaccine
-# ----------------------------------------------
-
-# Sweden total population
-sweden_pop = vaccine_region['population_2019'].sum()
-
-# Percentage of population vaccinated
-percent_vaccinated = (vaccine_region['total_vaccinations'].sum() 
-                      / sweden_pop * 100)
-
-fig = go.Figure()
-
-# Vaccinated
-fig.add_trace(
-    go.Bar(
-        name="Vaccinerade",
-        y=list(" "),
-        x=[percent_vaccinated],
-        marker=dict(color='rgb(40, 40, 140)'),
-        orientation='h',
-        text=['Vaccinerade'],
-        hoverlabel=dict(
-            bgcolor='white',
-            bordercolor='gray',
-            font=dict(
-                color='black'
-            )
-        ),
-        hovertemplate=
-        '<extra></extra>'+
-        '<b>%{text}</b><br>'+
-        '%{x:.2f}%'
+    vaccine_region = pd.DataFrame(
+        {
+            'county': county,
+            'pfizer': pfizer,
+            'moderna': moderna
+        }
     )
-)
 
-# Not vaccinated
-fig.add_trace(
-    go.Bar(
-        name="Ej Vaccinerade",
-        y=list(" "),
-        x=[100-percent_vaccinated],
-        marker=dict(color='rgba(140, 140, 140, 0.8)'),
-        orientation='h',
-        text=['Ej Vaccinerade'],
-        hoverlabel=dict(
-            bgcolor='white',
-            bordercolor='gray',
-            font=dict(
-                color='black'
-            )
-        ),
-        hovertemplate=
-        '<extra></extra>'+
-        '<b>%{text}</b><br>'+
-        '%{x:.2f}%'
+    vaccine_region = vaccine_region[
+        vaccine_region['county'] != 'Totala summan'].merge(
+        counties_pop,
+        on='county',                     
+        how='left')
+
+    vaccine_region['total_vaccinations'] = (vaccine_region['pfizer'] 
+                                            + vaccine_region['moderna'])
+    vaccine_region['percent_vaccinated'] = (vaccine_region['total_vaccinations'] 
+                                            / vaccine_region['population_2019'] 
+                                            * 100)
+
+    # ----------------------------------------------
+    # Graph - % population vaccinated
+    # Filename: percentage_vaccine
+    # ----------------------------------------------
+
+    # Sweden total population
+    sweden_pop = vaccine_region['population_2019'].sum()
+
+    # Percentage of population vaccinated
+    percent_vaccinated = (vaccine_region['total_vaccinations'].sum() 
+                          / sweden_pop * 100)
+
+    fig = go.Figure()
+
+    # Vaccinated
+    fig.add_trace(
+        go.Bar(
+            name="Vaccinerade",
+            y=list(" "),
+            x=[percent_vaccinated],
+            marker=dict(color='rgb(40, 40, 140)'),
+            orientation='h',
+            text=['Vaccinerade'],
+            hoverlabel=dict(
+                bgcolor='white',
+                bordercolor='gray',
+                font=dict(
+                    color='black'
+                )
+            ),
+            hovertemplate=
+            '<extra></extra>'+
+            '<b>%{text}</b><br>'+
+            '%{x:.2f}%'
+        )
     )
-)
 
-
-fig.update_layout(
-    title="<b>Andelen av Befolkningen som Vaccinerat</b>",
-    barmode='stack',
-    legend_traceorder='normal',
-    font=dict(
-        family='Arial'
-    ),
-    xaxis=dict(
-        title="% Vaccinerade",
-        linewidth=2,
-        linecolor='black',
-        gridwidth=1,
-        gridcolor='rgb(220, 220, 220)'
-    ),
-    yaxis=dict(
-        linewidth=2,
-        linecolor='black',
-    ),
-    height=130,
-    margin=dict(t=30, b=0),
-    plot_bgcolor='white'
-)
-
-fig.write_html('graphs/vaccine/percent_vaccine.html')
-
-# --------------------------------------
-# Graph - % population vaccinated county
-# Filename: percentage_vaccine_county
-# --------------------------------------
-
-# I do not know why this is needed but without it the plot returns:
-# RecursionError: maximum recursion depth exceeded while calling a Python object
-vaccine_region['county'] = vaccine_region['county'].apply(lambda x: x[:20])
-
-vaccine_region = vaccine_region.sort_values('percent_vaccinated')
-
-fig = go.Figure()
-
-# Vaccinated
-fig.add_trace(
-    go.Bar(
-        name="Vaccinerade",
-        y=list(vaccine_region['county']),
-        x=list(vaccine_region['percent_vaccinated']),
-        marker=dict(color='rgb(40, 40, 140)'),
-        orientation='h',
-        text=['Vaccinerade']*21,
-        hoverlabel=dict(
-            bgcolor='white',
-            bordercolor='gray',
-            font=dict(
-                color='black'
-            )
-        ),
-        hovertemplate=
-        '<extra>%{y}</extra>'+
-        '<b>%{text}</b><br>'+
-        '%{x:.2f}%'
+    # Not vaccinated
+    fig.add_trace(
+        go.Bar(
+            name="Ej Vaccinerade",
+            y=list(" "),
+            x=[100-percent_vaccinated],
+            marker=dict(color='rgba(140, 140, 140, 0.8)'),
+            orientation='h',
+            text=['Ej Vaccinerade'],
+            hoverlabel=dict(
+                bgcolor='white',
+                bordercolor='gray',
+                font=dict(
+                    color='black'
+                )
+            ),
+            hovertemplate=
+            '<extra></extra>'+
+            '<b>%{text}</b><br>'+
+            '%{x:.2f}%'
+        )
     )
-)
 
-# Not vaccinated
-fig.add_trace(
-    go.Bar(
-        name="Ej Vaccinerade",
-        y=list(vaccine_region['county']),
-        x=list(100-vaccine_region['percent_vaccinated']),
-        marker=dict(color='rgba(140, 140, 140, 0.8)'),
-        orientation='h',
-        text=['Ej Vaccinerade']*21,
-        hoverlabel=dict(
-            bgcolor='white',
-            bordercolor='gray',
-            font=dict(
-                color='black'
-            )
+
+    fig.update_layout(
+        title="<b>Andelen av Befolkningen som Vaccinerat</b>",
+        barmode='stack',
+        legend_traceorder='normal',
+        font=dict(
+            family='Arial'
         ),
-        hovertemplate=
-        '<extra>%{y}</extra>'+
-        '<b>%{text}</b><br>'+
-        '%{x:.2f}%'
+        xaxis=dict(
+            title="% Vaccinerade",
+            linewidth=2,
+            linecolor='black',
+            gridwidth=1,
+            gridcolor='rgb(220, 220, 220)'
+        ),
+        yaxis=dict(
+            linewidth=2,
+            linecolor='black',
+        ),
+        height=130,
+        margin=dict(t=30, b=0),
+        plot_bgcolor='white'
     )
-)
 
-fig.update_layout(
-    title="<b>Andelen av Befolkningen som Vaccinerat per Län</b>",
-    barmode='stack',
-    legend_traceorder='normal',
-    font=dict(
-        family='Arial'
-    ),
-    xaxis=dict(
-        title="% Vaccinerade",
-        linewidth=2,
-        linecolor='black',
-        gridwidth=1,
-        gridcolor='rgb(220, 220, 220)'
-    ),
-    yaxis=dict(
-        linewidth=2,
-        linecolor='black',
-    ),
-    height=700,
-    margin=dict(t=30, b=0),
-    plot_bgcolor='white'
-)
+    fig.write_html('graphs/vaccine/percent_vaccine.html')
 
-fig.write_html('graphs/vaccine/percent_vaccine_county.html')
+    # --------------------------------------
+    # Graph - % population vaccinated county
+    # Filename: percentage_vaccine_county
+    # --------------------------------------
+
+    # I do not know why this is needed but without it the plot returns:
+    # RecursionError: maximum recursion depth exceeded while calling a Python 
+    # object
+    vaccine_region['county'] = [x[:20] for x in vaccine_region['county']]
+
+    vaccine_region = vaccine_region.sort_values('percent_vaccinated')
+
+    fig = go.Figure()
+
+    # Vaccinated
+    fig.add_trace(
+        go.Bar(
+            name="Vaccinerade",
+            y=list(vaccine_region['county']),
+            x=list(vaccine_region['percent_vaccinated']),
+            marker=dict(color='rgb(40, 40, 140)'),
+            orientation='h',
+            text=['Vaccinerade']*21,
+            hoverlabel=dict(
+                bgcolor='white',
+                bordercolor='gray',
+                font=dict(
+                    color='black'
+                )
+            ),
+            hovertemplate=
+            '<extra>%{y}</extra>'+
+            '<b>%{text}</b><br>'+
+            '%{x:.2f}%'
+        )
+    )
+
+    # Not vaccinated
+    fig.add_trace(
+        go.Bar(
+            name="Ej Vaccinerade",
+            y=list(vaccine_region['county']),
+            x=list(100-vaccine_region['percent_vaccinated']),
+            marker=dict(color='rgba(140, 140, 140, 0.8)'),
+            orientation='h',
+            text=['Ej Vaccinerade']*21,
+            hoverlabel=dict(
+                bgcolor='white',
+                bordercolor='gray',
+                font=dict(
+                    color='black'
+                )
+            ),
+            hovertemplate=
+            '<extra>%{y}</extra>'+
+            '<b>%{text}</b><br>'+
+            '%{x:.2f}%'
+        )
+    )
+
+    fig.update_layout(
+        title="<b>Andelen av Befolkningen som Vaccinerat per Län</b>",
+        barmode='stack',
+        legend_traceorder='normal',
+        font=dict(
+            family='Arial'
+        ),
+        xaxis=dict(
+            title="% Vaccinerade",
+            linewidth=2,
+            linecolor='black',
+            gridwidth=1,
+            gridcolor='rgb(220, 220, 220)'
+        ),
+        yaxis=dict(
+            linewidth=2,
+            linecolor='black',
+        ),
+        height=700,
+        margin=dict(t=30, b=0),
+        plot_bgcolor='white'
+    )
+
+    fig.write_html('graphs/vaccine/percent_vaccine_county.html')
+
+except:
+    print('ERROR: Vaccination data not retrieved')
+    pass
 
 # =============================================================================
 # Stockholm
@@ -1619,7 +1626,8 @@ hospital = pd.read_excel(
     sheet_name='Antal intensivvårdade per dag')
 
 hospital['Datum_vårdstart'] = pd.to_datetime(
-    hospital['Datum_vårdstart'], format='%Y-%m-%d')
+    hospital['Datum_vårdstart'], 
+    format='%Y-%m-%d')
 
 # 7 day rolling average
 hospital['7_day_rolling'] = hospital['Antal_intensivvårdade'].rolling(
@@ -1953,7 +1961,8 @@ daily_deaths = pd.read_excel(
 daily_deaths = daily_deaths[daily_deaths['Datum_avliden'] != 'Uppgift saknas']
 
 daily_deaths['Datum_avliden'] = pd.to_datetime(
-    daily_deaths['Datum_avliden'],format='%Y-%m-%d')
+    daily_deaths['Datum_avliden'],
+    format='%Y-%m-%d')
 
 # 7 day rolling average
 daily_deaths['total_7_day'] = daily_deaths['Antal_avlidna'].rolling(
