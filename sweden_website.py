@@ -25,7 +25,10 @@ template=dict(
     layout=go.Layout(
         title=dict(
             x=0,
-            xref='paper'
+            xref='paper',
+            y=0.96,
+            yref='container',
+            yanchor='top'
         ),
         xaxis=dict(
             showline=True,
@@ -46,6 +49,13 @@ template=dict(
         hovermode='closest'
     )
 )
+
+plot_config={
+    'modeBarButtonsToRemove': [
+        'toggleSpikelines', 'hoverClosestCartesian', 'hoverCompareCartesian',
+        'lasso2d', 'toggleSpikelines', 'autoScale2d', 'zoom2d'
+    ]
+}
 
 # =============================================================================
 # Cases
@@ -114,6 +124,15 @@ daily_cases['cases_per_10000'] = (daily_cases['cases'] /
 daily_cases['cases_7_day_per_10000'] = (daily_cases['cases_7_day'] / 
                                         daily_cases['population_2019'] * 10000)
 
+# Thousand comma separator to be used in graph labels
+daily_cases['cases_str'] = ["{:,}".format(x) for x in daily_cases['cases']]
+daily_cases['cases_7_day_str'] = ["{:,}".format(round(x, 2)) 
+                                  for x in daily_cases['cases_7_day']]
+daily_cases['cases_7_day_per_10000_str'] = ["{:,}".format(round(x, 2)) 
+                                            for x in
+                                            daily_cases['cases_7_day_per_10000']]
+
+
 # -------------------------
 # Graph - daily cases
 # Filename: daily_cases_all
@@ -130,10 +149,13 @@ fig.add_trace(
         x=list(df['Statistikdatum']),
         y=list(df['cases_7_day']),
         showlegend=False,
-        text=list(df['cases']),
+        customdata=np.stack((
+            df['cases_7_day_str'],
+            df['cases_str']
+        ), axis=-1),
         hoverlabel=dict(
             bgcolor='white',
-            bordercolor='blue',
+            bordercolor='steelblue',
             font=dict(
                 color='black'
             )
@@ -141,8 +163,8 @@ fig.add_trace(
         hovertemplate=
         '<extra></extra>'+
         '<b>%{x}</b><br>'+
-        '<b>Medelvärde</b>: %{y:.1f}<br>'+
-        '<b>Daglig</b>: %{text}'
+        '<b>Medelvärde</b>: %{customdata[0]}<br>'+
+        '<b>Daglig</b>: %{customdata[1]}'
     )
 )
 
@@ -159,26 +181,15 @@ fig.add_trace(
 
 fig.update_layout(
     template=template,
-    title="<b>Bekräftade Fall per Dag</b><br><sup>7 dagar glidande medelvärde",
+    title=("<b>Bekräftade Fall per Dag</b>"
+           "<br><sub>7 dagar glidande medelvärde"
+           "<br>Källa: Folkhälsomyndigheten"),
     yaxis_title="Antal Fall",
-    annotations=[
-        dict(
-            x=0, y=-0.15,
-            text="Källa: Folkhälsomyndigheten",
-            showarrow=False,
-            xref='paper',
-            yref='paper',
-            xanchor='left',
-            yanchor='auto',
-            xshift=0,
-            yshift=0,
-            font=dict(size=11,
-                      color='dimgray')
-        )
-    ]
+    height=600,
+    margin=dict(t=100)
 )
 
-fig.write_html('graphs/cases/daily_cases_all.html')
+fig.write_html('graphs/cases/daily_cases_all.html', config=plot_config)
 
 # --------------------------------
 # Graph - daily cases per county
@@ -199,6 +210,7 @@ for value, region in enumerate(regions, start=3):
             x=list(df['Statistikdatum'][df['county'] == region]),
             y=list(df['cases_7_day'][df['county'] == region]),
             showlegend=False,
+            text=df['cases_7_day_str'],
             hoverlabel=dict(
                 bgcolor='white',
                 bordercolor='gray',
@@ -209,7 +221,7 @@ for value, region in enumerate(regions, start=3):
             hovertemplate=
             '<extra></extra>'+
             '<b>%{x}</b><br>'+
-            '%{y:.1f}'
+            '%{text}'
         ),
         row=value//3, col=value%3+1
     )
@@ -222,6 +234,7 @@ for value, region in enumerate(regions, start=3):
             y=list(df['cases_7_day_per_10000'][df['county'] == region]),
             visible=False,
             showlegend=False,
+            text=df['cases_7_day_per_10000_str'],
             hoverlabel=dict(
                 bgcolor='white',
                 bordercolor='gray',
@@ -232,7 +245,7 @@ for value, region in enumerate(regions, start=3):
             hovertemplate=
             '<extra></extra>'+
             '<b>%{x}</b><br>'+
-            '%{y:.1f}'
+            '%{text}'
         ),
         row=value//3, col=value%3+1
     )
@@ -253,55 +266,46 @@ fig.update_yaxes(
 )
 
 fig.update_layout(
-    title="<b>Bekräftade Fall per Län</b><br><sup>7 dagar glidande medelvärde",
-    font=dict(
-        family='Arial'
+    title=dict(
+        text=("<b>Bekräftade Fall per Län</b>"
+              "<br><sub>7 dagar glidande medelvärde"
+              "<br>Källa: Folkhälsomyndigheten"),
+        x=0,
+        xref='paper',
+        y=0.96,
+        yref='container',
+        yanchor='top'
     ),
-    plot_bgcolor='white',
+    margin=dict(t=120),
     height=800,
+    plot_bgcolor='white',
     updatemenus=[
         dict(
             direction='down',
             x=1,
             xanchor='right',
-            y=1.1,
-            yanchor='top',
+            y=1.07,
+            yanchor='bottom',
             buttons=list([
                 dict(label="Antal Fall",
                      method='update',
                      args=[{'visible': [True]*21 + [False]*21},
-                             {'title': ("<b>Bekräftade Fall per Län</b><br>"
-                                        "<sup>7 dagar glidande medelvärde")}]),
+                             {'title': ("<b>Bekräftade Fall per Dag per Län</b>"
+                                        "<br><sub>7 dagar glidande medelvärde"
+                                        "<br>Källa: Folkhälsomyndigheten")}]),
                 dict(label="Antal Fall per 10,000",
                      method='update',
                      args=[{'visible': [False]*21 + [True]*21},
-                             {'title': ("<b>Bekräftade Fall per Län "
-                                        "(per 10,000)</b><br><sup>7 dagar "
-                                        "glidande medelvärde")}]),
+                             {'title': ("<b>Bekräftade Fall per Dag per Län "
+                                        "(per 10,000)</b>"
+                                        "<br><sub>7 dagar glidande medelvärde"
+                                        "<br>Källa: Folkhälsomyndigheten")}]),
             ])
         )
     ]
 )
 
-fig.add_annotation(
-    dict(
-        x=0, y=-0.08,
-        text="Källa: Folkhälsomyndigheten",
-        showarrow=False,
-        xref='paper',
-        yref='paper',
-        xanchor='left',
-        yanchor='auto',
-        xshift=0,
-        yshift=0,
-        font=dict(
-            size=11,
-            color='dimgray'
-        )
-    )
-)
-
-fig.write_html('graphs/cases/daily_cases_per_county.html')
+fig.write_html('graphs/cases/daily_cases_per_county.html', config=plot_config)
 
 # ---------------------------------------------
 # Graph - daily cases per county (single graph)
@@ -317,6 +321,7 @@ for region in regions:
             x=list(df['Statistikdatum'][df['county'] == region]),
             y=list(df['cases_7_day'][df['county'] == region]),
             name=region,
+            text=df['cases_7_day_str'],
             hoverlabel=dict(
                 bgcolor='white',
                 bordercolor='gray',
@@ -326,7 +331,7 @@ for region in regions:
             ),
             hovertemplate=
             '<b>%{x}</b><br>'+
-            '%{y:.1f}'
+            '%{text}'
         )
     )
 
@@ -338,6 +343,7 @@ for region in regions:
             y=list(df['cases_7_day_per_10000'][df['county'] == region]),
             name=region,
             visible=False,
+            text=df['cases_7_day_per_10000_str'],
             hoverlabel=dict(
                 bgcolor='white',
                 bordercolor='gray',
@@ -347,56 +353,44 @@ for region in regions:
             ),
             hovertemplate=
             '<b>%{x}</b><br>'+
-            '%{y:.1f}'
+            '%{text}'
         )
     )
 
 fig.update_layout(
     template=template,
-    title="<b>Bekräftade Fall per Län</b><br><sup>7 dagar glidande medelvärde",
+    title=("<b>Bekräftade Fall per Dag per Län</b>"
+           "<br><sub>7 dagar glidande medelvärde"
+           "<br>Källa: Folkhälsomyndigheten"),
+    yaxis_separatethousands=True,
     height=600,
-    annotations=[
-        dict(
-            x=0, y=-0.15,
-            text="Källa: Folkhälsomyndigheten",
-            showarrow=False,
-            xref='paper',
-            yref='paper',
-            xanchor='left',
-            yanchor='auto',
-            xshift=0,
-            yshift=0,
-            font=dict(
-                size=11,
-                color='dimgray'
-            )
-        )
-    ],
     updatemenus=[
         dict(
             direction='down',
             x=1,
             xanchor='right',
-            y=1.1,
-            yanchor='top',
+            y=1.01,
+            yanchor='bottom',
             buttons=list([
                 dict(label="Antal Fall",
                      method='update',
                      args=[{'visible': [True]*21 + [False]*21},
-                           {'title': ("<b>Bekräftade Fall per Län</b><br>"
-                                      "<sup>7 dagar glidande medelvärde")}]),
+                           {'title': ("<b>Bekräftade Fall per Dag per Län</b>"
+                                      "<br><sub>7 dagar glidande medelvärde"
+                                      "<br>Källa: Folkhälsomyndigheten")}]),
                 dict(label="Antal Fall per 10,000",
                      method='update',
                      args=[{'visible': [False]*21 + [True]*21},
-                           {'title': ("<b>Bekräftade Fall per Län (per 10,000)"
-                                      "</b><br><sup>7 dagar "
-                                      "glidande medelvärde")}]),
+                           {'title': ("<b>Bekräftade Fall per Dag per Län "
+                                      "(per 10,000)</b><br>"
+                                      "<sub>7 dagar glidande medelvärde"
+                                      "<br>Källa: Folkhälsomyndigheten")}]),
                     ]
             )
     )]
 )
 
-fig.write_html('graphs/cases/daily_cases_per_county_single.html')
+fig.write_html('graphs/cases/daily_cases_per_county_single.html', config=plot_config)
 
 # ---------------------------------------------------
 # Graph - percentage of population with positive test
@@ -503,33 +497,19 @@ fig.add_trace(
 
 fig.update_layout(
     template=template,
-    title="<b>Andelen av Befolkningen som har Testat Positivt i COVID-19</b>",
+    title=("<b>Andelen av Befolkningen som har Testat Positivt i COVID-19</b>"
+           "<br><sub>Källa: Folkhälsomyndigheten"),
     xaxis=dict(
         title="Åldersgrupp",
         gridwidth=0
     ),
     yaxis_title="%",
-    annotations=[
-        dict(
-            x=0, y=-0.15,
-            text="Källa: Folkhälsomyndigheten",
-            showarrow=False,
-            xref='paper',
-            yref='paper',
-            xanchor='left',
-            yanchor='auto',
-            xshift=0,
-            yshift=0,
-            font=dict(
-                size=11,
-                color='dimgray'
-            )
-        )
-    ]
+    height=500,
+    margin=dict(t=80)
 
 )
 
-fig.write_html('graphs/cases/percentage_cases.html')
+fig.write_html('graphs/cases/percentage_cases.html', config=plot_config)
 
 # -------------------------
 # Graph - number of tests
@@ -606,7 +586,7 @@ fig.add_trace(
         text=weekly_tests['number_individual_tests_str'],
         hoverlabel=dict(
             bgcolor='white',
-            bordercolor='blue',
+            bordercolor='steelblue',
             font=dict(
                 color='black'
             )
@@ -651,7 +631,7 @@ fig.add_trace(
         text=weekly_tests['number_antibody_str'],
         hoverlabel=dict(
             bgcolor='white',
-            bordercolor='blue',
+            bordercolor='steelblue',
             font=dict(
                 color='black'
             )
@@ -664,63 +644,34 @@ fig.add_trace(
 )
 
 fig.update_layout(
-    title="<b>Antal per Vecka - Nukleinsyrapåvisning</b>",
-    font=dict(
-        family='Arial'
-    ),
-    xaxis=dict(
-        title="Vecka",
-        linewidth=2,
-        linecolor='black',
-        gridwidth=1,
-        gridcolor='rgb(240, 240, 240)'
-    ),
-    yaxis=dict(
-        title="Antal Tester",
-        linewidth=2,
-        linecolor='black',
-        gridwidth=1,
-        gridcolor='rgb(240, 240, 240)'
-    ),
-    plot_bgcolor='white',
-    annotations=[
-        dict(
-            x=0,
-            y=-0.15,
-            text="Källa: Folkhälsomyndigheten",
-            showarrow=False,
-            xref='paper',
-            yref='paper',
-            xanchor='left',
-            yanchor='auto',
-            xshift=0,
-            yshift=0,
-            font=dict(
-                size=11,
-                color='dimgray'
-            )
-        )
-    ],
+    template=template,
+    title=("<b>Antal per Vecka - Nukleinsyrapåvisning</b>"
+           "<br><sub>Källa: Folkhälsomyndigheten"),
+    yaxis_title="Antal Tester",
+    height=600,
+    margin=dict(t=70),
     updatemenus=[dict(
         direction='down',
         x=1,
         xanchor='right',
-        y=1.1,
-        yanchor='top',
+        y=1.02,
+        yanchor='bottom',
         buttons=list([
             dict(label="Nukleinsyrapåvisning",
                  method='update',
                  args=[{'visible': [True, True, False]},
-                       {'title': "<b>Antal per Vecka - Nukleinsyrapåvisning</b>"}]),
+                       {'title': ("<b>Antal per Vecka - Nukleinsyrapåvisning</b>"
+                                  "<br><sub>Källa: Folkhälsomyndigheten")}]),
             dict(label="Antikroppspåvisning",
                  method='update',
                  args=[{'visible': [False, False, True]},
-                       {'title': "<b>Antal per Vecka - Antikroppspåvisning</b>"}]),
+                       {'title': ("<b>Antal per Vecka - Antikroppspåvisning</b>"
+                                  "<br><sub>Källa: Folkhälsomyndigheten")}]),
         ])
     )]
 )
 
-fig.write_html('graphs/cases/number_of_tests.html')
+fig.write_html('graphs/cases/number_of_tests.html', config=plot_config)
 
 # ---------------------------
 # Antibody tests
@@ -795,41 +746,19 @@ fig.add_trace(
 )
 
 fig.update_layout(
-    title="<b>Andel Positiva Antikropps Tester - " + week_str + "</b>",
-    xaxis=dict(
-        title="% Positiv",
-        linewidth=2,
-        linecolor='black',
-        gridcolor='rgb(240, 240, 240)',
-        gridwidth=2
-    ),
+    template=template,
+    title=("<b>Andel Positiva Antikropps Tester - " + week_str + "</b>"
+           "<br><sub>Källa: Folkhälsomyndigheten"),
+    xaxis_title="% Positiv",
     yaxis=dict(
-        linewidth=2,
-        linecolor='black'
+        gridwidth=0
     ),
     plot_bgcolor='white',
     height=700,
-    annotations=[
-        dict(
-            x=0,
-            y=-0.15,
-            text="Källa: Folkhälsomyndigheten",
-            showarrow=False,
-            xref='paper',
-            yref='paper',
-            xanchor='left',
-            yanchor='auto',
-            xshift=0,
-            yshift=0,
-            font=dict(
-                size=11,
-                color='dimgray'
-            )
-        )
-    ]
+    margin=dict(t=70, l=120)
 )
 
-fig.write_html('graphs/cases/positive_antibody.html')
+fig.write_html('graphs/cases/positive_antibody.html', config=plot_config)
 
 # =============================================================================
 # Vaccinations
@@ -964,7 +893,7 @@ try:
         plot_bgcolor='white'
     )
 
-    fig.write_html('graphs/vaccine/percent_vaccine.html')
+    fig.write_html('graphs/vaccine/percent_vaccine.html', config=plot_config)
 
     # --------------------------------------
     # Graph - % population vaccinated county
@@ -1049,7 +978,7 @@ try:
         plot_bgcolor='white'
     )
 
-    fig.write_html('graphs/vaccine/percent_vaccine_county.html')
+    fig.write_html('graphs/vaccine/percent_vaccine_county.html', config=plot_config)
 
 except:
     print('ERROR: Vaccination data not retrieved')
@@ -1113,15 +1042,15 @@ stockholm_län['fall_per_10000'] = (stockholm_län['nya_fall_vecka'] /
 
 stockholm_län = stockholm_län.sort_values(['år', 'veckonummer'])
 
+stockholm_län['nya_fall_vecka_str'] = ["{:,}".format(x) for x in 
+                                       stockholm_län['nya_fall_vecka']]
+
 df = stockholm_län
 
 fig = make_subplots(
     4, 7,
     subplot_titles=(stockholm_kommuns),
     shared_xaxes=True)
-
-xaxis_text = ["Vecka " + str(i) + ", 2020" for i in range(1, 54)]
-xaxis_text = xaxis_text + ["Vecka " + str(i) + ", 2021" for i in range(1, 53)]
 
 # New cases per week
 for value, region in enumerate(stockholm_kommuns, start=7):
@@ -1131,7 +1060,11 @@ for value, region in enumerate(stockholm_kommuns, start=7):
                list(df['veckonummer'][df['Kommun_stadsdel'] == region])],
             y=list(df['nya_fall_vecka'][df['Kommun_stadsdel'] == region]),
             showlegend=False,
-            text=xaxis_text,
+            customdata=np.stack((
+                df['veckonummer'][df['Kommun_stadsdel'] == region],
+                df['år'][df['Kommun_stadsdel'] == region],
+                df['nya_fall_vecka_str'][df['Kommun_stadsdel'] == region]
+            ), axis=-1),
             hoverlabel=dict(
                 bgcolor='white',
                 bordercolor='gray',
@@ -1141,8 +1074,8 @@ for value, region in enumerate(stockholm_kommuns, start=7):
             ),
             hovertemplate=
             '<extra></extra>'+
-            '<b>%{text}</b><br>'+
-            'Cases: %{y}'
+            '<b>Vecka %{customdata[0]} - %{customdata[1]}</b><br>'+
+            'Cases: %{customdata[2]}'
         ), value//7, value%7+1
     )
 
@@ -1155,7 +1088,10 @@ for value, region in enumerate(stockholm_kommuns, start=7):
             y=list(df['fall_per_10000'][df['Kommun_stadsdel'] == region]),
             visible=False,
             showlegend=False,
-            text=xaxis_text,
+            customdata=np.stack((
+                df['veckonummer'][df['Kommun_stadsdel'] == region],
+                df['år'][df['Kommun_stadsdel'] == region]
+            ), axis=-1),
             hoverlabel=dict(
                 bgcolor='white',
                 bordercolor='gray',
@@ -1166,11 +1102,12 @@ for value, region in enumerate(stockholm_kommuns, start=7):
             hovertemplate=
             '<extra></extra>'+
             '<b>%{text}</b><br>'+
-            '<b>Cases</b>: %{y:.3f}'
+            '<b>Cases per 10,000</b>: %{y:.2f}'
         ), value//7, value%7+1
     )
 
 fig.update_xaxes(
+    showdividers=False,
     linewidth=1,
     linecolor='black',
     gridwidth=1,
@@ -1185,54 +1122,42 @@ fig.update_yaxes(
 )
 
 fig.update_layout(
-    title="<b>Bekräftade Fall inom Stockholms Län per Vecka</b>",
-    font=dict(
-        family='Arial'
+    title=dict(
+        text=("<b>Bekräftade Fall inom Stockholms Län per Vecka</b>"
+              "<br><sub>Källa: Folkhälsomyndigheten"),
+        x=0,
+        xref='paper',
+        y=0.96,
+        yref='container',
+        yanchor='top'
     ),
     plot_bgcolor='white',
     height=800,
-    margin=dict(b=80),
+    margin=dict(t=80, b=70),
     updatemenus=[dict(
         direction='down',
         x=1,
         xanchor='right',
-        y=1.1,
-        yanchor='top',
+        y=1.05,
+        yanchor='bottom',
         buttons=list([
             dict(label="Antal Fall",
                  method='update',
                  args=[{'visible': [True]*26 + [False]*26},
-                         {'title': ("<b>Bekräftade Fall inom Stockholms Län " 
-                                    "per Vecka</b>")}]),
+                         {'title': ("<b>Bekräftade Fall inom Stockholms Län "
+                                    "per Vecka</b><br>"
+                                    "<sub>Källa: Folkhälsomyndigheten")}]),
             dict(label="Antal Fall per 10,000",
                  method='update',
                  args=[{'visible': [False]*26 + [True]*26},
                          {'title': ("<b>Bekräftade Fall inom Stockholms Län "
-                                    "per Vecka (per 10,000)</b>")}]),
+                                    "per Vecka (per 10,000)</b><br>"
+                                    "<sub>Källa: Folkhälsomyndigheten")}]),
         ])
     )]
 )
 
-fig.add_annotation(
-    dict(
-        x=0,
-        y=-0.11,
-        text="Källa: Folkhälsomyndigheten",
-        showarrow=False,
-        xref='paper',
-        yref='paper',
-        xanchor='left',
-        yanchor='auto',
-        xshift=0,
-        yshift=0,
-        font=dict(
-            size=11,
-            color='dimgray'
-        )
-    )
-)
-
-fig.write_html('graphs/stockholm/cases_stockholm_county.html')
+fig.write_html('graphs/stockholm/cases_stockholm_county.html', config=plot_config)
 
 # -------------------------------------------------------------
 # Graph - daily cases per area of Stockholms Län (single graph)
@@ -1249,7 +1174,11 @@ for region in stockholm_kommuns:
                list(df['veckonummer'][df['Kommun_stadsdel'] == region])],
             y=list(df['nya_fall_vecka'][df['Kommun_stadsdel'] == region]),
             name=region,
-            text=xaxis_text,
+            customdata=np.stack((
+                df['veckonummer'][df['Kommun_stadsdel'] == region],
+                df['år'][df['Kommun_stadsdel'] == region],
+                df['nya_fall_vecka_str'][df['Kommun_stadsdel'] == region]
+            ), axis=-1),
             hoverlabel=dict(
                 bgcolor='white',
                 bordercolor='gray',
@@ -1258,8 +1187,9 @@ for region in stockholm_kommuns:
                 )
             ),
             hovertemplate=
-            '<b>%{text}</b><br>'+
-            'Cases: %{y}'
+            '<extra></extra>'+
+            '<b>Vecka %{customdata[0]} - %{customdata[1]}</b><br>'+
+            'Cases: %{customdata[2]}'
         )
     )
 
@@ -1272,7 +1202,10 @@ for region in stockholm_kommuns:
             y=list(df['fall_per_10000'][df['Kommun_stadsdel'] == region]),
             name=region,
             visible=False,
-            text=xaxis_text,
+            customdata=np.stack((
+                df['veckonummer'][df['Kommun_stadsdel'] == region],
+                df['år'][df['Kommun_stadsdel'] == region]
+            ), axis=-1),
             hoverlabel=dict(
                 bgcolor='white',
                 bordercolor='gray',
@@ -1281,47 +1214,18 @@ for region in stockholm_kommuns:
                 )
             ),
             hovertemplate=
-            '<b>%{text}</b><br>'+
-            '<b>Cases</b>: %{y:.3f}'
+            '<b>Vecka %{customdata[0]} - %{customdata[1]}</b><br>'+
+            '<b>Cases</b>: %{y:.2f}'
         )
     )
 
 fig.update_layout(
-    title="<b>Bekräftade Fall inom Stockholms Län</b>",
-    font=dict(
-        family='Arial'
-    ),
-    xaxis=dict(
-        title="Vecka",
-        linewidth=1,
-        linecolor='black',
-        gridwidth=1,
-        gridcolor='rgb(240, 240, 240)'
-    ),
-    yaxis=dict(
-        linewidth=1,
-        linecolor='black',
-        gridwidth=1,
-        gridcolor='rgb(240, 240, 240)'
-    ),
-    plot_bgcolor='white',
-    height=700,
-    annotations=[
-        dict(
-            x=0,
-            y=-0.15,
-            text="Källa: Folkhälsomyndigheten",
-            showarrow=False,
-            xref='paper',
-            yref='paper',
-            xanchor='left',
-            yanchor='auto',
-            xshift=0,
-            yshift=0,
-            font=dict(size=11,
-                      color='dimgray')
-        )
-    ],
+    template=template,
+    title=("<b>Bekräftade Fall inom Stockholms Län</b>"
+           "<br><sub>Källa: Folkhälsomyndigheten"),
+    xaxis_title="Vecka",
+    height=600,
+    margin=dict(t=70),
     updatemenus=[
         dict(
             direction='down',
@@ -1333,19 +1237,21 @@ fig.update_layout(
                 dict(label="Antal Fall",
                      method='update',
                      args=[{'visible': [True]*26 + [False]*26},
-                             {'title': ("<b>Bekräftade Fall inom Stockholms "
-                                        "Län</b>")}]),
+                             {'title': ("<b>Bekräftade Fall inom Stockholms Län"
+                                        "</b><br>"
+                                        "<sub>Källa: Folkhälsomyndigheten")}]),
                 dict(label="Antal Fall per 10,000",
                      method='update',
                      args=[{'visible': [False]*26 + [True]*26},
-                             {'title': ("<b>Bekräftade Fall inom Stockholms "
-                                        "Län (per 10,000)</b>")}]),
+                             {'title': ("<b>Bekräftade Fall inom Stockholms Län"
+                                        " (per 10,000)</b><br>"
+                                        "<sub>Källa: Folkhälsomyndigheten")}]),
             ])
         )
     ]
 )
 
-fig.write_html('graphs/stockholm/cases_stockholm_county_single.html')
+fig.write_html('graphs/stockholm/cases_stockholm_county_single.html', config=plot_config)
 
 # -------------------------------------------------
 # Graph - weekly cases per area of Stockholm Kommun
@@ -1374,6 +1280,9 @@ stockholm_kommun['nya_fall_vecka_10000'] = (stockholm_kommun['nya_fall_vecka']
                                             / stockholm_kommun['befolkning_2019']
                                             * 10000)
 
+stockholm_kommun['nya_fall_vecka_str'] = ["{:,}".format(x) for x in
+                                          stockholm_kommun['nya_fall_vecka']]
+
 df = stockholm_kommun
 regions = list(df['Stadsdel'].unique())
 
@@ -1387,7 +1296,11 @@ for value, region in enumerate(regions, start=3):
                list(df['veckonummer'][df['Stadsdel'] == region])],
             y=list(df['nya_fall_vecka'][df['Stadsdel'] == region]),
             showlegend=False,
-            text=xaxis_text,
+            customdata=np.stack((
+                df['veckonummer'][df['Kommun_stadsdel'] == region],
+                df['år'][df['Kommun_stadsdel'] == region],
+                df['nya_fall_vecka_str'][df['Kommun_stadsdel'] == region]
+            ), axis=-1),
             hoverlabel=dict(
                 bgcolor='white',
                 bordercolor='gray',
@@ -1397,8 +1310,8 @@ for value, region in enumerate(regions, start=3):
             ),
             hovertemplate=
             '<extra></extra>'+
-            '<b>%{text}</b><br>'+
-            'Cases: %{y}'
+            '<b>Week %{customdata[0]} - %{customdata[1]}</b><br>'+
+            '<b>Cases</b>: %{customdata[2]}'
         ), value//3, value%3+1
     )
 
@@ -1411,7 +1324,10 @@ for value, region in enumerate(regions, start=3):
             y=list(df['nya_fall_vecka_10000'][df['Stadsdel'] == region]),
             showlegend=False,
             visible=False,
-            text=xaxis_text,
+            customdata=np.stack((
+                df['veckonummer'][df['Kommun_stadsdel'] == region],
+                df['år'][df['Kommun_stadsdel'] == region]
+            ), axis=-1),
             hoverlabel=dict(
                 bgcolor='white',
                 bordercolor='gray',
@@ -1421,12 +1337,13 @@ for value, region in enumerate(regions, start=3):
             ),
             hovertemplate=
             '<extra></extra>'+
-            '<b>%{text}</b><br>'+
-            'Cases: %{y}'
+            '<b>Week %{customdata[0]} - %{customdata[1]}</b><br>'+
+            '<b>Cases per 10,000</b>: %{y:.2f}'
         ), value//3, value%3+1
     )
 
 fig.update_xaxes(
+    showdividers=False,
     linewidth=1,
     linecolor='black',
     gridwidth=1,
@@ -1442,57 +1359,44 @@ fig.update_yaxes(
 
 
 fig.update_layout(
-    title="<b>Bekräftade Fall inom Stockholms Kommun per Vecka</b>",
-    font=dict(
-        family='Arial'
+    title=dict(
+        text=("<b>Bekräftade Fall inom Stockholms Kommun per Vecka</b>"
+              "<br><sub>Källa: Folkhälsomyndigheten"),
+        x=0,
+        xref='paper',
+        y=0.96,
+        yref='container',
+        yanchor='top'
     ),
     plot_bgcolor='white',
     height=700,
-    margin=dict(b=70),
+    margin=dict(t=80, b=70),
     updatemenus=[
         dict(
             direction='down',
             x=1,
             xanchor='right',
-            y=1.13,
-            yanchor='top',
+            y=1.05,
+            yanchor='bottom',
             buttons=list([
                 dict(label="Antal Fall",
                      method='update',
                      args=[{'visible': [True]*14 + [False]*14},
                              {'title': ("<b>Bekräftade Fall inom Stockholms "
-                                        "Kommun per Vecka</b>")}]),
+                                        "Kommun per Vecka</b><br><sub>"
+                                        "Källa: Folkhälsomyndigheten")}]),
                 dict(label="Antal Fall per 10,000",
                      method='update',
                      args=[{'visible': [False]*14 + [True]*14},
                              {'title': ("<b>Bekräftade Fall inom Stockholms "
-                                        "Kommun per Vecka (per 10,000)</b>")}]),
+                                        "Kommun per Vecka (per 10,000)</b><br>"
+                                        "<sub>Källa: Folkhälsomyndigheten")}]),
             ])
         )
     ]
 )
 
-fig.add_annotation(
-    dict(
-        x=0,
-        y=-0.12,
-        text="Källa: Folkhälsomyndigheten",
-        showarrow=False,
-        xref='paper',
-        yref='paper',
-        xanchor='left',
-        yanchor='auto',
-        xshift=0,
-        yshift=0,
-        font=dict(
-            size=11,
-            color='dimgray'
-        )
-    )
-
-)
-
-fig.write_html('graphs/stockholm/cases_stockholm_kommun.html')
+fig.write_html('graphs/stockholm/cases_stockholm_kommun.html', config=plot_config)
 
 # ---------------------------------------------------------------
 # Graph - daily cases per area of Stockholm Kommun (single graph)
@@ -1509,7 +1413,11 @@ for region in regions:
                list(df['veckonummer'][df['Stadsdel'] == region])],
             y=list(df['nya_fall_vecka'][df['Stadsdel'] == region]),
             name=region,
-            text=xaxis_text,
+            customdata=np.stack((
+                df['veckonummer'][df['Kommun_stadsdel'] == region],
+                df['år'][df['Kommun_stadsdel'] == region],
+                df['nya_fall_vecka_str'][df['Kommun_stadsdel'] == region]
+            ), axis=-1),
             hoverlabel=dict(
                 bgcolor='white',
                 bordercolor='gray',
@@ -1519,8 +1427,8 @@ for region in regions:
             ),
             hovertemplate=
             '<extra></extra>'+
-            '<b>%{text}</b><br>'+
-            'Cases: %{y}'
+            '<b>Week %{customdata[0]} - %{customdata[1]}</b><br>'+
+            '<b>Cases</b>: %{customdata[2]}'
         )
     )
 
@@ -1533,7 +1441,10 @@ for region in regions:
             y=list(df['nya_fall_vecka_10000'][df['Stadsdel'] == region]),
             name=region,
             visible=False,
-            text=xaxis_text,
+            customdata=np.stack((
+                df['veckonummer'][df['Kommun_stadsdel'] == region],
+                df['år'][df['Kommun_stadsdel'] == region],
+            ), axis=-1),
             hoverlabel=dict(
                 bgcolor='white',
                 bordercolor='gray',
@@ -1543,49 +1454,17 @@ for region in regions:
             ),
             hovertemplate=
             '<extra></extra>'+
-            '<b>%{text}</b><br>'+
-            'Cases: %{y}'
+            '<b>Week %{customdata[0]} - %{customdata[1]}</b><br>'+
+            '<b>Cases</b>: %{y:.2f}'
         )
     )
 
 fig.update_layout(
-    title="<b>Bekräftade Fall inom Stockholms Kommun</b>",
-    font=dict(
-        family='Arial'
-    ),
-    xaxis=dict(
-        title="Vecka",
-        linewidth=1,
-        linecolor='black',
-        gridwidth=1,
-        gridcolor='rgb(240, 240, 240)'
-    ),
-    yaxis=dict(
-        linewidth=1,
-        linecolor='black',
-        gridwidth=1,
-        gridcolor='rgb(240, 240, 240)'
-    ),
-    plot_bgcolor='white',
+    template=template,
+    title=("<b>Bekräftade Fall per Vecka inom Stockholms Kommun</b><br>"
+           "<sub>Källa: Folkhälsomyndigheten"),
     height=700,
-    annotations=[
-        dict(
-            x=0,
-            y=-0.15,
-            text="Källa: Folkhälsomyndigheten",
-            showarrow=False,
-            xref='paper',
-            yref='paper',
-            xanchor='left',
-            yanchor='auto',
-            xshift=0,
-            yshift=0,
-            font=dict(
-                size=11,
-                color='dimgray'
-            )
-        )
-    ],
+    margin=dict(t=80),
     updatemenus=[
         dict(
             direction='down',
@@ -1597,19 +1476,21 @@ fig.update_layout(
                 dict(label="Antal Fall",
                      method='update',
                      args=[{'visible': [True]*14 + [False]*14},
-                             {'title': ("<b>Bekräftade Fall inom Stockholms "
-                                        "Kommun per Vecka</b>")}]),
+                             {'title': ("<b>Bekräftade Fall per Vecka inom "
+                                        "Stockholms Kommun</b><br><sub>"
+                                        "Källa: Folkhälsomyndigheten")}]),
                 dict(label="Antal Fall per 10,000",
                      method='update',
                      args=[{'visible': [False]*14 + [True]*14},
-                             {'title': ("<b>Bekräftade Fall inom Stockholms "
-                                        "Kommun per Vecka (per 10,000)</b>")}]),
+                             {'title': ("<b>Bekräftade Fall per Vecka inom "
+                                        "Stockholms Kommun per (10,000)</b><br>"
+                                        "<sub>Källa: Folkhälsomyndigheten")}]),
             ])
         )
     ]
 )
 
-fig.write_html('graphs/stockholm/cases_stockholm_kommun_single.html')
+fig.write_html('graphs/stockholm/cases_stockholm_kommun_single.html', config=plot_config)
 
 # =============================================================================
 # Intensive ward
@@ -1646,7 +1527,7 @@ fig.add_trace(
         text=list(hospital['Antal_intensivvårdade']),
         hoverlabel=dict(
             bgcolor='white',
-            bordercolor='blue',
+            bordercolor='steelblue',
             font=dict(
                 color='black'
             )
@@ -1673,27 +1554,14 @@ fig.add_trace(
 fig.update_layout(
     template=template,
     title=("<b>Antal Intensivvårdade per Dag</b>"
-           "<br><sup>7 dagar glidande medelvärde"),
+           "<br><sub>7 dagar glidande medelvärde<br>"
+           "Källa: Folkhälsomyndigheten"),
     yaxis_title="Antal Intensivvårdade",
-    annotations=[
-        dict(
-            x=0,
-            y=-0.15,
-            text="Källa: Folkhälsomyndigheten",
-            showarrow=False,
-            xref='paper',
-            yref='paper',
-            xanchor='left',
-            yanchor='auto',
-            xshift=0,
-            yshift=0,
-            font=dict(size=11,
-                      color='dimgray')
-        )
-    ]
+    height=600,
+    margin=dict(t=90)
 )
 
-fig.write_html('graphs/intensiv/intensive_ward_all.html')
+fig.write_html('graphs/intensiv/intensive_ward_all.html', config=plot_config)
 
 # ---------------------------------------
 # Graph - daily intensive ward per region
@@ -1725,9 +1593,6 @@ regions['Intensivvård_per_10000'] = (regions['Antal_intensivvårdade_vecka']
 df = regions
 regions_list = list(df['Region'].unique())
 
-xaxis_text = ["Vecka " + str(i) + ", 2020" for i in range(1, 53)]
-xaxis_text = xaxis_text + ["Vecka " + str(i) + ", 2021" for i in range(1, 53)]
-
 fig = make_subplots(3, 7, subplot_titles=(regions_list), shared_xaxes=True)
 
 # Intensive ward per week
@@ -1737,7 +1602,10 @@ for value, region in enumerate(regions_list, start=7):
             x=[list(df['år'][df['Region'] == region]),
                list(df['veckonummer'][df['Region'] == region])],
             y=list(df['Antal_intensivvårdade_vecka'][df['Region'] == region]),
-            text=xaxis_text,
+            customdata=np.stack((
+                df['veckonummer'][df['Region'] == region],
+                df['år'][df['Region'] == region],
+            ), axis=-1),
             hoverlabel=dict(
                 bgcolor='white',
                 bordercolor='gray',
@@ -1747,7 +1615,7 @@ for value, region in enumerate(regions_list, start=7):
             ),
             hovertemplate=
             '<extra></extra>'+
-            '<b>%{text}</b><br>'+
+            '<b>Week %{customdata[0]} - %{customdata[1]}</b><br>'+
             '<b>Antal Intensivvårdade</b>: %{y}',
             showlegend=False
         ), value//7, value%7+1
@@ -1760,7 +1628,10 @@ for value, region in enumerate(regions_list, start=7):
             x=[list(df['år'][df['Region'] == region]),
                list(df['veckonummer'][df['Region'] == region])],
             y=list(df['Intensivvård_per_10000'][df['Region'] == region]),
-            text=xaxis_text,
+            customdata=np.stack((
+                df['veckonummer'][df['Region'] == region],
+                df['år'][df['Region'] == region],
+            ), axis=-1),
             hoverlabel=dict(
                 bgcolor='white',
                 bordercolor='gray',
@@ -1770,7 +1641,7 @@ for value, region in enumerate(regions_list, start=7):
             ),
             hovertemplate=
             '<extra></extra>'+
-            '<b>%{text}</b><br>'+
+            '<b>Week %{customdata[0]} - %{customdata[1]}</b><br>'+
             '<b>Antal Intensivvårdade</b>: %{y:.3f}',
             showlegend=False,
             visible=False
@@ -1779,6 +1650,7 @@ for value, region in enumerate(regions_list, start=7):
 
 
 fig.update_xaxes(
+    showdividers=False,
     linewidth=1,
     linecolor='black',
     gridwidth=1,
@@ -1793,9 +1665,14 @@ fig.update_yaxes(
 )
 
 fig.update_layout(
-    title_text="<b>Antal Intensivvådade per Län</b>",
-    font=dict(
-        family='Arial'
+    title=dict(
+        text=("<b>Antal Intensivvådade per Län</b><br>"
+              "<sub>Källa: Folkhälsomyndigheten"),
+        x=0,
+        xref='paper',
+        y=0.96,
+        yref='container',
+        yanchor='top'
     ),
     plot_bgcolor='white',
     height=800,
@@ -1805,42 +1682,26 @@ fig.update_layout(
             direction='down',
             x=1,
             xanchor='right',
-            y=1.1,
-            yanchor='top',
+            y=1.05,
+            yanchor='bottom',
             buttons=list([
                 dict(label="Antal Intensivvådade",
                     method='update',
                     args=[{'visible': [True]*21 + [False]*21},
-                          {'title': "<b>Antal Intensivvådade per Län</b>"}]),
+                          {'title': ("<b>Antal Intensivvådade per Län</b><br>"
+                                     "<sub>Källa: Folkhälsomyndigheten")}]),
                 dict(label="Antal per 10,000",
                     method='update',
                     args=[{'visible': [False]*21 + [True]*21},
                           {'title': ("<b>Antal Intensivvådade per Län "
-                                     "(per 10,000)</b>")}]),
+                                     "per (10,000)</b><br>"
+                                     "<sub>Källa: Folkhälsomyndigheten")}]),
             ])
         )
     ]
 )
 
-fig.add_annotation(
-    dict(
-        x=0, y=-0.11,
-        text="Källa: Folkhälsomyndigheten",
-        showarrow=False,
-        xref='paper',
-        yref='paper',
-        xanchor='left',
-        yanchor='auto',
-        xshift=0,
-        yshift=0,
-        font=dict(
-            size=11,
-            color='dimgray'
-        )
-    )
-)
-
-fig.write_html('graphs/intensiv/intensive_ward_per_county.html')
+fig.write_html('graphs/intensiv/intensive_ward_per_county.html', config=plot_config)
 
 # ------------------------------------------------------
 # Graph - daily intensive ward per region (single graph)
@@ -1857,7 +1718,10 @@ for region in regions_list:
                list(df['veckonummer'][df['Region'] == region])],
             y=list(df['Antal_intensivvårdade_vecka'][df['Region'] == region]),
             name=region,
-            text=xaxis_text,
+            customdata=np.stack((
+                df['veckonummer'][df['Region'] == region],
+                df['år'][df['Region'] == region],
+            ), axis=-1),
             hoverlabel=dict(
                 bgcolor='white',
                 bordercolor='gray',
@@ -1867,7 +1731,7 @@ for region in regions_list:
             ),
             hovertemplate=
             '<extra></extra>'+
-            '<b>%{text}</b><br>'+
+            '<b>Week %{customdata[0]} - %{customdata[1]}</b><br>'+
             '<b>Antal Intensivvårdade</b>: %{y}'
         )
     )
@@ -1881,7 +1745,10 @@ for region in regions_list:
             y=list(df['Intensivvård_per_10000'][df['Region'] == region]),
             name=region,
             visible=False,
-            text=xaxis_text,
+            customdata=np.stack((
+                df['veckonummer'][df['Region'] == region],
+                df['år'][df['Region'] == region],
+            ), axis=-1),
             hoverlabel=dict(
                 bgcolor='white',
                 bordercolor='gray',
@@ -1891,34 +1758,18 @@ for region in regions_list:
             ),
             hovertemplate=
             '<extra></extra>'+
-            '<b>%{text}</b><br>'+
+            '<b>Week %{customdata[0]} - %{customdata[1]}</b><br>'+
             '<b>Antal Intensivvårdade</b>: %{y:.3f}'
         )
     )
 
 fig.update_layout(
     template=template,
-    title="<b>Antal Intensivvådade per Län</b>",
+    title=("<b>Antal Intensivvådade per Län</b><br>"
+           "<sub>Källa: Folkhälsomyndigheten"),
     xaxis_title="Vecka",
     height=700,
-    annotations=[
-        dict(
-            x=0,
-            y=-0.15,
-            text="Källa: Folkhälsomyndigheten",
-            showarrow=False,
-            xref='paper',
-            yref='paper',
-            xanchor='left',
-            yanchor='auto',
-            xshift=0,
-            yshift=0,
-            font=dict(
-                size=11,
-                color='dimgray'
-            )
-        )
-    ],
+    margin=dict(t=80),
     updatemenus=[
         dict(
             direction='down',
@@ -1930,18 +1781,20 @@ fig.update_layout(
                 dict(label="Antal Intensivvådade",
                     method='update',
                     args=[{'visible': [True]*21 + [False]*21},
-                          {'title': "<b>Antal Intensivvådade per Län</b>"}]),
+                          {'title': ("<b>Antal Intensivvådade per Län</b><br>"
+                                     "<sub>Källa: Folkhälsomyndigheten")}]),
                 dict(label="Antal per 10,000",
                     method='update',
                     args=[{'visible': [False]*21 + [True]*21},
-                          {'title': ("<b>Antal Intensivvådade per Län "
-                                     "(per 10,000)</b>")}]),
+                          {'title': ("<b>Antal Intensivvådade per Län (per "
+                                     "10,000)</b><br>"
+                                     "<sub>Källa: Folkhälsomyndigheten")}]),
             ])
         )
     ]
 )
 
-fig.write_html('graphs/intensiv/intensive_ward_per_county_single.html')
+fig.write_html('graphs/intensiv/intensive_ward_per_county_single.html', config=plot_config)
 
 # =============================================================================
 # Deaths
@@ -1981,7 +1834,7 @@ fig.add_trace(
         showlegend=False,
         hoverlabel=dict(
             bgcolor='white',
-            bordercolor='blue',
+            bordercolor='steelblue',
             font=dict(
                 color='black'
             )
@@ -2007,29 +1860,15 @@ fig.add_trace(
 
 fig.update_layout(
     template=template,
-    title="<b>Antal Avlidna i COVID-19</b><br><sup>7 dagar glidande medelvärde",
+    title=("<b>Antal Avlidna i COVID-19</b><br>"
+           "<sub>7 dagar glidande medelvärde<br>"
+           "Källa: Folkhälsomyndigheten"),
     yaxis_title="Antal Avlidna",
-    annotations=[
-        dict(
-            x=0,
-            y=-0.15,
-            text="Källa: Folkhälsomyndigheten",
-            showarrow=False,
-            xref='paper',
-            yref='paper',
-            xanchor='left',
-            yanchor='auto',
-            xshift=0,
-            yshift=0,
-            font=dict(
-                size=11,
-                color='dimgray'
-            )
-        )
-    ]
+    height=600,
+    margin=dict(t=90)
 )
 
-fig.write_html('graphs/deaths/deaths_all.html')
+fig.write_html('graphs/deaths/deaths_all.html', config=plot_config)
 
 # ----------------------------------------
 # Graph - weekly deaths vs. 5 year average
@@ -2037,16 +1876,23 @@ fig.write_html('graphs/deaths/deaths_all.html')
 # ----------------------------------------
 
 # Statistiska centralbyrån data on weekly deaths from 2015 to 2019
-all_deaths_url = ("https://www.scb.se/en/finding-statistics/"
-                  "statistics-by-subject-area/population/"
-                  "population-composition/population-statistics/pong/"
-                  "tables-and-graphs/preliminary-statistics-on-deaths/")
+#all_deaths_url = ("https://www.scb.se/en/finding-statistics/"
+ #                 "statistics-by-subject-area/population/"
+  #                "population-composition/population-statistics/pong/"
+   #               "tables-and-graphs/preliminary-statistics-on-deaths/")
+
+
+all_deaths_url = ("https://www.scb.se/hitta-statistik/statistik-efter-amne/"
+                  "befolkning/befolkningens-sammansattning/"
+                  "befolkningsstatistik/pong/tabell-och-diagram/"
+                  "preliminar-statistik-over-doda/")
 
 sweden_weekly = pd.read_excel(
     all_deaths_url, 
     sheet_name = 'Tabell 1',
     skiprows = 6,
-    usecols = [0,1,2,3,4,5,6,7])
+    usecols = [0,1,2,3,4,5,6,7]
+)
 
 # Remove 29th February to give same number of days in each year. Also drop the
 # row that contained deaths with an unknown date.
@@ -2095,26 +1941,20 @@ sweden_average['5_year_max'] = sweden_average[
 
 # Append the data frame to itself to create two years worth of averages.
 sweden_average = sweden_average.append(sweden_average)
-sweden_average['vecka'] = list(range(1,105))
-
-# Create a data frame with 104 weeks and one columns with 2020 deaths followed
-# by 2021 deaths.
-sweden_pandemic = pd.DataFrame(
-    {
-        'vecka': list(range(1,105)),
-        'deaths': sweden_pandemic['weekly_2020'].append(
+sweden_average['pandemic'] = sweden_pandemic['weekly_2020'].append(
             sweden_pandemic['weekly_2021'])
-    }
-)
+sweden_average['år'] = [2020]*52 + [2021]*52
 
 # Drop the weeks which have not happened yet and then remove the most recent 3
 # weeks to avoid showing incomplete data (it takes a couple of weeks for all
 # deaths to be published).
-sweden_pandemic = sweden_pandemic[sweden_pandemic['deaths'] != 0]
-sweden_pandemic = sweden_pandemic.iloc[:-3, :]
-sweden_average = sweden_average.iloc[:len(sweden_pandemic.index), :]
+sweden_average = sweden_average.iloc[
+    :(sweden_average['pandemic'] == 0).argmax() - 3, :]
 
 df = sweden_average
+
+df['DM_str'] = [x.split(' ')[0] + ' ' + x.split(' ')[1][:3] 
+                for x in df['DagMånad']]
 
 fig = go.Figure()
 
@@ -2123,7 +1963,8 @@ fig = go.Figure()
 # the origin.
 fig.add_trace(
     go.Scatter(
-        x=list(df['vecka']) + list(df['vecka'][::-1]),
+        x=[list(df['år']) + list(df['år'][::-1]),
+           list(df['DM_str']) + list(df['DM_str'][::-1])],
         y=list(df['5_year_max']) + list(df['5_year_min'][::-1]),
         name="5 year min/max",
         line=dict(color='rgba(200, 200, 200, 0.5)'),
@@ -2136,11 +1977,11 @@ fig.add_trace(
 # 5-year average
 fig.add_trace(
     go.Scatter(
-        x=list(df['vecka']),
+        x=[list(df['år']), list(df['DM_str'])],
         y=list(df['5_year_average']),
         name="5 year avg.",
         line=dict(dash='dash'),
-        text=list(range(1,53))*2,
+        text=sweden_average['DM_str'],
         hoverlabel=dict(
             bgcolor='white',
             bordercolor='red',
@@ -2150,7 +1991,7 @@ fig.add_trace(
         ),
         hovertemplate=
         '<extra></extra>'+
-        '<b>Vecka %{text}, 2015-2019</b><br>'+
+        '<b>%{text} - 2015-2019</b><br>'+
         '%{y:.1f}'
     )
 )
@@ -2158,11 +1999,14 @@ fig.add_trace(
 # Pandemic deaths
 fig.add_trace(
     go.Scatter(
-        x=list(sweden_pandemic['vecka']),
-        y=list(sweden_pandemic['deaths']),
+        x=[list(sweden_average['år']), list(df['DM_str'])],
+        y=list(sweden_average['pandemic']),
         line=dict(color='blue'),
         name="2020/2021",
-        text=xaxis_text,
+        customdata=np.stack((
+            sweden_average['DM_str'],
+            sweden_average['år']
+        ), axis=-1),
         hoverlabel=dict(
             bgcolor='white',
             bordercolor='blue',
@@ -2172,54 +2016,33 @@ fig.add_trace(
         ),
         hovertemplate=
         '<extra></extra>'+
-        '<b>%{text}</b><br>'+
+        '<b>%{customdata[0]} - %{customdata[1]}</b><br>'+
         '%{y:.1f}'
     )
 )
 
-# Set the tick values to show the start of 2020 and 2021
-tickvals = [1, 15, 30, 45, 53, 67, 82, 97, 104]
-ticktext = ['1 (2020)', '15', '30', '45', '1 (2021)', '15', '30', '45', '52']
-
-# Set the length of values and text lists to the correct length given the size
-# of the data frame.
-max_index = np.min([i for i in tickvals if i >= len(df.index)])
-ticktext = ticktext[:tickvals.index(max_index)]
-tickvals = tickvals[:tickvals.index(max_index)]
-
 fig.update_layout(
     template=template,
-    title=("<b>Antal Avlidna per Vecka (2020-2021) vs. "
-           "Medelvärde över 5 år (2015-2019)"),
+    title=("<b>Antal Avlidna per Vecka (2020-2021) vs.<br>"
+           "Medelvärde över 5 år (2015-2019)</b><br>"
+           "<sub>Källa: Statistiska Centralbyrån"),
     xaxis=dict(
-        title="Vecka",
-        tickmode='array',
-        tickvals=tickvals,
-        ticktext=ticktext
+        title="7 Days Ending",
+        #showdividers=False,
+        tickmode="auto",
+        nticks=15,
+        tickangle=45
     ),
-    yaxis_title="Antal Avlidna",
+    yaxis=dict(
+        title="Antal Avlidna",
+        separatethousands=True
+    ),
     legend=dict(traceorder='reversed'),
-    annotations=[
-        dict(
-            x=0,
-            y=-0.15,
-            text="Källa: Statistiska Centralbyrån",
-            showarrow=False,
-            xref='paper',
-            yref='paper',
-            xanchor='left',
-            yanchor='auto',
-            xshift=0,
-            yshift=0,
-            font=dict(
-                size=11,
-                color='dimgray'
-            )
-        )
-    ]
+    height=600,
+    margin=dict(t=90, b=130)
 )
 
-fig.write_html('graphs/deaths/deaths_weekly.html')
+fig.write_html('graphs/deaths/deaths_weekly.html', config=plot_config)
 
 # ----------------------------
 # Graph - case fatality rate
@@ -2256,34 +2079,18 @@ fig.add_trace(
 )
 fig.update_layout(
     template=template,
-    title="<b>Case Fatality Rate by Age Group</b>",
-    plot_bgcolor='white',
+    title=("<b>Case Fatality Rate by Age Group</b>"
+           "<br><sub>Källa: Folkhälsomyndigheten"),
+    height=600,
+    margin=dict(t=80),
     xaxis=dict(
         title="Åldersgrupp",
         gridwidth=0
     ),
-    yaxis_title="Case Fatality Rate",
-    annotations=[
-        dict(
-            x=0,
-            y=-0.15,
-            text="Källa: Folkhälsomyndigheten",
-            showarrow=False,
-            xref='paper',
-            yref='paper',
-            xanchor='left',
-            yanchor='auto',
-            xshift=0,
-            yshift=0,
-            font=dict(
-                size=11,
-                color='dimgray'
-            )
-        )
-    ]
+    yaxis_title="Case Fatality Rate"
 )
 
-fig.write_html('graphs/deaths/case_fatality_rate.html')
+fig.write_html('graphs/deaths/case_fatality_rate.html', config=plot_config)
 
 # ---------------------------
 # Graph - deaths by age group
@@ -2352,40 +2159,31 @@ fig.add_trace(
 
 fig.update_layout(
     template=template,
-    title="<b>Antal Avlidna per Åldersgrupp</b>",
+    title=("<b>Antal Avlidna per Åldersgrupp</b><br>"
+           "<sub>Källa: Folkhälsomyndigheten"),
     xaxis=dict(
         title="Åldersgrupp",
         gridwidth=0
     ),
-    yaxis_title="Antal Avlidna",
-    annotations=[
-        dict(
-            x=0,
-            y=-0.15,
-            text="Källa: Folkhälsomyndigheten",
-            showarrow=False,
-            xref='paper',
-            yref='paper',
-            xanchor='left',
-            yanchor='auto',
-            xshift=0,
-            yshift=0,
-            font=dict(size=11,
-                      color='dimgray')
-        )
-    ],
+    yaxis=dict(
+        title="Antal Avlidna",
+        separatethousands=True
+    ),
+    height=600,
+    margin=dict(t=80),
     updatemenus=[
         dict(
             direction='down',
             x=1,
             xanchor='right',
-            y=1.1,
-            yanchor='top',
+            y=1.01,
+            yanchor='bottom',
             buttons=list([
                 dict(label="Antal Avlidna",
                      method='update',
                      args=[{'visible': [True, False]},
-                           {'title': "<b>Antal Avlidna per Åldersgrupp</b>",
+                           {'title': ("<b>Antal Avlidna per Åldersgrupp</b><br>"
+                                      "<sub>Källa: Folkhälsomyndigheten"),
                             'yaxis': {'title': 'Antal Avlidna',
                                       'gridcolor': 'rgb(240, 240, 240)',
                                       'gridwidth': 2,
@@ -2395,7 +2193,8 @@ fig.update_layout(
                      method='update',
                      args=[{'visible': [False, True]},
                            {'title': ("<b>Andelen av Befolkningen som har "
-                                      "Dött i COVID-19 - per Åldersgrupp</b>"),
+                                      "Dött i COVID-19 - per Åldersgrupp</b>"
+                                      "<br><sub>Källa: Folkhälsomyndigheten"),
                             'yaxis': {'title': '% per Åldersgrupp',
                                       'gridcolor': 'rgb(240, 240, 240)',
                                       'gridwidth': 2,
@@ -2406,7 +2205,7 @@ fig.update_layout(
     ]
 )
 
-fig.write_html('graphs/deaths/deaths_age_group.html')
+fig.write_html('graphs/deaths/deaths_age_group.html', config=plot_config)
 
 # -----------------------
 # Graph - comorbidities
@@ -2436,8 +2235,9 @@ df = comorbidities
 # Män
 fig.add_trace(
     go.Bar(
-        x=list(df['Sjukdomsgrupper']),
-        y=list(df['Män']),
+        y=list(df['Sjukdomsgrupper']),
+        x=list(df['Män']),
+        orientation='h',
         marker=dict(
             color='skyblue'
         ),
@@ -2450,16 +2250,17 @@ fig.add_trace(
             )
         ),
         hovertemplate=
-        '<b>%{x}</b><br>'+
-        '%{y}'
+        '<b>%{y}</b><br>'+
+        '%{x}'
     )
 )
 
 # Kvinnor
 fig.add_trace(
     go.Bar(
-        x=list(df['Sjukdomsgrupper']),
-        y=list(df['Kvinnor']),
+        y=list(df['Sjukdomsgrupper']),
+        x=list(df['Kvinnor']),
+        orientation='h',
         marker=dict(
             color='darkblue'
         ),
@@ -2472,39 +2273,32 @@ fig.add_trace(
             )
         ),
         hovertemplate=
-        '<b>%{x}</b><br>'+
-        '%{y}'
+        '<b>%{y}</b><br>'+
+        '%{x}'
     )
 )
 
 fig.update_layout(
     template=template,
-    title="<b>Antal Avlidna i COVID-19 Uppdelat på Sjukdomsgrupper</b>",
+    title=("<b>Antal Avlidna i COVID-19 Uppdelat på Sjukdomsgrupper</b>"
+           "<br><sub>Källa: Socialstyrelsen"),
     xaxis=dict(
+        title="Antal Avlidna",
+        separatethousands=True,
         gridwidth=0
     ),
-    yaxis_title="Antal Avlidna",
-    annotations=[
-        dict(
-            x=0,
-            y=-0.15,
-            text="Källa: Socialstyrelsen",
-            showarrow=False,
-            xref='paper',
-            yref='paper',
-            xanchor='left',
-            yanchor='auto',
-            xshift=0,
-            yshift=0,
-            font=dict(
-                size=11,
-                color='dimgray'
-            )
-        )
-    ]
+    yaxis=dict(
+        autorange='reversed',
+        tickmode='array',
+        tickvals=df['Sjukdomsgrupper'],
+        ticktext=['Hjärt- och<br>kärlsjukdom', 'Högt<br>blodtryck', 'Diabetes', 
+                  'Lungsjukdom', 'Ingen av<br>sjukdomsgrupperna']
+    ),
+    height=600,
+    margin=dict(t=80, l=150)
 )
 
-fig.write_html('graphs/deaths/comorbidities.html')
+fig.write_html('graphs/deaths/comorbidities.html', config=plot_config)
 
 # ---------------------------------
 # Graph - number of comorbidities
@@ -2522,8 +2316,9 @@ df = number_comorbidities
 # Män
 fig.add_trace(
     go.Bar(
-        x=list(df['Sjukdomsgrupper']),
-        y=list(df['Män']),
+        y=list(df['Sjukdomsgrupper']),
+        x=list(df['Män']),
+        orientation='h',
         name="Män",
         marker=dict(
             color='skyblue'
@@ -2536,16 +2331,17 @@ fig.add_trace(
             )
         ),
         hovertemplate=
-        '<b>%{x}</b><br>'+
-        '%{y}'
+        '<b>%{y}</b><br>'+
+        '%{x}'
     )
 )
 
 # Kvinnor
 fig.add_trace(
     go.Bar(
-        x=list(df['Sjukdomsgrupper']),
-        y=list(df['Kvinnor']),
+        y=list(df['Sjukdomsgrupper']),
+        x=list(df['Kvinnor']),
+        orientation='h',
         name="Kvinnor",
         marker=dict(
             color='darkblue'
@@ -2558,39 +2354,31 @@ fig.add_trace(
             )
         ),
         hovertemplate=
-        '<b>%{x}</b><br>'+
-        '%{y}'
+        '<b>%{y}</b><br>'+
+        '%{x}'
     )
 )
 
 fig.update_layout(
     template=template,
-    title="<b>Antal av Sjukdomsgrupper</b>",
+    title="<b>Antal av Sjukdomsgrupper</b><br><sub>Källa: Socialstyrelsen",
     xaxis=dict(
+        title="Antal Avlidna",
+        separatethousands=True,
         gridwidth=0
     ),
-    yaxis_title="Antal Avlidna",
-    annotations=[
-        dict(
-            x=0,
-            y=-0.15,
-            text="Källa: Socialstyrelsen",
-            showarrow=False,
-            xref='paper',
-            yref='paper',
-            xanchor='left',
-            yanchor='auto',
-            xshift=0,
-            yshift=0,
-            font=dict(
-                size=11,
-                color='dimgray'
-            )
-        )
-    ]
+    yaxis=dict(
+        tickmode='array',
+        tickvals=df['Sjukdomsgrupper'],
+        ticktext=['Ingen av<br>sjukdomsgrupperna', 
+                  'En av <br>sjukdomsgrupperna', 
+                  '2 eller flera<br>av sjukdomsgrupperna']
+    ),
+    height=600,
+    margin=dict(t=80, l=150)
 )
 
-fig.write_html('graphs/deaths/number_of_comorbidities.html')
+fig.write_html('graphs/deaths/number_of_comorbidities.html', config=plot_config)
 
 # =============================================================================
 # Maps
@@ -2660,30 +2448,12 @@ fig.update_layout(
         l=50,
         r=50,
         b=50,
-        t=50,
+        t=80,
         pad=4
-    ),
-    annotations=[
-        dict(
-            x=0,
-            y=-0.05,
-            text="Källa: Folkhälsomyndigheten",
-            showarrow=False,
-            xref='paper',
-            yref='paper',
-            xanchor='left',
-            yanchor='auto',
-            xshift=0,
-            yshift=0,
-            font=dict(
-                size=11,
-                color='dimgray'
-            )
-        )
-    ]
+    )
 )
 
-fig.write_html('maps/Sweden_map_cases.html')
+fig.write_html('maps/Sweden_map_cases.html', config=plot_config)
 
 # --------------------------------
 # Map - total cases per 10,000
@@ -2742,30 +2512,12 @@ fig.update_layout(
         l=50,
         r=50,
         b=50,
-        t=50,
+        t=80,
         pad=4
-    ),
-    annotations=[
-        dict(
-            x=0,
-            y=-0.05,
-            text="Källa: Folkhälsomyndigheten",
-            showarrow=False,
-            xref='paper',
-            yref='paper',
-            xanchor='left',
-            yanchor='auto',
-            xshift=0,
-            yshift=0,
-            font=dict(
-                size=11,
-                color='dimgray'
-            )
-        )
-    ]
+    )
 )
 
-fig.write_html('maps/Sweden_maps_cases_10000.html')
+fig.write_html('maps/Sweden_maps_cases_10000.html', config=plot_config)
 
 # ----------------------------
 # Map - total deaths in Sweden
@@ -2795,7 +2547,7 @@ fig = go.Figure(
 )
 
 fig.update_layout(
-    title="<b>Antal Avlidna</b>",
+    title="<b>Antal Avlidna</b><br><sub>Källa: Folkhälsomyndigheten",
     hovermode ='closest',
     mapbox=dict(
         accesstoken=mapbox_access_token,
@@ -2812,28 +2564,12 @@ fig.update_layout(
         l=50,
         r=50,
         b=50,
-        t=50,
+        t=80,
         pad=4
     ),
-    annotations=[
-        dict(
-            x=0,
-            y=-0.05,
-            text="Källa: Folkhälsomyndigheten",
-            showarrow=False,
-            xref='paper',
-            yref='paper',
-            xanchor='left',
-            yanchor='auto',
-            xshift=0,
-            yshift=0,
-            font=dict(size=11,
-                      color='dimgray')
-        )
-    ]
 )
 
-fig.write_html('maps/Sweden_map_deaths.html')
+fig.write_html('maps/Sweden_map_deaths.html', config=plot_config)
 
 # ---------------------------------
 # Map - total deaths per 10,000
@@ -2867,7 +2603,8 @@ fig = go.Figure(
 )
 
 fig.update_layout(
-    title="<b>Antal Avlidna per 10,000</b>",
+    title=("<b>Antal Avlidna per 10,000</b>"
+           "<br><sub>Källa: Folkhälsomyndigheten"),
     hovermode ='closest',
     mapbox=dict(
         accesstoken=mapbox_access_token,
@@ -2884,27 +2621,9 @@ fig.update_layout(
         l=50,
         r=50,
         b=50,
-        t=50,
+        t=80,
         pad=4
-    ),
-    annotations=[
-        dict(
-            x=0,
-            y=-0.05,
-            text="Källa: Folkhälsomyndigheten",
-            showarrow=False,
-            xref='paper',
-            yref='paper',
-            xanchor='left',
-            yanchor='auto',
-            xshift=0,
-            yshift=0,
-            font=dict(
-                size=11,
-                color='dimgray'
-            )
-        )
-    ]
+    )
 )
 
-fig.write_html('maps/Sweden_maps_deaths_10000.html')
+fig.write_html('maps/Sweden_maps_deaths_10000.html', config=plot_config)
