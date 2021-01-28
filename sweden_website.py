@@ -115,20 +115,20 @@ daily_cases = daily_cases.merge(
     on='county',
     how='left')
 
-daily_cases.loc[daily_cases['county'] == 'Totalt_antal_fall', 
+daily_cases.loc[daily_cases['county'] == 'Totalt_antal_fall',
                 'population_2019'] = total_pop
 
 # Create columns with cases and 7 day rolling averages per 10,000 inhabitants
 daily_cases['cases_per_10000'] = (daily_cases['cases'] /
                                   daily_cases['population_2019'] * 10000)
-daily_cases['cases_7_day_per_10000'] = (daily_cases['cases_7_day'] / 
+daily_cases['cases_7_day_per_10000'] = (daily_cases['cases_7_day'] /
                                         daily_cases['population_2019'] * 10000)
 
 # Thousand comma separator to be used in graph labels
 daily_cases['cases_str'] = ["{:,}".format(x) for x in daily_cases['cases']]
-daily_cases['cases_7_day_str'] = ["{:,}".format(round(x, 2)) 
+daily_cases['cases_7_day_str'] = ["{:,}".format(round(x, 2))
                                   for x in daily_cases['cases_7_day']]
-daily_cases['cases_7_day_per_10000_str'] = ["{:,}".format(round(x, 2)) 
+daily_cases['cases_7_day_per_10000_str'] = ["{:,}".format(round(x, 2))
                                             for x in
                                             daily_cases['cases_7_day_per_10000']]
 
@@ -138,7 +138,7 @@ daily_cases['cases_7_day_per_10000_str'] = ["{:,}".format(round(x, 2))
 # Filename: daily_cases_all
 # -------------------------
 
-df = daily_cases[ (daily_cases['Statistikdatum'] >= '2020-02-10') 
+df = daily_cases[ (daily_cases['Statistikdatum'] >= '2020-02-10')
                  & (daily_cases['county'] == 'Totalt_antal_fall')]
 
 fig = go.Figure()
@@ -186,7 +186,7 @@ fig.update_layout(
            "<br>Källa: Folkhälsomyndigheten"),
     yaxis_title="Antal Fall",
     height=600,
-    margin=dict(t=100)
+    margin=dict(t=100, b=30)
 )
 
 fig.write_html('graphs/cases/daily_cases_all.html', config=plot_config)
@@ -276,7 +276,7 @@ fig.update_layout(
         yref='container',
         yanchor='top'
     ),
-    margin=dict(t=120),
+    margin=dict(t=120, b=60),
     height=800,
     plot_bgcolor='white',
     updatemenus=[
@@ -364,6 +364,7 @@ fig.update_layout(
            "<br>Källa: Folkhälsomyndigheten"),
     yaxis_separatethousands=True,
     height=600,
+    margin=dict(t=90, b=30),
     updatemenus=[
         dict(
             direction='down',
@@ -414,9 +415,9 @@ population_ages[['födda i Sverige.4', 'utrikes födda.4']] = population_ages[
 
 # Populations are broken down by domestic and foreign born, these are summed to
 # get the population totals.
-population_ages['Men'] = (population_ages['födda i Sverige.3'] 
+population_ages['Men'] = (population_ages['födda i Sverige.3']
                           + population_ages['utrikes födda.3'])
-population_ages['Women'] = (population_ages['födda i Sverige.4'] 
+population_ages['Women'] = (population_ages['födda i Sverige.4']
                             + population_ages['utrikes födda.4'])
 population_ages['All'] = population_ages['Men'] + population_ages['Women']
 
@@ -454,7 +455,7 @@ population_grouped_ages = population_ages.groupby('group')[
     '50-59', '60-69', '70-79', '80-89', '90+'
 ]
 
-åldersgrupp['case_fatality_rate'] = (åldersgrupp['Totalt_antal_avlidna'] 
+åldersgrupp['case_fatality_rate'] = (åldersgrupp['Totalt_antal_avlidna']
                                      / åldersgrupp['Totalt_antal_fall'])
 
 åldersgrupp['case_fatality_rate_rounded'] = round(
@@ -467,11 +468,11 @@ population_grouped_ages = population_ages.groupby('group')[
     how='left')
 
 # Percentage of people in each age group who have tested positive
-åldersgrupp['case_%'] = (åldersgrupp['Totalt_antal_fall'] 
+åldersgrupp['case_%'] = (åldersgrupp['Totalt_antal_fall']
                          / åldersgrupp['All'] * 100)
 
 # Percentage of population which has tested positive
-total_percentage = (sum(åldersgrupp['Totalt_antal_fall']) 
+total_percentage = (sum(åldersgrupp['Totalt_antal_fall'])
                     / sum(åldersgrupp['All']) * 100)
 
 fig = go.Figure()
@@ -504,7 +505,7 @@ fig.update_layout(
         gridwidth=0
     ),
     yaxis_title="%",
-    height=500,
+    height=600,
     margin=dict(t=80)
 
 )
@@ -764,225 +765,363 @@ fig.write_html('graphs/cases/positive_antibody.html', config=plot_config)
 # Vaccinations
 # =============================================================================
 
-# The website often changes the way it reports data hence the need for the
-# test on whether the current code works.
-try:
-    # The following fetches the html for the webpage with the most up-to-date
-    # vaccination numbers and extracts the table containing this information.
-    vaccine_url = ("https://www.folkhalsomyndigheten.se/smittskydd-beredskap/"
-                   "utbrott/aktuella-utbrott/covid-19/vaccination-mot-covid-19/"
-                   "statistik-over-vaccinerade-mot-covid-19/")
+vaccine_url = ("https://fohm.maps.arcgis.com/sharing/rest/content/items"
+               "/fc749115877443d29c2a49ea9eca77e9/data")
 
-    page = get(vaccine_url).text
-    soup = BeautifulSoup(page, 'lxml')
-    table = soup.findAll('table')[1]
+urlretrieve(vaccine_url, 'data/vaccine.xlsx')
 
-    # Extract week numbers from the table
-    county = []
-    pfizer = []
-    moderna = []
-    for row in table.findAll('tr'):
-        if row.find('th').get('scope')=='row':
-            county.append(row.find(text=True))
-            cells = row.findAll('td')
-            pfizer.append(int(cells[0].find(text=True).replace(" ", "")))
-            moderna.append(int(cells[1].find(
-                text=True).replace(" ", "").replace("–", "0")))
+# ----------------------------------------------
+# Graph - percentage vaccinated
+# Filename: percent_vaccinated
+# ----------------------------------------------
 
-    vaccine_region = pd.DataFrame(
-        {
-            'county': county,
-            'pfizer': pfizer,
-            'moderna': moderna
-        }
-    )
+vaccine = pd.read_excel(
+    'data/vaccine.xlsx',
+    sheet_name='Vaccinerade kön',
+    usecols=[0,1,2,3]
+)
 
-    vaccine_region = vaccine_region[
-        vaccine_region['county'] != 'Totala summan'].merge(
-        counties_pop,
-        on='county',                     
-        how='left')
+# Sweden total population
+sweden_pop = counties_pop['population_2019'].sum()
 
-    vaccine_region['total_vaccinations'] = (vaccine_region['pfizer'] 
-                                            + vaccine_region['moderna'])
-    vaccine_region['percent_vaccinated'] = (vaccine_region['total_vaccinations'] 
-                                            / vaccine_region['population_2019'] 
-                                            * 100)
+dose_2_percent = vaccine[ (vaccine['Kön'] == 'Tot') 
+                         & (vaccine['Dosnummer'] == 'Dos 2') 
+                        ]['Antal vaccinerade'].values[0] / sweden_pop * 100
 
-    # ----------------------------------------------
-    # Graph - % population vaccinated
-    # Filename: percentage_vaccine
-    # ----------------------------------------------
+dose_1_percent = vaccine[ (vaccine['Kön'] == 'Tot') 
+                         & (vaccine['Dosnummer'] == 'Dos 1') 
+                        ]['Antal vaccinerade'].values[0] / sweden_pop * 100
 
-    # Sweden total population
-    sweden_pop = vaccine_region['population_2019'].sum()
+x = [dose_2_percent, dose_1_percent]
+y = [100 - dose_2_percent, 100 - dose_1_percent]
 
-    # Percentage of population vaccinated
-    percent_vaccinated = (vaccine_region['total_vaccinations'].sum() 
-                          / sweden_pop * 100)
+fig = go.Figure()
 
-    fig = go.Figure()
-
-    # Vaccinated
-    fig.add_trace(
-        go.Bar(
-            name="Vaccinerade",
-            y=list(" "),
-            x=[percent_vaccinated],
-            marker=dict(color='rgb(40, 40, 140)'),
-            orientation='h',
-            text=['Vaccinerade'],
-            hoverlabel=dict(
-                bgcolor='white',
-                bordercolor='gray',
-                font=dict(
-                    color='black'
-                )
-            ),
-            hovertemplate=
-            '<extra></extra>'+
-            '<b>%{text}</b><br>'+
-            '%{x:.2f}%'
-        )
-    )
-
-    # Not vaccinated
-    fig.add_trace(
-        go.Bar(
-            name="Ej Vaccinerade",
-            y=list(" "),
-            x=[100-percent_vaccinated],
-            marker=dict(color='rgba(140, 140, 140, 0.8)'),
-            orientation='h',
-            text=['Ej Vaccinerade'],
-            hoverlabel=dict(
-                bgcolor='white',
-                bordercolor='gray',
-                font=dict(
-                    color='black'
-                )
-            ),
-            hovertemplate=
-            '<extra></extra>'+
-            '<b>%{text}</b><br>'+
-            '%{x:.2f}%'
-        )
-    )
-
-
-    fig.update_layout(
-        title="<b>Andelen av Befolkningen som Vaccinerat</b>",
-        barmode='stack',
-        legend_traceorder='normal',
-        font=dict(
-            family='Arial'
+# Percentage of people who have received either 1 or 2 doses
+fig.add_trace(
+    go.Bar(
+        name="Vaccinarade",
+        y=['Dos 2', 'Dos 1'],
+        x=x,
+        marker=dict(color='rgb(40, 40, 140)'),
+        orientation='h',
+        text=['Dos 2', 'Dos 1'],
+        hoverlabel=dict(
+            bgcolor='white',
+            bordercolor='gray',
+            font=dict(
+                color='black'
+            )
         ),
-        xaxis=dict(
-            title="% Vaccinerade",
-            linewidth=2,
-            linecolor='black',
-            gridwidth=1,
-            gridcolor='rgb(220, 220, 220)'
-        ),
-        yaxis=dict(
-            linewidth=2,
-            linecolor='black',
-        ),
-        height=130,
-        margin=dict(t=30, b=0),
-        plot_bgcolor='white'
+        hovertemplate=
+        '<extra></extra>'+
+        '<b>%{text}</b><br>'+
+        '%{x:.3f}%'
     )
+)
 
-    fig.write_html('graphs/vaccine/percent_vaccine.html', config=plot_config)
-
-    # --------------------------------------
-    # Graph - % population vaccinated county
-    # Filename: percentage_vaccine_county
-    # --------------------------------------
-
-    # I do not know why this is needed but without it the plot returns:
-    # RecursionError: maximum recursion depth exceeded while calling a Python 
-    # object
-    vaccine_region['county'] = [x[:20] for x in vaccine_region['county']]
-
-    vaccine_region = vaccine_region.sort_values('percent_vaccinated')
-
-    fig = go.Figure()
-
-    # Vaccinated
-    fig.add_trace(
-        go.Bar(
-            name="Vaccinerade",
-            y=list(vaccine_region['county']),
-            x=list(vaccine_region['percent_vaccinated']),
-            marker=dict(color='rgb(40, 40, 140)'),
-            orientation='h',
-            text=['Vaccinerade']*21,
-            hoverlabel=dict(
-                bgcolor='white',
-                bordercolor='gray',
-                font=dict(
-                    color='black'
-                )
-            ),
-            hovertemplate=
-            '<extra>%{y}</extra>'+
-            '<b>%{text}</b><br>'+
-            '%{x:.2f}%'
-        )
+# Percentage of people who have not received either 1 or 2 doses
+fig.add_trace(
+    go.Bar(
+        name="Ej Vaccinerade",
+        y=['Dos 2', 'Dos 1'],
+        x=y,
+        marker=dict(color='rgba(140, 140, 140, 0.8)'),
+        orientation='h',
+        hoverinfo='skip'
     )
+)
 
-    # Not vaccinated
-    fig.add_trace(
-        go.Bar(
-            name="Ej Vaccinerade",
-            y=list(vaccine_region['county']),
-            x=list(100-vaccine_region['percent_vaccinated']),
-            marker=dict(color='rgba(140, 140, 140, 0.8)'),
-            orientation='h',
-            text=['Ej Vaccinerade']*21,
-            hoverlabel=dict(
-                bgcolor='white',
-                bordercolor='gray',
-                font=dict(
-                    color='black'
-                )
-            ),
-            hovertemplate=
-            '<extra>%{y}</extra>'+
-            '<b>%{text}</b><br>'+
-            '%{x:.2f}%'
-        )
+fig.update_layout(
+    title=dict(
+        text=("<b>Andel av Befolkning Vaccinerade</b>"
+              "<br><sub>Source: Folkhälsomyndigheten"),
+        x=0,
+        xref='paper',
+        y=0.9,
+        yref='container',
+        yanchor='top'
+    ),
+    barmode='stack',
+    legend_traceorder='normal',
+    xaxis=dict(
+        linewidth=2,
+        linecolor='black',
+        gridwidth=1,
+        gridcolor='rgb(220, 220, 220)'
+    ),
+    yaxis=dict(
+        linewidth=2,
+        linecolor='black',
+    ),
+    height=200,
+    margin=dict(t=80, b=0),
+    plot_bgcolor='white'
+)
+
+fig.write_html('graphs/vaccine/percentage_vaccinated.html', config=config)
+
+# ------------------------------------
+# Graph - percentage vaccinated by age
+# Filename: percent_vaccinated_age
+# ------------------------------------
+
+vaccine = pd.read_excel(
+    'data/vaccine.xlsx',
+    sheet_name='Vaccinerade ålder',
+    usecols=[0,1,2,3,4]
+)
+
+vaccine = vaccine[ (vaccine['Region'] == '| Sverige |') 
+                  & (vaccine['Åldersgrupp'] != 'Totalt') ]
+
+vaccine = vaccine.replace('90 eller äldre', '90+')
+
+vaccine['Andel vaccinerade'] = vaccine['Andel vaccinerade'] * 100
+
+x = [dose_2_percent, dose_1_percent]
+y = [100 - dose_2_percent, 100 - dose_1_percent]
+
+fig = go.Figure()
+
+# Percentage of people who have received either 1 or 2 doses
+fig.add_trace(
+    go.Bar(
+        x=list(vaccine[vaccine['Dosnummer'] == 'Dos 1']['Åldersgrupp']),
+        y=list(vaccine[vaccine['Dosnummer'] == 'Dos 1']['Andel vaccinerade']),
+        marker=dict(color='rgb(40, 40, 140)'),
+        name="Dos 1",
+        hoverlabel=dict(
+            bgcolor='white',
+            bordercolor='rgb(40, 40, 140)',
+            font=dict(
+                color='black'
+            )
+        ),
+        hovertemplate=
+        '<extra></extra>'+
+        '<b>%{x}</b><br>'+
+        '%{y:.2f}%'
     )
+)
 
-    fig.update_layout(
-        title="<b>Andelen av Befolkningen som Vaccinerat per Län</b>",
-        barmode='stack',
-        legend_traceorder='normal',
-        font=dict(
-            family='Arial'
+# Percentage of people who have received either 1 or 2 doses
+fig.add_trace(
+    go.Bar(
+        x=list(vaccine[vaccine['Dosnummer'] == 'Dos 2']['Åldersgrupp']),
+        y=list(vaccine[vaccine['Dosnummer'] == 'Dos 2']['Andel vaccinerade']),
+        marker=dict(color='skyblue'),
+        name="Dos 2",
+        hoverlabel=dict(
+            bgcolor='white',
+            bordercolor='skyblue',
+            font=dict(
+                color='black'
+            )
         ),
-        xaxis=dict(
-            title="% Vaccinerade",
-            linewidth=2,
-            linecolor='black',
-            gridwidth=1,
-            gridcolor='rgb(220, 220, 220)'
-        ),
-        yaxis=dict(
-            linewidth=2,
-            linecolor='black',
-        ),
-        height=700,
-        margin=dict(t=30, b=0),
-        plot_bgcolor='white'
+        hovertemplate=
+        '<extra></extra>'+
+        '<b>%{x}</b><br>'+
+        '%{y:.2f}%'
     )
+)
 
-    fig.write_html('graphs/vaccine/percent_vaccine_county.html', config=plot_config)
+fig.update_layout(
+    title=dict(
+        text=("<b>Andel av Befolkning Vaccinerade per Åldersgrupp</b>"
+              "<br><sub>Source: Folkhälsomyndigheten"),
+        x=0,
+        xref='paper',
+        y=0.9,
+        yref='container',
+        yanchor='top'
+    ),
+    barmode='group',
+    xaxis=dict(
+        title="Åldersgrupp",
+        linewidth=2,
+        linecolor='black',
+    ),
+    yaxis=dict(
+        title="%",
+        linewidth=2,
+        linecolor='black',
+        gridwidth=1,
+        gridcolor='rgb(220, 220, 220)'
+    ),
+    height=200,
+    margin=dict(t=80, l=50),
+    plot_bgcolor='white'
+)
 
-except:
-    print('ERROR: Vaccination data not retrieved')
-    pass
+fig.write_html('graphs/vaccine/percentage_vaccinated_age.html', config=config)
+
+# ------------------------------------
+# Graph - total vaccinated time series
+# Filename: total_vaccinated
+# ------------------------------------
+
+vaccine = pd.read_excel(
+    'data/vaccine.xlsx',
+    sheet_name='Vaccinerade tidsserie',
+    usecols=[0,1,2,3,4,5]
+)
+
+vaccine = vaccine.replace('| Sverige |', 'Sverige')
+
+vaccine = vaccine[vaccine['Region'] == 'Sverige']
+
+vaccine['weekly'] = vaccine.groupby('Dosnummer')['Antal vaccinerade'].diff()
+vaccine.iloc[:2, 6] = vaccine.iloc[:2, 3]
+vaccine['weekly'] = vaccine['weekly'].astype(int)
+
+vaccine['antal_str'] = ["{:,}".format(x) for x in vaccine['Antal vaccinerade']]
+vaccine['weekly_str'] = ["{:,}".format(x) for x in vaccine['weekly']]
+
+fig = go.Figure()
+
+# Dos 1
+fig.add_trace(
+    go.Scatter(
+        x=[list(vaccine[vaccine['Dosnummer'] == 'Dos 1']['År']),
+           list(vaccine[vaccine['Dosnummer'] == 'Dos 1']['Vecka'])],
+        y=list(vaccine[vaccine['Dosnummer'] == 'Dos 1']['Antal vaccinerade']),
+        marker=dict(color='rgb(40, 40, 140)'),
+        name="Dos 1",
+        customdata=np.stack((
+            vaccine[vaccine['Dosnummer'] == 'Dos 1']['Vecka'],
+            vaccine[vaccine['Dosnummer'] == 'Dos 1']['År'],
+            vaccine[vaccine['Dosnummer'] == 'Dos 1']['antal_str']
+        ), axis=-1),
+        hoverlabel=dict(
+            bgcolor='white',
+            bordercolor='rgb(40, 40, 140)',
+            font=dict(
+                color='black'
+            )
+        ),
+        hovertemplate=
+        '<extra></extra>'+
+        '<b>Vecka %{customdata[0]} - %{customdata[1]}</b><br>'+
+        '%{customdata[2]}'
+    )
+)
+
+# Dos 2
+fig.add_trace(
+    go.Scatter(
+        x=[list(vaccine[vaccine['Dosnummer'] == 'Dos 2']['År']),
+           list(vaccine[vaccine['Dosnummer'] == 'Dos 2']['Vecka'])],
+        y=list(vaccine[vaccine['Dosnummer'] == 'Dos 2']['Antal vaccinerade']),
+        marker=dict(color='skyblue'),
+        name="Dos 2",
+        customdata=np.stack((
+            vaccine[vaccine['Dosnummer'] == 'Dos 2']['Vecka'],
+            vaccine[vaccine['Dosnummer'] == 'Dos 2']['År'],
+            vaccine[vaccine['Dosnummer'] == 'Dos 2']['antal_str']
+        ), axis=-1),
+        hoverlabel=dict(
+            bgcolor='white',
+            bordercolor='skyblue',
+            font=dict(
+                color='black'
+            )
+        ),
+        hovertemplate=
+        '<extra></extra>'+
+        '<b>Vecka %{customdata[0]} - %{customdata[1]}</b><br>'+
+        '%{customdata[2]}'
+    )
+)
+
+# Dos 1 weekly
+fig.add_trace(
+    go.Scatter(
+        x=[list(vaccine[vaccine['Dosnummer'] == 'Dos 1']['År']),
+           list(vaccine[vaccine['Dosnummer'] == 'Dos 1']['Vecka'])],
+        y=list(vaccine[vaccine['Dosnummer'] == 'Dos 1']['weekly']),
+        marker=dict(color='rgb(40, 40, 140)'),
+        name="Dos 1",
+        visible=False,
+        customdata=np.stack((
+            vaccine[vaccine['Dosnummer'] == 'Dos 1']['Vecka'],
+            vaccine[vaccine['Dosnummer'] == 'Dos 1']['År'],
+            vaccine[vaccine['Dosnummer'] == 'Dos 1']['weekly_str']
+        ), axis=-1),
+        hoverlabel=dict(
+            bgcolor='white',
+            bordercolor='rgb(40, 40, 140)',
+            font=dict(
+                color='black'
+            )
+        ),
+        hovertemplate=
+        '<extra></extra>'+
+        '<b>Vecka %{customdata[0]} - %{customdata[1]}</b><br>'+
+        '%{customdata[2]}'
+    )
+)
+
+# Dos 2 weekly
+fig.add_trace(
+    go.Scatter(
+        x=[list(vaccine[vaccine['Dosnummer'] == 'Dos 2']['År']),
+           list(vaccine[vaccine['Dosnummer'] == 'Dos 2']['Vecka'])],
+        y=list(vaccine[vaccine['Dosnummer'] == 'Dos 2']['weekly']),
+        marker=dict(color='skyblue'),
+        name="Dos 2",
+        visible=False,
+        customdata=np.stack((
+            vaccine[vaccine['Dosnummer'] == 'Dos 2']['Vecka'],
+            vaccine[vaccine['Dosnummer'] == 'Dos 2']['År'],
+            vaccine[vaccine['Dosnummer'] == 'Dos 2']['weekly_str']
+        ), axis=-1),
+        hoverlabel=dict(
+            bgcolor='white',
+            bordercolor='skyblue',
+            font=dict(
+                color='black'
+            )
+        ),
+        hovertemplate=
+        '<extra></extra>'+
+        '<b>Vecka %{customdata[0]} - %{customdata[1]}</b><br>'+
+        '%{customdata[2]}'
+    )
+)
+
+fig.update_layout(
+    template=template,
+    title=("<b>Antal av Befolkning Vaccinerade - Totalt</b>"
+           "<br><sub>Källa: Folkhälsomyndigheten"),
+    xaxis_title="Vecka",
+    height=600,
+    margin=dict(t=80),
+    updatemenus=[dict(
+        direction='down',
+        x=1,
+        xanchor='right',
+        y=1.01,
+        yanchor='bottom',
+        buttons=list([
+            dict(label="Totalt",
+                 method='update',
+                 args=[{'visible': [True, True, False, False]},
+                         {'title': ("<b>Antal av Befolkning Vaccinerade "
+                                    "- Totalt</b>""<br><sub>"
+                                    "Källa: Folkhälsomyndigheten")}]),
+            dict(label="Per Vecka",
+                 method='update',
+                 args=[{'visible': [False, False, True, True]},
+                         {'title': ("<b>Antal av Befolkning Vaccinerade "
+                                    "- per Vecka</b>""<br><sub>"
+                                    "Källa: Folkhälsomyndigheten")}]),
+        ])
+    )]
+)
+
+fig.write_html('graphs/vaccine/total_vaccinated.html', config=config)
+
 
 # =============================================================================
 # Stockholm
@@ -1042,7 +1181,7 @@ stockholm_län['fall_per_10000'] = (stockholm_län['nya_fall_vecka'] /
 
 stockholm_län = stockholm_län.sort_values(['år', 'veckonummer'])
 
-stockholm_län['nya_fall_vecka_str'] = ["{:,}".format(x) for x in 
+stockholm_län['nya_fall_vecka_str'] = ["{:,}".format(x) for x in
                                        stockholm_län['nya_fall_vecka']]
 
 df = stockholm_län
@@ -1133,7 +1272,7 @@ fig.update_layout(
     ),
     plot_bgcolor='white',
     height=800,
-    margin=dict(t=80, b=70),
+    margin=dict(t=100, b=70),
     updatemenus=[dict(
         direction='down',
         x=1,
@@ -1357,7 +1496,6 @@ fig.update_yaxes(
     gridcolor='rgb(240, 240, 240)'
 )
 
-
 fig.update_layout(
     title=dict(
         text=("<b>Bekräftade Fall inom Stockholms Kommun per Vecka</b>"
@@ -1370,7 +1508,7 @@ fig.update_layout(
     ),
     plot_bgcolor='white',
     height=700,
-    margin=dict(t=80, b=70),
+    margin=dict(t=100, b=70),
     updatemenus=[
         dict(
             direction='down',
@@ -1507,7 +1645,7 @@ hospital = pd.read_excel(
     sheet_name='Antal intensivvårdade per dag')
 
 hospital['Datum_vårdstart'] = pd.to_datetime(
-    hospital['Datum_vårdstart'], 
+    hospital['Datum_vårdstart'],
     format='%Y-%m-%d')
 
 # 7 day rolling average
@@ -1558,7 +1696,7 @@ fig.update_layout(
            "Källa: Folkhälsomyndigheten"),
     yaxis_title="Antal Intensivvårdade",
     height=600,
-    margin=dict(t=90)
+    margin=dict(t=90, b=30)
 )
 
 fig.write_html('graphs/intensiv/intensive_ward_all.html', config=plot_config)
@@ -1587,7 +1725,7 @@ regions = regions.merge(
     right_on='county',
     how='left')
 
-regions['Intensivvård_per_10000'] = (regions['Antal_intensivvårdade_vecka'] 
+regions['Intensivvård_per_10000'] = (regions['Antal_intensivvårdade_vecka']
                                      / regions['population_2019'] * 10000)
 
 df = regions
@@ -1865,7 +2003,7 @@ fig.update_layout(
            "Källa: Folkhälsomyndigheten"),
     yaxis_title="Antal Avlidna",
     height=600,
-    margin=dict(t=90)
+    margin=dict(t=90, b=30)
 )
 
 fig.write_html('graphs/deaths/deaths_all.html', config=plot_config)
@@ -1876,19 +2014,13 @@ fig.write_html('graphs/deaths/deaths_all.html', config=plot_config)
 # ----------------------------------------
 
 # Statistiska centralbyrån data on weekly deaths from 2015 to 2019
-#all_deaths_url = ("https://www.scb.se/en/finding-statistics/"
- #                 "statistics-by-subject-area/population/"
-  #                "population-composition/population-statistics/pong/"
-   #               "tables-and-graphs/preliminary-statistics-on-deaths/")
-
-
 all_deaths_url = ("https://www.scb.se/hitta-statistik/statistik-efter-amne/"
                   "befolkning/befolkningens-sammansattning/"
                   "befolkningsstatistik/pong/tabell-och-diagram/"
                   "preliminar-statistik-over-doda/")
 
 sweden_weekly = pd.read_excel(
-    all_deaths_url, 
+    all_deaths_url,
     sheet_name = 'Tabell 1',
     skiprows = 6,
     usecols = [0,1,2,3,4,5,6,7]
@@ -1953,7 +2085,7 @@ sweden_average = sweden_average.iloc[
 
 df = sweden_average
 
-df['DM_str'] = [x.split(' ')[0] + ' ' + x.split(' ')[1][:3] 
+df['DM_str'] = [x.split(' ')[0] + ' ' + x.split(' ')[1][:3]
                 for x in df['DagMånad']]
 
 fig = go.Figure()
@@ -2097,7 +2229,7 @@ fig.write_html('graphs/deaths/case_fatality_rate.html', config=plot_config)
 # Filename: deaths_age_group
 # ---------------------------
 
-åldersgrupp['deaths_%'] = (åldersgrupp['Totalt_antal_avlidna'] 
+åldersgrupp['deaths_%'] = (åldersgrupp['Totalt_antal_avlidna']
                            / åldersgrupp['All'] * 100)
 
 fig = go.Figure()
@@ -2291,7 +2423,7 @@ fig.update_layout(
         autorange='reversed',
         tickmode='array',
         tickvals=df['Sjukdomsgrupper'],
-        ticktext=['Hjärt- och<br>kärlsjukdom', 'Högt<br>blodtryck', 'Diabetes', 
+        ticktext=['Hjärt- och<br>kärlsjukdom', 'Högt<br>blodtryck', 'Diabetes',
                   'Lungsjukdom', 'Ingen av<br>sjukdomsgrupperna']
     ),
     height=600,
@@ -2370,8 +2502,8 @@ fig.update_layout(
     yaxis=dict(
         tickmode='array',
         tickvals=df['Sjukdomsgrupper'],
-        ticktext=['Ingen av<br>sjukdomsgrupperna', 
-                  'En av <br>sjukdomsgrupperna', 
+        ticktext=['Ingen av<br>sjukdomsgrupperna',
+                  'En av <br>sjukdomsgrupperna',
                   '2 eller flera<br>av sjukdomsgrupperna']
     ),
     height=600,
@@ -2431,7 +2563,7 @@ fig = go.Figure(
 )
 
 fig.update_layout(
-    title="<b>Bekräftade Fall</b>",
+    title="<b>Bekräftade Fall</b><br><sub>Källa: Folkhälsomyndigheten",
     hovermode ='closest',
     mapbox=dict(
         accesstoken=mapbox_access_token,
@@ -2448,7 +2580,7 @@ fig.update_layout(
         l=50,
         r=50,
         b=50,
-        t=80,
+        t=90,
         pad=4
     )
 )
@@ -2468,7 +2600,7 @@ county_data = county_data.merge(
     how='left')
 
 county_data['cases_per_10000'] = (round(
-    county_data['Totalt_antal_fall'] / 
+    county_data['Totalt_antal_fall'] /
     county_data['population_2019'] * 1000, 3))
 
 # Create plot of total number of deaths per 1000 per county
@@ -2494,7 +2626,8 @@ fig = go.Figure(
 )
 
 fig.update_layout(
-    title="<b>Bekräftade Fall per 10,000</b>",
+    title=("<b>Bekräftade Fall per 10,000</b><br>"
+           "<sub>Källa: Folkhälsomyndigheten"),
     hovermode ='closest',
     mapbox=dict(
         accesstoken=mapbox_access_token,
@@ -2512,7 +2645,7 @@ fig.update_layout(
         l=50,
         r=50,
         b=50,
-        t=80,
+        t=90,
         pad=4
     )
 )
@@ -2564,7 +2697,7 @@ fig.update_layout(
         l=50,
         r=50,
         b=50,
-        t=80,
+        t=90,
         pad=4
     ),
 )
@@ -2577,7 +2710,7 @@ fig.write_html('maps/Sweden_map_deaths.html', config=plot_config)
 # ---------------------------------
 
 county_data['deaths_per_10000'] = (round(
-    county_data['Totalt_antal_avlidna'] 
+    county_data['Totalt_antal_avlidna']
     / county_data['population_2019'] * 1000, 3))
 
 # Create plot of total number of deaths per 10,000 per county
@@ -2621,7 +2754,7 @@ fig.update_layout(
         l=50,
         r=50,
         b=50,
-        t=80,
+        t=90,
         pad=4
     )
 )
