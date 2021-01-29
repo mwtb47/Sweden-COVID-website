@@ -784,12 +784,12 @@ vaccine = pd.read_excel(
 # Sweden total population
 sweden_pop = counties_pop['population_2019'].sum()
 
-dose_2_percent = vaccine[ (vaccine['Kön'] == 'Tot') 
-                         & (vaccine['Dosnummer'] == 'Dos 2') 
+dose_2_percent = vaccine[ (vaccine['Kön'] == 'Tot')
+                         & (vaccine['Dosnummer'] == 'Dos 2')
                         ]['Antal vaccinerade'].values[0] / sweden_pop * 100
 
-dose_1_percent = vaccine[ (vaccine['Kön'] == 'Tot') 
-                         & (vaccine['Dosnummer'] == 'Dos 1') 
+dose_1_percent = vaccine[ (vaccine['Kön'] == 'Tot')
+                         & (vaccine['Dosnummer'] == 'Dos 1')
                         ]['Antal vaccinerade'].values[0] / sweden_pop * 100
 
 x = [dose_2_percent, dose_1_percent]
@@ -835,7 +835,8 @@ fig.add_trace(
 fig.update_layout(
     title=dict(
         text=("<b>Andel av Befolkning Vaccinerade</b>"
-              "<br><sub>Source: Folkhälsomyndigheten"),
+              "<br><sub>Källa: Folkhälsomyndigheten, "
+              "<br>Befolkningsstatistik från SCB"),
         x=0,
         xref='paper',
         y=0.9,
@@ -872,7 +873,7 @@ vaccine = pd.read_excel(
     usecols=[0,1,2,3,4]
 )
 
-vaccine = vaccine[ (vaccine['Region'] == '| Sverige |') 
+vaccine = vaccine[ (vaccine['Region'] == '| Sverige |')
                   & (vaccine['Åldersgrupp'] != 'Totalt') ]
 
 vaccine = vaccine.replace('90 eller äldre', '90+')
@@ -929,7 +930,7 @@ fig.add_trace(
 fig.update_layout(
     title=dict(
         text=("<b>Andel av Befolkning Vaccinerade per Åldersgrupp</b>"
-              "<br><sub>Source: Folkhälsomyndigheten"),
+              "<br><sub>Källa: Folkhälsomyndigheten"),
         x=0,
         xref='paper',
         y=0.9,
