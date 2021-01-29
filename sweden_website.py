@@ -855,7 +855,7 @@ fig.update_layout(
         linewidth=2,
         linecolor='black',
     ),
-    height=600,
+    height=200,
     margin=dict(t=80, b=0),
     plot_bgcolor='white'
 )
@@ -950,7 +950,7 @@ fig.update_layout(
         gridwidth=1,
         gridcolor='rgb(220, 220, 220)'
     ),
-    height=200,
+    height=600,
     margin=dict(t=80, l=50),
     plot_bgcolor='white'
 )
