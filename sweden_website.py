@@ -855,7 +855,7 @@ fig.update_layout(
         linewidth=2,
         linecolor='black',
     ),
-    height=200,
+    height=600,
     margin=dict(t=80, b=0),
     plot_bgcolor='white'
 )
