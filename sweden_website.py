@@ -836,7 +836,7 @@ fig.update_layout(
     title=dict(
         text=("<b>Andel av Befolkning Vaccinerade</b>"
               "<br><sub>Källa: Folkhälsomyndigheten, "
-              "<br>Befolkningsstatistik från SCB"),
+              "Befolkningsstatistik från SCB"),
         x=0,
         xref='paper',
         y=0.9,
@@ -951,7 +951,7 @@ fig.update_layout(
         gridcolor='rgb(220, 220, 220)'
     ),
     height=600,
-    margin=dict(t=80, l=50),
+    margin=dict(t=100, l=50),
     plot_bgcolor='white'
 )
 
