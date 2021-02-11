@@ -784,11 +784,11 @@ vaccine = pd.read_excel(
 # Sweden total population
 sweden_pop = counties_pop['population_2019'].sum()
 
-dose_2_percent = vaccine[ (vaccine['Kön'] == 'Tot')
+dose_2_percent = vaccine[ (vaccine['Kön'] == 'Totalt')
                          & (vaccine['Dosnummer'] == 'Dos 2')
                         ]['Antal vaccinerade'].values[0] / sweden_pop * 100
 
-dose_1_percent = vaccine[ (vaccine['Kön'] == 'Tot')
+dose_1_percent = vaccine[ (vaccine['Kön'] == 'Totalt')
                          & (vaccine['Dosnummer'] == 'Dos 1')
                         ]['Antal vaccinerade'].values[0] / sweden_pop * 100
 
