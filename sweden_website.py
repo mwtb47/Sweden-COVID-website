@@ -1950,7 +1950,7 @@ daily_deaths = pd.read_excel(
     sheet_name='Antal avlidna per dag')
 
 # Drop row which shows deaths where the date is unknown
-daily_deaths = daily_deaths[daily_deaths['Datum_avliden'] != 'Uppgift saknas']
+daily_deaths = daily_deaths[daily_deaths['Datum_avliden'] != 'uppgift saknas']
 
 daily_deaths['Datum_avliden'] = pd.to_datetime(
     daily_deaths['Datum_avliden'],
