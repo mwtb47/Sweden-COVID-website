@@ -84,6 +84,8 @@ daily_cases = daily_cases.melt(
     var_name='county',
     value_name='cases')
 
+daily_cases = daily_cases[~daily_cases['Statistikdatum'].isnull()]
+
 # Group data frame by county and create new column with 7 day rolling average
 daily_cases['cases_7_day'] = daily_cases.groupby('county')['cases'].apply(
     lambda x: x.rolling(window=7).mean())
@@ -125,7 +127,7 @@ daily_cases['cases_7_day_per_10000'] = (daily_cases['cases_7_day'] /
                                         daily_cases['population_2019'] * 10000)
 
 # Thousand comma separator to be used in graph labels
-daily_cases['cases_str'] = ["{:,}".format(x) for x in daily_cases['cases']]
+daily_cases['cases_str'] = ["{:,}".format(int(x)) for x in daily_cases['cases']]
 daily_cases['cases_7_day_str'] = ["{:,}".format(round(x, 2))
                                   for x in daily_cases['cases_7_day']]
 daily_cases['cases_7_day_per_10000_str'] = ["{:,}".format(round(x, 2))
@@ -575,13 +577,20 @@ cols = ['number_individual_tests', 'number_tests', 'number_antibody']
 for c in cols:
     weekly_tests[c + '_str'] = ["{:,}".format(x) for x in weekly_tests[c]]
 
+# Plotly multicategory axes want to plot values found in both categories
+# first. As 2020 starts in week 8, it therefore plots from week 8 in 2021
+# first, with weeks 1-7 at the end. A dummy week number is set up for 2020
+# shifting all weeks by 7 to start at week 1.
+weekly_tests['plot_vecka'] = weekly_tests['vecka'].copy()
+weekly_tests.iloc[:46, -1] = weekly_tests['plot_vecka'][:46] - 7
+
 fig = go.Figure()
 
 # Number of individual tests
 fig.add_trace(
     go.Scatter(
         x=[[2020]*46 + [2021]*(len(weekly_tests.index)-46),
-           list(weekly_tests['vecka'])],
+           list(weekly_tests['plot_vecka'])],
         y=list(weekly_tests['number_individual_tests']),
         name="Individer",
         text=weekly_tests['number_individual_tests_str'],
@@ -603,7 +612,7 @@ fig.add_trace(
 fig.add_trace(
     go.Scatter(
         x=[[2020]*46 + [2021]*(len(weekly_tests.index)-46),
-           list(weekly_tests['vecka'])],
+           list(weekly_tests['plot_vecka'])],
         y=list(weekly_tests['number_tests']),
         name="Totalt",
         text=weekly_tests['number_tests_str'],
