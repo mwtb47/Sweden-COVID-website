@@ -7,6 +7,7 @@
 
 from datetime import date
 import json
+from unicodedata import nomalize
 from urllib.request import urlretrieve
 
 from bs4 import BeautifulSoup
@@ -701,8 +702,10 @@ for row in table_antibody.findAll('tr'):
     län.append(row.find('th').find(text=True))
     cells = row.findAll('td')
     if len(cells) > 0:
-        number_antibody.append(int(cells[0].find(text=True).replace(" ", "")))
-        positive_antibody.append(int(cells[1].find(text=True).replace(" ", "")))
+        number_antibody.append(
+            int(normalize('NFKD', cells[0].find(text=True)).replace(" ", "")))
+        positive_antibody.append(
+            int(normalize('NFKD', cells[1].find(text=True)).replace(" ", "")))
 
 df = pd.DataFrame(
     {
