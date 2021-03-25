@@ -7,7 +7,7 @@
 
 from datetime import date
 import json
-from unicodedata import nomalize
+from unicodedata import normalize
 from urllib.request import urlretrieve
 
 from bs4 import BeautifulSoup
