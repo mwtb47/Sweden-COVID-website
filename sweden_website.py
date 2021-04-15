@@ -797,11 +797,11 @@ vaccine = pd.read_excel(
 sweden_pop = counties_pop['population_2019'].sum()
 
 dose_2_percent = vaccine[ (vaccine['Kön'] == 'Totalt')
-                         & (vaccine['Dosnummer'] == 'Dos 2')
+                         & (vaccine['Vaccinationsstatus'] == 'Färdigvaccinerade')
                         ]['Antal vaccinerade'].values[0] / sweden_pop * 100
 
 dose_1_percent = vaccine[ (vaccine['Kön'] == 'Totalt')
-                         & (vaccine['Dosnummer'] == 'Dos 1')
+                         & (vaccine['Vaccinationsstatus'] == 'Minst 1 dos')
                         ]['Antal vaccinerade'].values[0] / sweden_pop * 100
 
 x = [dose_2_percent, dose_1_percent]
@@ -813,11 +813,11 @@ fig = go.Figure()
 fig.add_trace(
     go.Bar(
         name="Vaccinarade",
-        y=['Dos 2', 'Dos 1'],
+        y=['Färdigvaccinerade', 'Minst 1 dos'],
         x=x,
         marker=dict(color='rgb(40, 40, 140)'),
         orientation='h',
-        text=['Dos 2', 'Dos 1'],
+        text=['Färdigvaccinerade', 'Minst 1 dos'],
         hoverlabel=dict(
             bgcolor='white',
             bordercolor='gray',
@@ -836,7 +836,7 @@ fig.add_trace(
 fig.add_trace(
     go.Bar(
         name="Ej Vaccinerade",
-        y=['Dos 2', 'Dos 1'],
+        y=['Färdigvaccinerade', 'Minst 1 dos'],
         x=y,
         marker=dict(color='rgba(140, 140, 140, 0.8)'),
         orientation='h',
@@ -900,10 +900,12 @@ fig = go.Figure()
 # Percentage of people who have received either 1 or 2 doses
 fig.add_trace(
     go.Bar(
-        x=list(vaccine[vaccine['Dosnummer'] == 'Dos 1']['Åldersgrupp']),
-        y=list(vaccine[vaccine['Dosnummer'] == 'Dos 1']['Andel vaccinerade']),
+        x=list(vaccine[
+            vaccine['Vaccinationsstatus'] == 'Minst 1 dos']['Åldersgrupp']),
+        y=list(vaccine[
+            vaccine['Vaccinationsstatus'] == 'Minst 1 dos']['Andel vaccinerade']),
         marker=dict(color='rgb(40, 40, 140)'),
-        name="Dos 1",
+        name="Minst 1 dos",
         hoverlabel=dict(
             bgcolor='white',
             bordercolor='rgb(40, 40, 140)',
@@ -921,10 +923,12 @@ fig.add_trace(
 # Percentage of people who have received either 1 or 2 doses
 fig.add_trace(
     go.Bar(
-        x=list(vaccine[vaccine['Dosnummer'] == 'Dos 2']['Åldersgrupp']),
-        y=list(vaccine[vaccine['Dosnummer'] == 'Dos 2']['Andel vaccinerade']),
+        x=list(vaccine[
+            vaccine['Vaccinationsstatus'] == 'Färdigvaccinerade']['Åldersgrupp']),
+        y=list(vaccine[
+            vaccine['Vaccinationsstatus'] == 'Färdigvaccinerade']['Andel vaccinerade']),
         marker=dict(color='skyblue'),
-        name="Dos 2",
+        name="Färdigvaccinerade",
         hoverlabel=dict(
             bgcolor='white',
             bordercolor='skyblue',
@@ -984,7 +988,8 @@ vaccine = vaccine.replace('| Sverige |', 'Sverige')
 
 vaccine = vaccine[vaccine['Region'] == 'Sverige']
 
-vaccine['weekly'] = vaccine.groupby('Dosnummer')['Antal vaccinerade'].diff()
+vaccine['weekly'] = vaccine.groupby(
+    'Vaccinationsstatus')['Antal vaccinerade'].diff()
 vaccine.iloc[:2, 6] = vaccine.iloc[:2, 3]
 vaccine['weekly'] = vaccine['weekly'].astype(int)
 
@@ -996,15 +1001,15 @@ fig = go.Figure()
 # Dos 1
 fig.add_trace(
     go.Scatter(
-        x=[list(vaccine[vaccine['Dosnummer'] == 'Dos 1']['År']),
-           list(vaccine[vaccine['Dosnummer'] == 'Dos 1']['Vecka'])],
-        y=list(vaccine[vaccine['Dosnummer'] == 'Dos 1']['Antal vaccinerade']),
+        x=[list(vaccine[vaccine['Vaccinationsstatus'] == 'Minst 1 dos']['År']),
+           list(vaccine[vaccine['Vaccinationsstatus'] == 'Minst 1 dos']['Vecka'])],
+        y=list(vaccine[vaccine['Vaccinationsstatus'] == 'Minst 1 dos']['Antal vaccinerade']),
         marker=dict(color='rgb(40, 40, 140)'),
-        name="Dos 1",
+        name="Minst 1 dos",
         customdata=np.stack((
-            vaccine[vaccine['Dosnummer'] == 'Dos 1']['Vecka'],
-            vaccine[vaccine['Dosnummer'] == 'Dos 1']['År'],
-            vaccine[vaccine['Dosnummer'] == 'Dos 1']['antal_str']
+            vaccine[vaccine['Vaccinationsstatus'] == 'Minst 1 dos']['Vecka'],
+            vaccine[vaccine['Vaccinationsstatus'] == 'Minst 1 dos']['År'],
+            vaccine[vaccine['Vaccinationsstatus'] == 'Minst 1 dos']['antal_str']
         ), axis=-1),
         hoverlabel=dict(
             bgcolor='white',
@@ -1023,15 +1028,15 @@ fig.add_trace(
 # Dos 2
 fig.add_trace(
     go.Scatter(
-        x=[list(vaccine[vaccine['Dosnummer'] == 'Dos 2']['År']),
-           list(vaccine[vaccine['Dosnummer'] == 'Dos 2']['Vecka'])],
-        y=list(vaccine[vaccine['Dosnummer'] == 'Dos 2']['Antal vaccinerade']),
+        x=[list(vaccine[vaccine['Vaccinationsstatus'] == 'Färdigvaccinerade']['År']),
+           list(vaccine[vaccine['Vaccinationsstatus'] == 'Färdigvaccinerade']['Vecka'])],
+        y=list(vaccine[vaccine['Vaccinationsstatus'] == 'Färdigvaccinerade']['Antal vaccinerade']),
         marker=dict(color='skyblue'),
-        name="Dos 2",
+        name="Färdigvaccinerade",
         customdata=np.stack((
-            vaccine[vaccine['Dosnummer'] == 'Dos 2']['Vecka'],
-            vaccine[vaccine['Dosnummer'] == 'Dos 2']['År'],
-            vaccine[vaccine['Dosnummer'] == 'Dos 2']['antal_str']
+            vaccine[vaccine['Vaccinationsstatus'] == 'Färdigvaccinerade']['Vecka'],
+            vaccine[vaccine['Vaccinationsstatus'] == 'Färdigvaccinerade']['År'],
+            vaccine[vaccine['Vaccinationsstatus'] == 'Färdigvaccinerade']['antal_str']
         ), axis=-1),
         hoverlabel=dict(
             bgcolor='white',
@@ -1050,16 +1055,16 @@ fig.add_trace(
 # Dos 1 weekly
 fig.add_trace(
     go.Scatter(
-        x=[list(vaccine[vaccine['Dosnummer'] == 'Dos 1']['År']),
-           list(vaccine[vaccine['Dosnummer'] == 'Dos 1']['Vecka'])],
-        y=list(vaccine[vaccine['Dosnummer'] == 'Dos 1']['weekly']),
+        x=[list(vaccine[vaccine['Vaccinationsstatus'] == 'Minst 1 dos']['År']),
+           list(vaccine[vaccine['Vaccinationsstatus'] == 'Minst 1 dos']['Vecka'])],
+        y=list(vaccine[vaccine['Vaccinationsstatus'] == 'Minst 1 dos']['weekly']),
         marker=dict(color='rgb(40, 40, 140)'),
-        name="Dos 1",
+        name="Minst 1 dos",
         visible=False,
         customdata=np.stack((
-            vaccine[vaccine['Dosnummer'] == 'Dos 1']['Vecka'],
-            vaccine[vaccine['Dosnummer'] == 'Dos 1']['År'],
-            vaccine[vaccine['Dosnummer'] == 'Dos 1']['weekly_str']
+            vaccine[vaccine['Vaccinationsstatus'] == 'Minst 1 dos']['Vecka'],
+            vaccine[vaccine['Vaccinationsstatus'] == 'Minst 1 dos']['År'],
+            vaccine[vaccine['Vaccinationsstatus'] == 'Minst 1 dos']['weekly_str']
         ), axis=-1),
         hoverlabel=dict(
             bgcolor='white',
@@ -1078,16 +1083,16 @@ fig.add_trace(
 # Dos 2 weekly
 fig.add_trace(
     go.Scatter(
-        x=[list(vaccine[vaccine['Dosnummer'] == 'Dos 2']['År']),
-           list(vaccine[vaccine['Dosnummer'] == 'Dos 2']['Vecka'])],
-        y=list(vaccine[vaccine['Dosnummer'] == 'Dos 2']['weekly']),
+        x=[list(vaccine[vaccine['Vaccinationsstatus'] == 'Färdigvaccinerade']['År']),
+           list(vaccine[vaccine['Vaccinationsstatus'] == 'Färdigvaccinerade']['Vecka'])],
+        y=list(vaccine[vaccine['Vaccinationsstatus'] == 'Färdigvaccinerade']['weekly']),
         marker=dict(color='skyblue'),
-        name="Dos 2",
+        name="Färdigvaccinerade",
         visible=False,
         customdata=np.stack((
-            vaccine[vaccine['Dosnummer'] == 'Dos 2']['Vecka'],
-            vaccine[vaccine['Dosnummer'] == 'Dos 2']['År'],
-            vaccine[vaccine['Dosnummer'] == 'Dos 2']['weekly_str']
+            vaccine[vaccine['Vaccinationsstatus'] == 'Färdigvaccinerade']['Vecka'],
+            vaccine[vaccine['Vaccinationsstatus'] == 'Färdigvaccinerade']['År'],
+            vaccine[vaccine['Vaccinationsstatus'] == 'Färdigvaccinerade']['weekly_str']
         ), axis=-1),
         hoverlabel=dict(
             bgcolor='white',
