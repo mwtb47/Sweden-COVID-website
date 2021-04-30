@@ -2362,7 +2362,7 @@ fig.write_html('graphs/deaths/deaths_age_group.html', config=plot_config)
 # -----------------------
 
 ss_url = ("https://www.socialstyrelsen.se/globalassets/1-globalt/"
-          "covid-19-statistik/statistik-om-covid-19-avlidna/"
+          "covid-19-statistik/avlidna-i-covid-19/"
           "statistik-covid19-avlidna.xlsx")
 
 # Read data from socialstyrelsen on deaths by age group and comorbidities
