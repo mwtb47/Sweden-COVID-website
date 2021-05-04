@@ -2034,7 +2034,8 @@ fig.write_html('graphs/deaths/deaths_all.html', config=plot_config)
 # Statistiska centralbyrån data on weekly deaths from 2015 to 2019
 all_deaths_url = ("https://www.scb.se/hitta-statistik/statistik-efter-amne/"
                   "befolkning/befolkningens-sammansattning/"
-                  "befolkningsstatistik/pong/tabell-och-diagram/6/")
+                  "befolkningsstatistik/pong/tabell-och-diagram/"
+                  "preliminar-statistik-over-doda-publicerad-2021-05-03/")
 
 sweden_weekly = pd.read_excel(
     all_deaths_url,
