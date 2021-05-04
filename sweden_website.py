@@ -2373,7 +2373,7 @@ socialstyrelsen = pd.read_excel(
     usecols=[0,1,3,5])
 
 # Select rows with data on comorbidities
-comorbidities = socialstyrelsen.iloc[[15,16,17,18,20], :]
+comorbidities = socialstyrelsen.iloc[[19,20,21,22], :]
 
 comorbidities.columns = ['Sjukdomsgrupper', 'Totalt', 'Män', 'Kvinnor']
 
