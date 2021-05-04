@@ -394,7 +394,8 @@ fig.update_layout(
     )]
 )
 
-fig.write_html('graphs/cases/daily_cases_per_county_single.html', config=plot_config)
+fig.write_html('graphs/cases/daily_cases_per_county_single.html', 
+               config=plot_config)
 
 # ---------------------------------------------------
 # Graph - percentage of population with positive test
@@ -1314,7 +1315,8 @@ fig.update_layout(
     )]
 )
 
-fig.write_html('graphs/stockholm/cases_stockholm_county.html', config=plot_config)
+fig.write_html('graphs/stockholm/cases_stockholm_county.html', 
+               config=plot_config)
 
 # -------------------------------------------------------------
 # Graph - daily cases per area of Stockholms Län (single graph)
@@ -1408,7 +1410,8 @@ fig.update_layout(
     ]
 )
 
-fig.write_html('graphs/stockholm/cases_stockholm_county_single.html', config=plot_config)
+fig.write_html('graphs/stockholm/cases_stockholm_county_single.html', 
+               config=plot_config)
 
 # -------------------------------------------------
 # Graph - weekly cases per area of Stockholm Kommun
@@ -1552,7 +1555,8 @@ fig.update_layout(
     ]
 )
 
-fig.write_html('graphs/stockholm/cases_stockholm_kommun.html', config=plot_config)
+fig.write_html('graphs/stockholm/cases_stockholm_kommun.html', 
+               config=plot_config)
 
 # ---------------------------------------------------------------
 # Graph - daily cases per area of Stockholm Kommun (single graph)
@@ -1646,7 +1650,8 @@ fig.update_layout(
     ]
 )
 
-fig.write_html('graphs/stockholm/cases_stockholm_kommun_single.html', config=plot_config)
+fig.write_html('graphs/stockholm/cases_stockholm_kommun_single.html', 
+               config=plot_config)
 
 # =============================================================================
 # Intensive ward
@@ -1857,7 +1862,8 @@ fig.update_layout(
     ]
 )
 
-fig.write_html('graphs/intensiv/intensive_ward_per_county.html', config=plot_config)
+fig.write_html('graphs/intensiv/intensive_ward_per_county.html', 
+               config=plot_config)
 
 # ------------------------------------------------------
 # Graph - daily intensive ward per region (single graph)
@@ -1950,7 +1956,8 @@ fig.update_layout(
     ]
 )
 
-fig.write_html('graphs/intensiv/intensive_ward_per_county_single.html', config=plot_config)
+fig.write_html('graphs/intensiv/intensive_ward_per_county_single.html', 
+               config=plot_config)
 
 # =============================================================================
 # Deaths
@@ -2528,7 +2535,8 @@ fig.update_layout(
     margin=dict(t=80, l=150)
 )
 
-fig.write_html('graphs/deaths/number_of_comorbidities.html', config=plot_config)
+fig.write_html('graphs/deaths/number_of_comorbidities.html', 
+               config=plot_config)
 
 # =============================================================================
 # Maps
