@@ -1,3 +1,8 @@
+# ======================================================================
+# Script to save graphs summarising the test data as html files. This
+# will be imported as a module into main.py.
+# ======================================================================
+
 from datetime import date
 from unicodedata import normalize
 
