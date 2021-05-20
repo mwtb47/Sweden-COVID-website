@@ -20,7 +20,7 @@ class Cases:
         self.fhm_data = fhm_data
         self.counties_pop = counties_pop
 
-    def process_cases_data(self):
+    def prepare_cases_data(self):
         """Prepare cases data to be used in graphs."""
         daily_cases = self.fhm_data['Antal per dag region']
 
@@ -362,7 +362,7 @@ class Cases:
 def main(template, plot_config, fhm_data, counties_pop):
     """Initiate Cases class and run methods to plot graphs."""
     cases = Cases(template, plot_config, fhm_data, counties_pop)
-    cases.process_cases_data()
+    cases.prepare_cases_data()
     cases.graph_daily_cases_all()
     cases.graph_daily_cases_per_county()
     cases.graph_daily_cases_per_county_single()
