@@ -196,12 +196,20 @@ class Deaths:
                     return day.strftime('%Y-%m-%d')
 
         # Statistiska centralbyrån data on weekly deaths from 2015 to 2019
+        """
         all_deaths_url = ("https://www.scb.se/hitta-statistik/"
                           "statistik-efter-amne/befolkning/"
                           "befolkningens-sammansattning/befolkningsstatistik/"
                           "pong/tabell-och-diagram/"
                           "preliminar-statistik-over-doda-publicerad-"
                           + get_recent_monday() + "/")
+        """
+        
+        all_deaths_url = ("https://www.scb.se/hitta-statistik/"
+                          "statistik-efter-amne/befolkning/"
+                          "befolkningens-sammansattning/"
+                          "befolkningsstatistik/pong/tabell-och-diagram/"
+                          "preliminar-statistik-over-doda/")
 
         sweden_weekly = pd.read_excel(
             all_deaths_url,
