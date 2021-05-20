@@ -94,8 +94,8 @@ modules_dict = {
 
 def main():
     """Ask which modules to run and then run them."""
-    print("Choose from: ['all', 'cases', 'comorbidities', 'deaths',")
-    print("              'intensive_care', 'maps', 'tests', 'vaccinations']")
+    print("Choose from: [all, cases, comorbidities, deaths, intensive_care")
+    print("              maps, tests, vaccinations]")
     modules = input("              ")
 
     if modules == 'all':
