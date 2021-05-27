@@ -275,6 +275,11 @@ class Deaths:
         # a couple of weeks for all deaths to be published).
         sweden_average = sweden_average.iloc[
             :(sweden_average['pandemic'] == 0).argmax() - 3, :]
+        
+        # Thousand comma separated strings for easier reading on graph 
+        # labels.
+        sweden_average['pandemic_str'] = [f'{x:,}'.replace('.0', '') 
+                                          for x in sweden_average['pandemic']]
 
         self.sweden_average = sweden_average
 
@@ -338,7 +343,8 @@ class Deaths:
                 name="2020/2021",
                 customdata=np.stack((
                     df['DM_str'],
-                    df['år']
+                    df['år'],
+                    df['pandemic_str']
                 ), axis=-1),
                 hoverlabel=dict(
                     bgcolor='white',
@@ -350,7 +356,7 @@ class Deaths:
                 hovertemplate=
                 '<extra></extra>'+
                 '<b>%{customdata[0]} - %{customdata[1]}</b><br>'+
-                '%{y:.1f}'
+                '%{customdata[2]}'
             )
         )
 
