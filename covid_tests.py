@@ -179,7 +179,7 @@ class Tests:
         # separated making them easier to read.
         cols = ['number_individual_tests', 'number_tests', 'number_antibody']
         for c in cols:
-            weekly_tests[c + '_str'] = ["{:,}".format(x)
+            weekly_tests[c + '_str'] = [f'{x:,}'.replace('.0', '') 
                                         for x in weekly_tests[c]]
 
         # Plotly multicategory axes want to plot values found in both
@@ -255,6 +255,12 @@ class Tests:
                    list(df['plot_vecka'])],
                 y=list(df['number_individual_tests']),
                 name="Individer",
+                customdata=np.stack(
+                    (df['plot_vecka'],
+                     [2020]*46 + [2021]*(len(df.index)-46),
+                     df['number_individual_tests_str']
+                    ), axis=-1
+                ),
                 text=df['number_individual_tests_str'],
                 hoverlabel=dict(
                     bgcolor='white',
@@ -265,8 +271,8 @@ class Tests:
                 ),
                 hovertemplate=
                 '<extra></extra>'+
-                '<b>Vecka %{x}</b><br>'+
-                '%{text}'
+                '<b>Vecka %{customdata[0]} - %{customdata[1]}</b><br>'+
+                '%{customdata[2]}'
             )
         )
 
@@ -277,7 +283,12 @@ class Tests:
                    list(df['plot_vecka'])],
                 y=list(df['number_tests']),
                 name="Totalt",
-                text=df['number_tests_str'],
+                customdata=np.stack(
+                    (df['plot_vecka'],
+                     [2020]*46 + [2021]*(len(df.index)-46),
+                     df['number_tests_str']
+                    ), axis=-1
+                ),
                 hoverlabel=dict(
                     bgcolor='white',
                     bordercolor='red',
@@ -287,8 +298,8 @@ class Tests:
                 ),
                 hovertemplate=
                 '<extra></extra>'+
-                '<b>Vecka %{x}</b><br>'+
-                '%{text}'
+                '<b>Vecka %{customdata[0]} - %{customdata[1]}</b><br>'+
+                '%{customdata[2]}'
             )
         )
 
@@ -300,7 +311,12 @@ class Tests:
                 y=list(df['number_antibody'][18:]),
                 name="Totalt",
                 visible=False,
-                text=df['number_antibody_str'],
+                customdata=np.stack(
+                    (df['plot_vecka'][18:],
+                     [2020]*28 + [2021]*(len(df.index)-46), 
+                     df['number_antibody_str'][18:]
+                    ), axis=-1
+                ),
                 hoverlabel=dict(
                     bgcolor='white',
                     bordercolor='steelblue',
@@ -310,8 +326,8 @@ class Tests:
                 ),
                 hovertemplate=
                 '<extra></extra>'+
-                '<b>Vecka %{x}</b><br>'+
-                '%{text}'
+                '<b>Vecka %{customdata[0]} - %{customdata[1]}</b><br>'+
+                '%{customdata[2]}'
             )
         )
 
