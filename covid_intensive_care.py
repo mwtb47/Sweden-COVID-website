@@ -155,7 +155,7 @@ class IntensiveCare:
                     ),
                     hovertemplate=
                     '<extra>%{customdata[0]}</extra>'+
-                    '<b>Week %{customdata[1]} - %{customdata[2]}</b><br>'+
+                    '<b>Vecka %{customdata[1]} - %{customdata[2]}</b><br>'+
                     '<b>Antal Intensivvårdade</b>: %{y}',
                     showlegend=False
                 ), value//7, value%7+1
@@ -182,7 +182,7 @@ class IntensiveCare:
                     ),
                     hovertemplate=
                     '<extra>%{customdata[0]}</extra>'+
-                    '<b>Week %{customdata[1]} - %{customdata[2]}</b><br>'+
+                    '<b>Vecka %{customdata[1]} - %{customdata[2]}</b><br>'+
                     '<b>Antal Intensivvårdade</b>: %{y:.3f}',
                     showlegend=False,
                     visible=False
@@ -278,7 +278,7 @@ class IntensiveCare:
                         )
                     ),
                     hovertemplate=
-                    '<b>Week %{customdata[0]} - %{customdata[1]}</b><br>'+
+                    '<b>Vecka %{customdata[0]} - %{customdata[1]}</b><br>'+
                     '<b>Antal Intensivvårdade</b>: %{y}'
                 )
             )
@@ -304,7 +304,7 @@ class IntensiveCare:
                         )
                     ),
                     hovertemplate=
-                    '<b>Week %{customdata[0]} - %{customdata[1]}</b><br>'+
+                    '<b>Vecka %{customdata[0]} - %{customdata[1]}</b><br>'+
                     '<b>Antal Intensivvårdade</b>: %{y:.3f}'
                 )
             )
