@@ -1,21 +1,17 @@
 # ======================================================================
-# Script to save maps summarising comorbidities data as html files. This
-# will be imported as a module into main.py.
+# Script to save graphs summarising comorbidities data as html files.
+# This will be imported as a module into main.py.
 # ======================================================================
 
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 
-class Comorbidities:
-    """Class containing methods to save two graphs as html files:
+class ComorbiditiesData:
+    """Class containing methods to prepare data on:
         - number of people who have died with certain comorbidities
         - the number of comorbidites people have had
     """
-    def __init__(self, template, plot_config):
-        self.template = template
-        self.plot_config = plot_config
-
     def prepare_data(self):
         """Read data from socialstyrelsen on deaths by age group and
         comorbidities.
@@ -39,8 +35,23 @@ class Comorbidities:
         number_comorbidities.columns = ['Sjukdomsgrupper', 'Totalt', 'Män',
                                         'Kvinnor']
 
-        self.comorbidities = comorbidities
-        self.number_comorbidities = number_comorbidities
+        return {
+            'comorbidities': comorbidities,
+            'number_comorbidities': number_comorbidities
+            }
+
+
+class PlotComorbidities:
+    """Class containing methods to use the prepared data to save two
+    graphs and one table as html files:
+        - number of people who have died with certain comorbidities
+        - the number of comorbidites people have had
+    """
+    def __init__(self, data, template, plot_config):
+        self.comorbidities = data['comorbidities']
+        self.number_comorbidities = data['number_comorbidities']
+        self.template = template
+        self.plot_config = plot_config
 
     def graph_comorbidities(self):
         """Plot graph showing the number of people with each comorbidity
@@ -203,8 +214,13 @@ class Comorbidities:
 
 
 def main(template, plot_config):
-    """Initiate Comorbidities class and run methods to plot graphs."""
-    comorbid = Comorbidities(template, plot_config)
-    comorbid.prepare_data()
+    """Initiate ComorbiditiesData class and run methods to prepare cases
+    data. Then initiate PlotComorbidities class and run methods to plot
+    graphs.
+    """
+    comorbid = ComorbiditiesData()
+    data = comorbid.prepare_data()
+
+    comorbid = PlotComorbidities(data, template, plot_config)
     comorbid.graph_comorbidities()
     comorbid.graph_number_of_comorbidities()
