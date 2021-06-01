@@ -1,5 +1,5 @@
 # ======================================================================
-# Script to save maps summarising deaths data as html files. This will
+# Script to save graphs summarising deaths data as html files. This will
 # be imported as a module into main.py.
 # ======================================================================
 
@@ -9,16 +9,14 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 
-class Deaths:
-    """Class containing methods to save four graphs as html files:
+class DeathsData:
+    """Class containing methods to prepare data on:
         - daily deaths in Sweden
         - 5 year average vs. 2020/2021 weekly deaths
         - case fatality rate by age group
         - number of deaths by age group
     """
-    def __init__(self, template, plot_config, fhm_data, counties_pop):
-        self.template = template
-        self.plot_config = plot_config
+    def __init__(self, fhm_data, counties_pop):
         self.fhm_data = fhm_data
         self.counties_pop = counties_pop
 
@@ -122,63 +120,6 @@ class Deaths:
 
         self.åldersgrupp = åldersgrupp
 
-    def graph_deaths_all(self):
-        """Plot graph showing daily covid-19 deaths and save as an html
-         file.
-
-        File name: deaths_all.html
-        """
-        df = self.daily_deaths
-        df = df[df['Datum_avliden']>='2020-03-17']
-
-        fig = go.Figure()
-
-        # 7 day rolling average
-        fig.add_trace(
-            go.Scatter(
-                x=list(df['Datum_avliden']),
-                y=list(df['total_7_day']),
-                text=list(df['Antal_avlidna']),
-                showlegend=False,
-                hoverlabel=dict(
-                    bgcolor='white',
-                    bordercolor='steelblue',
-                    font=dict(
-                        color='black'
-                    )
-                ),
-                hovertemplate=
-                '<extra></extra>'+
-                '<b>%{x}</b><br>'+
-                '<b>Medelvärde</b>: %{y:.1f}<br>'+
-                '<b>Daglig</b>: %{text}'
-            )
-        )
-
-        # Bar chart with daily deaths as reported
-        fig.add_trace(
-            go.Bar(
-                x=list(df['Datum_avliden']),
-                y=list(df['Antal_avlidna']),
-                marker=dict(color='rgba(200, 220, 255, 0.5)'),
-                showlegend=False,
-                hoverinfo='skip'
-            )
-        )
-
-        fig.update_layout(
-            template=self.template,
-            title=("<b>Antal Avlidna i COVID-19</b><br>"
-                   "<sub>7 dagar glidande medelvärde<br>"
-                   "Källa: Folkhälsomyndigheten"),
-            yaxis_title="Antal Avlidna",
-            height=600,
-            margin=dict(t=90, b=30)
-        )
-
-        fig.write_html('graphs/deaths/deaths_all.html',
-                       config=self.plot_config)
-
     def prepare_weekly_deaths_data(self):
         """Download and prepare data on the 2015-2019 five year average
         weekly deaths and the weekly deaths in 2020 and 2021.
@@ -204,7 +145,7 @@ class Deaths:
                           "preliminar-statistik-over-doda-publicerad-"
                           + get_recent_monday() + "/")
         """
-        
+
         all_deaths_url = ("https://www.scb.se/hitta-statistik/"
                           "statistik-efter-amne/befolkning/"
                           "befolkningens-sammansattning/"
@@ -275,13 +216,101 @@ class Deaths:
         # a couple of weeks for all deaths to be published).
         sweden_average = sweden_average.iloc[
             :(sweden_average['pandemic'] == 0).argmax() - 3, :]
-        
-        # Thousand comma separated strings for easier reading on graph 
+
+        # Thousand comma separated strings for easier reading on graph
         # labels.
-        sweden_average['pandemic_str'] = [f'{x:,}'.replace('.0', '') 
+        sweden_average['pandemic_str'] = [f'{x:,}'.replace('.0', '')
                                           for x in sweden_average['pandemic']]
 
         self.sweden_average = sweden_average
+
+    def return_data(self):
+        """Run methods to prepare data and return dictionary of Data
+        Frames.
+        """
+        self.prepare_data()
+        self.get_age_group_populations()
+        self.prepare_deaths_per_age_group()
+        self.prepare_weekly_deaths_data()
+
+        return {
+            'daily_deaths': self.daily_deaths,
+            'sweden_average': self.sweden_average,
+            'åldersgrupp': self.åldersgrupp,
+        }
+
+
+class PlotDeaths:
+    """Class containing methods to use the prepared data to save two
+    graphs and one table as html files:
+        - daily deaths in Sweden
+        - 5 year average vs. 2020/2021 weekly deaths
+        - case fatality rate by age group
+        - number of deaths by age group
+    """
+    def __init__(self, data, template, plot_config):
+        self.daily_deaths = data['daily_deaths']
+        self.åldersgrupp = data['åldersgrupp']
+        self.sweden_average = data['sweden_average']
+        self.template = template
+        self.plot_config = plot_config
+
+    def graph_deaths_all(self):
+        """Plot graph showing daily covid-19 deaths and save as an html
+         file.
+
+        File name: deaths_all.html
+        """
+        df = self.daily_deaths
+        df = df[df['Datum_avliden']>='2020-03-17']
+
+        fig = go.Figure()
+
+        # 7 day rolling average
+        fig.add_trace(
+            go.Scatter(
+                x=list(df['Datum_avliden']),
+                y=list(df['total_7_day']),
+                text=list(df['Antal_avlidna']),
+                showlegend=False,
+                hoverlabel=dict(
+                    bgcolor='white',
+                    bordercolor='steelblue',
+                    font=dict(
+                        color='black'
+                    )
+                ),
+                hovertemplate=
+                '<extra></extra>'+
+                '<b>%{x}</b><br>'+
+                '<b>Medelvärde</b>: %{y:.1f}<br>'+
+                '<b>Daglig</b>: %{text}'
+            )
+        )
+
+        # Bar chart with daily deaths as reported
+        fig.add_trace(
+            go.Bar(
+                x=list(df['Datum_avliden']),
+                y=list(df['Antal_avlidna']),
+                marker=dict(color='rgba(200, 220, 255, 0.5)'),
+                showlegend=False,
+                hoverinfo='skip'
+            )
+        )
+
+        fig.update_layout(
+            template=self.template,
+            title=("<b>Antal Avlidna i COVID-19 per Dag</b><br>"
+                   "<sub>7 dagar glidande medelvärde<br>"
+                   "Källa: Folkhälsomyndigheten"),
+            yaxis_title="Antal Avlidna",
+            height=600,
+            margin=dict(t=90, b=30)
+        )
+
+        fig.write_html('graphs/deaths/deaths_all.html',
+                       config=self.plot_config)
 
     def graph_deaths_weekly(self):
         """Plot graph showing 5 year average vs. 2020/2021 weekly deaths
@@ -557,12 +586,13 @@ class Deaths:
 
 
 def main(template, plot_config, fhm_data, counties_pop):
-    """Initiate Deaths class and run methods to plot graphs."""
-    deaths = Deaths(template, plot_config, fhm_data, counties_pop)
-    deaths.prepare_data()
-    deaths.get_age_group_populations()
-    deaths.prepare_deaths_per_age_group()
-    deaths.prepare_weekly_deaths_data()
+    """Initiate DeathsData class and run methods to prepare cases data.
+    Then initiate PlotDeaths class and run methods to plot graphs.
+    """
+    deaths = DeathsData(fhm_data, counties_pop)
+    data = deaths.return_data()
+
+    deaths = PlotDeaths(data, template, plot_config)
     deaths.graph_deaths_all()
     deaths.graph_deaths_weekly()
     deaths.graph_case_fatality_rate()
