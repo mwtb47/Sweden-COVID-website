@@ -169,7 +169,7 @@ class PlotVaccinations:
 
         fig.update_layout(
             title=dict(
-                text=("<b>Andel av Befolkning Vaccinerade</b>"
+                text=("<b>Andel av Befolkningen Vaccinerade</b>"
                       "<br><sub>Källa: Folkhälsomyndigheten, "
                       "Befolkningsstatistik från SCB"),
                 x=0,
@@ -191,7 +191,7 @@ class PlotVaccinations:
                 linecolor='black',
             ),
             height=200,
-            margin=dict(t=80, b=0),
+            margin=dict(t=70, b=0),
             plot_bgcolor='white'
         )
 
@@ -259,8 +259,8 @@ class PlotVaccinations:
 
         fig.update_layout(
             title=dict(
-                text=("<b>Andel av Befolkning Vaccinerade per Åldersgrupp</b>"
-                      "<br><sub>Källa: Folkhälsomyndigheten"),
+                text=("<b>Andel av Befolkningen Vaccinerade per Åldersgrupp"
+                      "</b><br><sub>Källa: Folkhälsomyndigheten"),
                 x=0,
                 xref='paper',
                 y=0.9,
@@ -411,7 +411,7 @@ class PlotVaccinations:
 
         fig.update_layout(
             template=self.template,
-            title=("<b>Antal av Befolkning Vaccinerade - Totalt</b>"
+            title=("<b>Antal av Befolkningen Vaccinerade - Totalt</b>"
                    "<br><sub>Källa: Folkhälsomyndigheten"),
             xaxis_title="Vecka",
             height=600,
@@ -426,15 +426,17 @@ class PlotVaccinations:
                     dict(label="Totalt",
                          method='update',
                          args=[{'visible': [True, True, False, False]},
-                                 {'title': ("<b>Antal av Befolkning Vaccinerade"
-                                            " - Totalt</b>""<br><sub>"
-                                            "Källa: Folkhälsomyndigheten")}]),
+                                 {'title': ("<b>Antal av Befolkningen "
+                                            "Vaccinerade - Totalt</b>""<br>"
+                                            "<sub>Källa: "
+                                            "Folkhälsomyndigheten")}]),
                     dict(label="Per Vecka",
                          method='update',
                          args=[{'visible': [False, False, True, True]},
-                                 {'title': ("<b>Antal av Befolkning Vaccinerade"
-                                            " - per Vecka</b>""<br><sub>"
-                                            "Källa: Folkhälsomyndigheten")}]),
+                                 {'title': ("<b>Antal av Befolkningen "
+                                            "Vaccinerade - per Vecka</b>""<br>"
+                                            "<sub>Källa: "
+                                            "Folkhälsomyndigheten")}]),
                 ])
             )]
         )
