@@ -1,5 +1,5 @@
 # ======================================================================
-# Script to save maps summarising intensive care data as html files.
+# Script to save graphs summarising intensive care data as html files.
 # This will be imported as a module into main.py.
 # ======================================================================
 
@@ -8,15 +8,12 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-class IntensiveCare:
-    """Class containing methods to save three graphs as html files:
+class IntensiveCareData:
+    """Class containing methods to prepare data on:
         - intensive care patients in Sweden
-        - subplot of intensive care patients per county
-        - single plot of intensive care patients per county
+        - intensive care patients per county
     """
-    def __init__(self, template, plot_config, fhm_data, counties_pop):
-        self.template = template
-        self.plot_config = plot_config
+    def __init__(self, fhm_data, counties_pop):
         self.fhm_data = fhm_data
         self.counties_pop = counties_pop
 
@@ -37,9 +34,62 @@ class IntensiveCare:
 
         self.hospital = hospital.dropna()
 
+    def prepare_counties_data(self):
+        """Prepare county level data on patients receiving intensive care
+        for plotting on graphs.
+        """
+        # Read regional data
+        regions = self.fhm_data['Veckodata Region']
+
+        # Replace county names with desired names
+        regions = regions.replace(
+            {
+                'Jämtland Härjedalen': 'Jämtland',
+                'Sörmland': 'Södermanland'
+            }
+        )
+
+        regions = regions.merge(
+            self.counties_pop[['county', 'population_2019']],
+            left_on='Region',
+            right_on='county',
+            how='left')
+
+        regions['Intensivvård_per_10000'] = (
+            regions['Antal_intensivvårdade_vecka']
+            / regions['population_2019'] * 10000)
+
+        self.regions = regions
+
+    def return_data(self):
+        """Run methods to prepare data and return dictionary of Data
+        Frames.
+        """
+        self.prepare_data()
+        self.prepare_counties_data()
+
+        return {
+            'hospital': self.hospital,
+            'regions': self.regions,
+        }
+
+
+class PlotIntensiveCare:
+    """Class containing methods to use the prepared data to save two
+    graphs and one table as html files:
+        - intensive care patients in Sweden
+        - subplot of intensive care patients per county
+        - single plot of intensive care patients per county
+    """
+    def __init__(self, data, template, plot_config):
+        self.hospital = data['hospital']
+        self.regions = data['regions']
+        self.template = template
+        self.plot_config = plot_config
+
     def graph_intensive_ward_all(self):
-        """Plot graph showing bar chart of daily intensive ward patients and
-        line chart of 7 day rolling average and save as an html file.
+        """Plot graph showing bar chart of daily intensive ward patients
+        and line chart of 7 day rolling average and save as an html file.
 
         File name: intensive_ward_all.html
         """
@@ -92,34 +142,6 @@ class IntensiveCare:
 
         fig.write_html('graphs/intensiv/intensive_ward_all.html',
                        config=self.plot_config)
-
-    def prepare_counties_data(self):
-        """Prepare county level data on patients receiving intensive care
-        for plotting on graphs.
-        """
-        # Read regional data
-        regions = self.fhm_data['Veckodata Region']
-
-        # Replace county names with desired names
-        regions = regions.replace(
-            {
-                'Jämtland Härjedalen': 'Jämtland',
-                'Sörmland': 'Södermanland'
-            }
-        )
-
-        regions = regions.merge(
-            self.counties_pop[['county', 'population_2019']],
-            left_on='Region',
-            right_on='county',
-            how='left')
-
-        regions['Intensivvård_per_10000'] = (
-            regions['Antal_intensivvårdade_vecka']
-            / regions['population_2019'] * 10000)
-
-        self.regions = regions
-
 
     def graph_intensive_ward_per_county(self):
         """Plot subplots showing the number of patients receiving
@@ -347,10 +369,14 @@ class IntensiveCare:
 
 
 def main(template, plot_config, fhm_data, counties_pop):
-    """Initiate IntensiveCare class and run methods to plot graphs."""
-    intensive = IntensiveCare(template, plot_config, fhm_data, counties_pop)
-    intensive.prepare_data()
+    """Initiate IntensiveCareData class and run methods to prepare cases
+    data. Then initiate PlotIntensiveCare class and run methods to plot
+    graphs.
+    """
+    intensive = IntensiveCareData(fhm_data, counties_pop)
+    data = intensive.return_data()
+
+    intensive = PlotIntensiveCare(data, template, plot_config)
     intensive.graph_intensive_ward_all()
-    intensive.prepare_counties_data()
     intensive.graph_intensive_ward_per_county()
     intensive.graph_intensive_ward_per_county_single()
