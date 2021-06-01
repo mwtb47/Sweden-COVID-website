@@ -231,7 +231,7 @@ class PlotCases:
 
         fig.update_layout(
             title=dict(
-                text=("<b>Bekräftade Fall per Län</b>"
+                text=("<b>Bekräftade Fall per Dag per Län</b>"
                       "<br><sub>7 dagar glidande medelvärde"
                       "<br>Källa: Folkhälsomyndigheten"),
                 x=0,
@@ -258,11 +258,11 @@ class PlotCases:
                                               "Län</b><br><sub>7 dagar "
                                               "glidande medelvärde<br>Källa: "
                                               "Folkhälsomyndigheten")}]),
-                        dict(label="Antal Fall per 10,000",
+                        dict(label="Antal Fall per 10 000",
                              method='update',
                              args=[{'visible': [False]*21 + [True]*21},
                                    {'title': ("<b>Bekräftade Fall per Dag per "
-                                              "Län (per 10,000)</b><br><sub>7 "
+                                              "Län (per 10 000)</b><br><sub>7 "
                                               "dagar glidande medelvärde<br>"
                                               "Källa: Folkhälsomyndigheten")}]),
                     ])
@@ -353,11 +353,11 @@ class PlotCases:
                                               "Län</b><br><sub>7 dagar "
                                               "glidande medelvärde<br>Källa: "
                                               "Folkhälsomyndigheten")}]),
-                        dict(label="Antal Fall per 10,000",
+                        dict(label="Antal Fall per 10 000",
                              method='update',
                              args=[{'visible': [False]*21 + [True]*21},
                                    {'title': ("<b>Bekräftade Fall per Dag per "
-                                              "Län (per 10,000)</b><br><sub>7 "
+                                              "Län (per 10 000)</b><br><sub>7 "
                                               "dagar glidande medelvärde<br>"
                                               "Källa: Folkhälsomyndigheten")}]),
                             ]
