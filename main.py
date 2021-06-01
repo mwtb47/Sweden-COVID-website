@@ -106,5 +106,5 @@ def main():
             modules_dict[m][0](*modules_dict[m][1])
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     main()
