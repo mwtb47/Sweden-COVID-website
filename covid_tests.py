@@ -13,15 +13,13 @@ import plotly.graph_objects as go
 from requests import get
 
 
-class Tests:
-    """Class containing methods to save three graphs as html files:
+class TestsData:
+    """Class containing methods to prepare data on:
         - percentage of each age group who have tested positive
         - number of covid-19 tests and antibody tests per week
         - antibody test positivity rate for latest week by county
     """
-    def __init__(self, template, plot_config, fhm_data):
-        self.template = template
-        self.plot_config = plot_config
+    def __init__(self, fhm_data):
         self.fhm_data = fhm_data
         self.user_agent = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
                            "AppleWebKit/605.1.15 (KHTML, like Gecko) "
@@ -179,7 +177,7 @@ class Tests:
         # separated making them easier to read.
         cols = ['number_individual_tests', 'number_tests', 'number_antibody']
         for c in cols:
-            weekly_tests[c + '_str'] = [f'{x:,}'.replace('.0', '') 
+            weekly_tests[c + '_str'] = [f'{x:,}'.replace('.0', '')
                                         for x in weekly_tests[c]]
 
         # Plotly multicategory axes want to plot values found in both
@@ -191,6 +189,90 @@ class Tests:
         weekly_tests.iloc[:46, -1] = weekly_tests['plot_vecka'][:46] - 7
 
         self.weekly_tests = weekly_tests
+
+    def prepare_antibody_tests(self):
+        """Prepare data on antibody tests."""
+        # Extract the table containing antibody test data from the html.
+        table_antibodies = self.tables[2]
+
+        län = []
+        number_antibodies = []
+        positive_antibodies = []
+
+        # Iterate through the html table, extracting the län, number of
+        # antibody tests and the number of positive antibody tests.
+        for row in table_antibodies.findAll('tr'):
+            län.append(row.find('th').find(text=True))
+            cells = row.findAll('td')
+            if len(cells) > 0:
+                number_antibodies.append(
+                    int(normalize(
+                        'NFKD', cells[0].find(text=True)).replace(" ", "")))
+                positive_antibodies.append(
+                    int(normalize(
+                        'NFKD', cells[1].find(text=True)).replace(" ", "")))
+
+        antibodies = pd.DataFrame(
+            {
+                "län": län[1:],
+                "number_tests": number_antibodies,
+                "number_positive": positive_antibodies,
+            }
+        )
+        antibodies = antibodies.replace("Jämtland/ Härjedalen", "Jämtland")
+
+        # Percentage of tests with positive results
+        antibodies['percent'] = round(antibodies['number_positive']
+                                      / antibodies['number_tests'] * 100, 4)
+        antibodies = antibodies.sort_values('percent')
+
+        # Not sure why this is needed, but graph would not plot without it.
+        antibodies['län'] = [i[:20] for i in antibodies['län']]
+
+        # Set the color as skyblue for all the counties, with the marker
+        # for the whole country being darkblue.
+        antibodies['color'] = np.where(
+            antibodies['län'] == 'Riket', 'darkblue', 'skyblue')
+
+        # Extract the most recent week number to use in the graph title.
+        text = self.tables[2].find('caption').find(text=True)
+        self.week_str = 'Vecka ' + text.split('vecka ')[1][:2]
+
+        self.antibodies = antibodies
+
+    def return_data(self):
+        """Run methods to prepare data and return dictionary of Data
+        Frames.
+        """
+        self.get_age_group_populations()
+        self.prepare_cases_per_age_group()
+        self.prepare_number_of_tests()
+        self.prepare_antibody_tests()
+
+        return {
+            'åldersgrupp': self.åldersgrupp,
+            'weekly_tests': self.weekly_tests,
+            'antibodies': self.antibodies,
+            'total_percentage': self.total_percentage,
+            'week_str': self.week_str
+        }
+
+
+class PlotTests:
+    """Class containing methods to use the prepared data to save two
+    graphs and one table as html files:
+        - percentage of each age group who have tested positive
+        - number of covid-19 tests and antibody tests per week
+        - antibody test positivity rate for latest week by county
+    """
+    def __init__(self, data, template, plot_config):
+        self.åldersgrupp = data['åldersgrupp']
+        self.weekly_tests = data['weekly_tests']
+        self.antibodies = data['antibodies']
+        self.total_percentage = data['total_percentage']
+        self.week_str = data['week_str']
+        self.template = template
+        self.plot_config = plot_config
 
     def graph_percentage_cases(self):
         """Plot graph showing percentage of age group who have tested
@@ -251,13 +333,13 @@ class Tests:
         # Number of individual tests
         fig.add_trace(
             go.Scatter(
-                x=[[2020]*46 + [2021]*(len(df.index)-46),
+                x=[[2020] * 46 + [2021] * (len(df.index) - 46),
                    list(df['plot_vecka'])],
                 y=list(df['number_individual_tests']),
                 name="Individer",
                 customdata=np.stack(
                     (df['plot_vecka'],
-                     [2020]*46 + [2021]*(len(df.index)-46),
+                     [2020] * 46 + [2021] * (len(df.index) - 46),
                      df['number_individual_tests_str']
                     ), axis=-1
                 ),
@@ -279,13 +361,13 @@ class Tests:
         # Number of tests performed
         fig.add_trace(
             go.Scatter(
-                x=[[2020]*46 + [2021]*(len(df.index)-46),
+                x=[[2020] * 46 + [2021] * (len(df.index) - 46),
                    list(df['plot_vecka'])],
                 y=list(df['number_tests']),
                 name="Totalt",
                 customdata=np.stack(
                     (df['plot_vecka'],
-                     [2020]*46 + [2021]*(len(df.index)-46),
+                     [2020] * 46 + [2021] * (len(df.index) - 46),
                      df['number_tests_str']
                     ), axis=-1
                 ),
@@ -306,14 +388,14 @@ class Tests:
         # Number of antibody tests
         fig.add_trace(
             go.Scatter(
-                x=[[2020]*28 + [2021]*(len(df.index)-46),
+                x=[[2020] * 28 + [2021] * (len(df.index) - 46),
                    list(df['vecka'][18:])],
                 y=list(df['number_antibody'][18:]),
                 name="Totalt",
                 visible=False,
                 customdata=np.stack(
                     (df['plot_vecka'][18:],
-                     [2020]*28 + [2021]*(len(df.index)-46), 
+                     [2020] * 28 + [2021] * (len(df.index) - 46),
                      df['number_antibody_str'][18:]
                     ), axis=-1
                 ),
@@ -368,55 +450,6 @@ class Tests:
 
 
 
-    def prepare_antibody_tests(self):
-        """Prepare data on antibody tests."""
-        # Extract the table containing antibody test data from the html.
-        table_antibodies = self.tables[2]
-
-        län = []
-        number_antibodies = []
-        positive_antibodies = []
-
-        # Iterate through the html table, extracting the län, number of
-        # antibody tests and the number of positive antibody tests.
-        for row in table_antibodies.findAll('tr'):
-            län.append(row.find('th').find(text=True))
-            cells = row.findAll('td')
-            if len(cells) > 0:
-                number_antibodies.append(
-                    int(normalize(
-                        'NFKD', cells[0].find(text=True)).replace(" ", "")))
-                positive_antibodies.append(
-                    int(normalize(
-                        'NFKD', cells[1].find(text=True)).replace(" ", "")))
-
-        antibodies = pd.DataFrame(
-            {
-                "län": län[1:],
-                "number_tests": number_antibodies,
-                "number_positive": positive_antibodies,
-            }
-        )
-        antibodies = antibodies.replace("Jämtland/ Härjedalen", "Jämtland")
-
-        # Percentage of tests with positive results
-        antibodies['percent'] = round(antibodies['number_positive']
-                                      / antibodies['number_tests'] * 100, 4)
-        antibodies = antibodies.sort_values('percent')
-
-        # Not sure why this is needed, but graph would not plot without it.
-        antibodies['län'] = [i[:20] for i in antibodies['län']]
-
-        # Set the color as skyblue for all the counties, with the marker
-        # for the whole country being darkblue.
-        antibodies['color'] = np.where(
-            antibodies['län'] == 'Riket', 'darkblue', 'skyblue')
-
-        # Extract the most recent week number to use in the graph title.
-        text = self.tables[2].find('caption').find(text=True)
-        self.week_str = 'Vecka ' + text.split('vecka ')[1][:2]
-
-        self.antibodies = antibodies
 
 
     def graph_positive_antibody(self):
@@ -471,12 +504,13 @@ class Tests:
 
 
 def main(template, plot_config, fhm_data):
-    """Initiate Tests class and run methods to plot graphs."""
-    tests = Tests(template, plot_config, fhm_data)
-    tests.get_age_group_populations()
-    tests.prepare_cases_per_age_group()
-    tests.prepare_number_of_tests()
-    tests.prepare_antibody_tests()
+    """Initiate TestsData class and run methods to prepare cases data.
+    Then initiate PlotTests class and run methods to plot graphs.
+    """
+    tests = TestsData(fhm_data)
+    data = tests.return_data()
+
+    tests = PlotTests(data, template, plot_config)
     tests.graph_percentage_cases()
     tests.graph_number_of_tests()
     tests.graph_positive_antibody()
