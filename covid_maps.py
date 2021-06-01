@@ -11,7 +11,7 @@ import plotly.graph_objects as go
 
 
 class Maps:
-    """Class containing methods to save four maps as html files:
+    """Class containing methods to plot maps showing:
         - cases per county
         - cases per 10,000 people per county
         - deaths per county
