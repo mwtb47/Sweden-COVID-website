@@ -229,7 +229,7 @@ class PlotIntensiveCare:
 
         fig.update_layout(
             title=dict(
-                text=("<b>Antal Intensivvådade per Län</b><br>"
+                text=("<b>Antal Intensivvådade per Dag per Län</b><br>"
                       "<sub>Källa: Folkhälsomyndigheten"),
                 x=0,
                 xref='paper',
@@ -251,14 +251,15 @@ class PlotIntensiveCare:
                         dict(label="Antal Intensivvådade",
                             method='update',
                             args=[{'visible': [True]*21 + [False]*21},
-                                  {'title': ("<b>Antal Intensivvådade per Län"
-                                             "</b><br><sub>Källa: "
+                                  {'title': ("<b>Antal Intensivvådade per Dag "
+                                             "per Län</b><br><sub>Källa: "
                                              "Folkhälsomyndigheten")}]),
-                        dict(label="Antal per 10,000",
+                        dict(label="Antal per 10 000",
                             method='update',
                             args=[{'visible': [False]*21 + [True]*21},
-                                  {'title': ("<b>Antal Intensivvådade per Län "
-                                             "per (10,000)</b><br><sub>Källa: "
+                                  {'title': ("<b>Antal Intensivvådade per Dag "
+                                             "per Län (per 10 000)</b><br>"
+                                             "<sub>Källa: "
                                              "Folkhälsomyndigheten")}]),
                     ])
                 )
@@ -333,7 +334,7 @@ class PlotIntensiveCare:
 
         fig.update_layout(
             template=self.template,
-            title=("<b>Antal Intensivvådade per Län</b><br>"
+            title=("<b>Antal Intensivvådade per Dag per Län</b><br>"
                    "<sub>Källa: Folkhälsomyndigheten"),
             xaxis_title="Vecka",
             height=700,
@@ -349,15 +350,16 @@ class PlotIntensiveCare:
                         dict(label="Antal Intensivvådade",
                             method='update',
                             args=[{'visible': [True]*21 + [False]*21},
-                                  {'title': ("<b>Antal Intensivvådade per Län"
-                                             "</b><br><sub>Källa: "
+                                  {'title': ("<b>Antal Intensivvådade per Dag "
+                                             "per Län</b><br><sub>Källa: "
                                              "Folkhälsomyndigheten")}]),
-                        dict(label="Antal per 10,000",
+                        dict(label="Antal per 10 000",
                             method='update',
                             args=[{'visible': [False]*21 + [True]*21},
-                                  {'title': ("<b>Antal Intensivvådade per Län "
-                                             "(per  10,000)</b><br> <sub>"
-                                             "Källa: Folkhälsomyndigheten")}]),
+                                  {'title': ("<b>Antal Intensivvådade per Dag "
+                                             "per Län (per  10 000)</b><br> "
+                                             "<sub>Källa: "
+                                             "Folkhälsomyndigheten")}]),
                     ])
                 )
             ]
