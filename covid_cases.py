@@ -1,6 +1,6 @@
 # ======================================================================
-# Script to save maps summarising cases data as html files. This will be
-# imported as a module into main.py.
+# Script to save graphs summarising the cases data as html files. This
+# will be imported as a module into main.py.
 # ======================================================================
 
 import numpy as np
@@ -8,15 +8,12 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-class Cases:
-    """Class containing methods to save three graphs as html files:
+class CasesData:
+    """Class containing methods to prepare data on:
         - daily cases in Sweden
-        - subplot of daily cases per county
-        - single plot of daily cases per county
+        - daily cases per county
     """
-    def __init__(self, template, plot_config, fhm_data, counties_pop):
-        self.template = template
-        self.plot_config = plot_config
+    def __init__(self, fhm_data, counties_pop):
         self.fhm_data = fhm_data
         self.counties_pop = counties_pop
 
@@ -79,7 +76,20 @@ class Cases:
             "{:,}".format(round(x, 2))
             for x in daily_cases['cases_7_day_per_10000']]
 
+        return daily_cases
+
+
+class PlotCases:
+    """Class containing methods to use the prepared data to save two
+    graphs and one table as html files:
+        - daily cases in Sweden
+        - subplot of daily cases per county
+        - single plot of daily cases per county
+    """
+    def __init__(self, daily_cases, template, plot_config):
         self.daily_cases = daily_cases
+        self.template = template
+        self.plot_config = plot_config
 
     def graph_daily_cases_all(self):
         """Plot graph showing daily cases for all of Sweden and save as
@@ -360,9 +370,13 @@ class Cases:
 
 
 def main(template, plot_config, fhm_data, counties_pop):
-    """Initiate Cases class and run methods to plot graphs."""
-    cases = Cases(template, plot_config, fhm_data, counties_pop)
-    cases.prepare_cases_data()
+    """Initiate CasesData class and run methods to prepare cases data.
+    Then initiate PlotCases class and run methods to plot graphs.
+    """
+    cases = CasesData(fhm_data, counties_pop)
+    daily_cases = cases.prepare_cases_data()
+
+    cases = PlotCases(daily_cases, template, plot_config)
     cases.graph_daily_cases_all()
     cases.graph_daily_cases_per_county()
     cases.graph_daily_cases_per_county_single()
