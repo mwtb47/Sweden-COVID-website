@@ -7,15 +7,13 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 
-class Vaccinations:
-    """Class containing methods to save three graphs as html files:
+class VaccinationsData:
+    """Class containing methods to prepare data on:
         - percentage of population vaccinated
         - percentage of each age group vaccinated
         - cumulative total vaccinations and total per week
     """
-    def __init__(self, template, plot_config, counties_pop):
-        self.template = template
-        self.plot_config = plot_config
+    def __init__(self, counties_pop):
         self.counties_pop = counties_pop
 
     def download_data(self):
@@ -92,6 +90,36 @@ class Vaccinations:
                                        for x in vaccine_total['weekly']]
 
         self.vaccine_total = vaccine_total
+
+    def return_data(self):
+        """Return dictionary of Data Frames."""
+        self.download_data()
+        self.prepare_vaccine_data()
+        self.prepare_vaccine_age_group_data()
+        self.prepare_vaccine_total_data()
+
+        return {
+            'dose_1_percent': self.dose_1_percent,
+            'dose_2_percent': self.dose_2_percent,
+            'vaccine_by_age': self.vaccine_by_age,
+            'vaccine_total': self.vaccine_total,
+        }
+
+
+class PlotVaccinations:
+    """Class containing methods to use the prepared data to save two
+    graphs and one table as html files:
+        - percentage of population vaccinated
+        - percentage of each age group vaccinated
+        - cumulative total vaccinations and total per week
+    """
+    def __init__(self, data, template, plot_config):
+        self.dose_1_percent = data['dose_1_percent']
+        self.dose_2_percent = data['dose_2_percent']
+        self.vaccine_by_age = data['vaccine_by_age']
+        self.vaccine_total = data['vaccine_total']
+        self.template = template
+        self.plot_config = plot_config
 
     def graph_percent_vaccinated(self):
         """Plot graph showing percentage of the population vaccinated
@@ -416,12 +444,14 @@ class Vaccinations:
 
 
 def main(template, plot_config, counties_pop):
-    """Initiate Vaccinations class and run methods to plot graphs."""
-    vaccinations = Vaccinations(template, plot_config, counties_pop)
-    vaccinations.download_data()
-    vaccinations.prepare_vaccine_data()
-    vaccinations.prepare_vaccine_age_group_data()
-    vaccinations.prepare_vaccine_total_data()
+    """Initiate VaccinationsData class and run methods to prepare cases
+    data. Then initiate PlotVaccinations class and run methods to plot
+    graphs.
+    """
+    vaccinations = VaccinationsData(counties_pop)
+    data = vaccinations.return_data()
+
+    vaccinations = PlotVaccinations(data, template, plot_config)
     vaccinations.graph_percent_vaccinated()
     vaccinations.graph_percent_vaccinated_age()
     vaccinations.graph_total_vaccinated()
