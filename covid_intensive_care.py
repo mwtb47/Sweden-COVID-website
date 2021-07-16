@@ -357,7 +357,7 @@ class PlotIntensiveCare:
                             method='update',
                             args=[{'visible': [False]*21 + [True]*21},
                                   {'title': ("<b>Antal Intensivvådade per Dag "
-                                             "per Län (per  10 000)</b><br> "
+                                             "per Län (per  10 000)</b><br>"
                                              "<sub>Källa: "
                                              "Folkhälsomyndigheten")}]),
                     ])
