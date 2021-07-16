@@ -13,6 +13,7 @@ import covid_comorbidities
 import covid_deaths
 import covid_intensive_care
 import covid_maps
+import covid_stockholm
 import covid_tests
 import covid_vaccinations
 
@@ -76,26 +77,36 @@ fhm_data = pd.read_excel(fhm_url, sheet_name=None)
 # function. The second is a list containing the arguments for the main
 # function.
 modules_dict = {
-    'cases': [covid_cases.main,
-              [template, plot_config, fhm_data, counties_population]],
+    'cases': [
+        covid_cases.main, 
+        [template, plot_config, fhm_data, counties_population]
+    ],
     'comorbidities': [covid_comorbidities.main, [template, plot_config]],
-    'deaths': [covid_deaths.main,
-               [template, plot_config, fhm_data, counties_population]],
-    'intensive_care': [covid_intensive_care.main,
-                       [template, plot_config, fhm_data, counties_population]],
-    'maps': [covid_maps.main,
-             [plot_config, fhm_data, counties_population,
-              mapbox_access_token]],
-    'tests': [covid_tests.main, [template, plot_config, fhm_data]],
-    'vaccinations': [covid_vaccinations.main,
-                     [template, plot_config, counties_population]],
+    'deaths': [
+        covid_deaths.main,
+        [template, plot_config, fhm_data, counties_population]
+    ],
+    'intensive_care': [
+        covid_intensive_care.main,
+        [template, plot_config, fhm_data, counties_population]
+    ],
+    'maps': [
+        covid_maps.main,
+        [plot_config, fhm_data, counties_population, mapbox_access_token]
+    ],
+    'stockholm': [covid_stockholm.main, [template, plot_config, fhm_data]],
+    #'tests': [covid_tests.main, [template, plot_config, fhm_data]],
+    'vaccinations': [
+        covid_vaccinations.main,
+        [template, plot_config, counties_population]
+    ],
 }
 
 
 def main():
     """Ask which modules to run and then run them."""
     print("Choose from: [all, cases, comorbidities, deaths, intensive_care")
-    print("              maps, tests, vaccinations]")
+    print("              maps, vaccinations]")
     modules = input("              ")
 
     if modules == 'all':
